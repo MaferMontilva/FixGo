@@ -1,0 +1,26 @@
+erDiagram
+  USERS ||--o{ USER_ROLES : has
+  ROLES ||--o{ USER_ROLES : assigns
+  USERS ||--o| CLIENT_PROFILES : owns
+  USERS ||--o| PROFESSIONAL_PROFILES : owns
+  USERS ||--o{ ADDRESSES : has
+  PROFESSIONAL_PROFILES ||--o{ PROFESSIONAL_CATEGORIES : offers
+  CATEGORIES ||--o{ PROFESSIONAL_CATEGORIES : classifies
+  CATEGORIES ||--o{ SERVICES : contains
+  USERS ||--o{ SERVICE_REQUESTS : creates
+  CATEGORIES ||--o{ SERVICE_REQUESTS : categorizes
+  SERVICES ||--o{ SERVICE_REQUESTS : specifies
+  SERVICE_REQUESTS ||--o{ SERVICE_REQUEST_IMAGES : includes
+  SERVICE_REQUESTS ||--o{ AI_ANALYSES : analyzed_by
+  AI_ANALYSES ||--o{ AI_ANALYSIS_QUESTIONS : asks
+  AI_ANALYSIS_QUESTIONS ||--o{ AI_ANALYSIS_ANSWERS : receives
+  SERVICE_REQUESTS ||--o{ BUDGETS : receives
+  PROFESSIONAL_PROFILES ||--o{ BUDGETS : sends
+  BUDGETS ||--o{ BUDGET_ITEMS : details
+  SERVICE_REQUESTS ||--o| SERVICE_ORDERS : becomes
+  BUDGETS ||--o| SERVICE_ORDERS : accepted_as
+  SERVICE_ORDERS ||--o{ SERVICE_STATUS_HISTORY : tracks
+  SERVICE_ORDERS ||--o{ REVIEWS : rated_by
+  CONVERSATIONS ||--o{ MESSAGES : contains
+  USERS ||--o{ NOTIFICATIONS : receives
+  USERS ||--o{ AUDIT_LOGS : performs

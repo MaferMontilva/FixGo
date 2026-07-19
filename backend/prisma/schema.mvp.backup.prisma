@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String?  @unique
+  phone        String?  @unique
+  passwordHash String?
+  role         String
+  status       String @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  client       Client?
+  professional Professional?
+}
+
+model Client {
+  id        String @id @default(cuid())
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id])
+  requests  ServiceRequest[]
+}
+
+model Professional {
+  id          String @id @default(cuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id])
+  displayName String
+  description String?
+  location    String?
+  verified    Boolean @default(false)
+  rating      Float   @default(0)
+  categories  ProfessionalCategory[]
+  budgets     Budget[]
+}
+
+model Category {
+  id            String @id @default(cuid())
+  name          String @unique
+  icon          String?
+  active        Boolean @default(true)
+  professionals ProfessionalCategory[]
+  requests      ServiceRequest[]
+}
+
+model ProfessionalCategory {
+  professionalId String
+  categoryId     String
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  category       Category     @relation(fields: [categoryId], references: [id])
+
+  @@id([professionalId, categoryId])
+}
+
+model ServiceRequest {
+  id               String @id @default(cuid())
+  clientId         String
+  categoryId       String?
+  originalText     String
+  title            String?
+  finalDescription String?
+  urgency          String @default("MEDIUM")
+  location         String?
+  status           String @default("DRAFT")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  client           Client @relation(fields: [clientId], references: [id])
+  category         Category? @relation(fields: [categoryId], references: [id])
+  images           ServiceRequestImage[]
+  analyses         AiAnalysis[]
+  budgets          Budget[]
+}
+
+model ServiceRequestImage {
+  id               String @id @default(cuid())
+  serviceRequestId String
+  path             String
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id])
+}
+
+model AiAnalysis {
+  id               String @id @default(cuid())
+  serviceRequestId String
+  provider         String
+  model            String?
+  input            String
+  outputJson       String
+  createdAt        DateTime @default(now())
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id])
+}
+
+model Budget {
+  id               String @id @default(cuid())
+  serviceRequestId String
+  professionalId   String
+  price            Float?
+  deadline         String?
+  notes            String?
+  status           String @default("SENT")
+  createdAt        DateTime @default(now())
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id])
+  professional     Professional @relation(fields: [professionalId], references: [id])
+}

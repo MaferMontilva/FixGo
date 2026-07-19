@@ -1,0 +1,14 @@
+{
+  "name": "fixgo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FixGo - plataforma de servicios profesionales para el hogar.",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

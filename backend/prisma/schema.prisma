@@ -1,0 +1,587 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Addresses {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int       @map("user_id")
+  label                           String?
+  addressLine1                    String    @map("address_line1")
+  addressLine2                    String?   @map("address_line2")
+  postalCode                      String?   @map("postal_code")
+  cityId                          Int?      @map("city_id")
+  cityText                        String?   @map("city_text")
+  regionText                      String?   @map("region_text")
+  countryText                     String   @default("España") @map("country_text")
+  latitude                        Float?
+  longitude                       Float?
+  accessInstructions              String?   @map("access_instructions")
+  isDefault                       Int      @default(0) @map("is_default")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("addresses")
+}
+
+model AiAnalyses {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int       @map("service_request_id")
+  sessionId                       Int?      @map("session_id")
+  provider                        String
+  model                           String
+  promptVersion                   String?   @map("prompt_version")
+  inputText                       String    @map("input_text")
+  suggestedTitle                  String?   @map("suggested_title")
+  suggestedDescription            String?   @map("suggested_description")
+  suggestedCategoryId             Int?      @map("suggested_category_id")
+  suggestedServiceId              Int?      @map("suggested_service_id")
+  suggestedUrgency                String?   @map("suggested_urgency")
+  suggestedDifficulty             String?   @map("suggested_difficulty")
+  suggestedToolsJson              String?   @map("suggested_tools_json")
+  suggestedMaterialsJson          String?   @map("suggested_materials_json")
+  safetyNotes                     String?   @map("safety_notes")
+  confidenceScore                 Float?    @map("confidence_score")
+  rawRequestJson                  String?   @map("raw_request_json")
+  rawResponseJson                 String?   @map("raw_response_json")
+  processingTimeMs                Int?      @map("processing_time_ms")
+  status                          String   @default("COMPLETED")
+  errorMessage                    String?   @map("error_message")
+  acceptedByUser                  Int      @default(0) @map("accepted_by_user")
+  createdAt                       String    @map("created_at")
+  @@map("ai_analyses")
+}
+
+model AiAnalysisAnswers {
+  id                              Int      @id @default(autoincrement())
+  questionId                      Int       @map("question_id")
+  userId                          Int       @map("user_id")
+  answerText                      String?   @map("answer_text")
+  answerJson                      String?   @map("answer_json")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@unique([questionId, userId])
+  @@map("ai_analysis_answers")
+}
+
+model AiAnalysisQuestions {
+  id                              Int      @id @default(autoincrement())
+  analysisId                      Int       @map("analysis_id")
+  questionText                    String    @map("question_text")
+  answerType                      String   @default("TEXT") @map("answer_type")
+  optionsJson                     String?   @map("options_json")
+  isRequired                      Int      @default(0) @map("is_required")
+  sortOrder                       Int      @default(0) @map("sort_order")
+  createdAt                       String    @map("created_at")
+  @@map("ai_analysis_questions")
+}
+
+model AiAssistantMessages {
+  id                              Int      @id @default(autoincrement())
+  sessionId                       Int       @map("session_id")
+  role                            String
+  content                         String
+  metadataJson                    String?   @map("metadata_json")
+  createdAt                       String    @map("created_at")
+  @@map("ai_assistant_messages")
+}
+
+model AiAssistantSessions {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int       @map("service_request_id")
+  userId                          Int       @map("user_id")
+  status                          String   @default("OPEN")
+  startedAt                       String    @map("started_at")
+  completedAt                     String?   @map("completed_at")
+  @@map("ai_assistant_sessions")
+}
+
+model AuditLogs {
+  id                              Int      @id @default(autoincrement())
+  actorUserId                     Int?      @map("actor_user_id")
+  action                          String
+  entityType                      String    @map("entity_type")
+  entityId                        String?   @map("entity_id")
+  oldValuesJson                   String?   @map("old_values_json")
+  newValuesJson                   String?   @map("new_values_json")
+  ipAddress                       String?   @map("ip_address")
+  createdAt                       String    @map("created_at")
+  @@map("audit_logs")
+}
+
+model AuthSessions {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int       @map("user_id")
+  refreshTokenHash                String   @unique @map("refresh_token_hash")
+  ipAddress                       String?   @map("ip_address")
+  userAgent                       String?   @map("user_agent")
+  expiresAt                       String    @map("expires_at")
+  revokedAt                       String?   @map("revoked_at")
+  createdAt                       String    @map("created_at")
+  @@map("auth_sessions")
+}
+
+model BudgetAttachments {
+  id                              Int      @id @default(autoincrement())
+  budgetId                        Int       @map("budget_id")
+  fileUrl                         String    @map("file_url")
+  originalFilename                String?   @map("original_filename")
+  mimeType                        String?   @map("mime_type")
+  createdAt                       String    @map("created_at")
+  @@map("budget_attachments")
+}
+
+model BudgetItems {
+  id                              Int      @id @default(autoincrement())
+  budgetId                        Int       @map("budget_id")
+  itemType                        String   @default("SERVICE") @map("item_type")
+  description                     String
+  quantity                        Float
+  unitPrice                       Float     @map("unit_price")
+  total                           Float
+  sortOrder                       Int      @default(0) @map("sort_order")
+  createdAt                       String    @map("created_at")
+  @@map("budget_items")
+}
+
+model Budgets {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int       @map("service_request_id")
+  professionalId                  Int       @map("professional_id")
+  status                          String   @default("DRAFT")
+  currency                        String   @default("EUR")
+  subtotal                        Float
+  taxes                           Float
+  platformFee                     Float     @map("platform_fee")
+  totalPrice                      Float     @map("total_price")
+  estimatedDurationValue          Int?      @map("estimated_duration_value")
+  estimatedDurationUnit           String?   @map("estimated_duration_unit")
+  availableFrom                   String?   @map("available_from")
+  validUntil                      String?   @map("valid_until")
+  observations                    String?
+  sentAt                          String?   @map("sent_at")
+  viewedAt                        String?   @map("viewed_at")
+  acceptedAt                      String?   @map("accepted_at")
+  rejectedAt                      String?   @map("rejected_at")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@unique([serviceRequestId, professionalId])
+  @@map("budgets")
+}
+
+model Categories {
+  id                              Int      @id @default(autoincrement())
+  parentId                        Int?      @map("parent_id")
+  code                            String   @unique
+  name                            String
+  slug                            String   @unique
+  description                     String?
+  iconName                        String?   @map("icon_name")
+  imageUrl                        String?   @map("image_url")
+  sortOrder                       Int      @default(0) @map("sort_order")
+  isActive                        Int      @default(1) @map("is_active")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("categories")
+}
+
+model Cities {
+  id                              Int      @id @default(autoincrement())
+  regionId                        Int       @map("region_id")
+  name                            String
+  postalCodePrefix                String?   @map("postal_code_prefix")
+  @@unique([regionId, name])
+  @@map("cities")
+}
+
+model ClientProfiles {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int      @unique @map("user_id")
+  displayName                     String?   @map("display_name")
+  notes                           String?
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("client_profiles")
+}
+
+model ConversationParticipants {
+  conversationId                  Int       @map("conversation_id")
+  userId                          Int       @map("user_id")
+  joinedAt                        String    @map("joined_at")
+  leftAt                          String?   @map("left_at")
+  lastReadAt                      String?   @map("last_read_at")
+  @@id([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Conversations {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int?      @map("service_request_id")
+  budgetId                        Int?      @map("budget_id")
+  serviceOrderId                  Int?      @map("service_order_id")
+  type                            String   @default("REQUEST")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("conversations")
+}
+
+model Countries {
+  id                              Int      @id @default(autoincrement())
+  iso2                            String   @unique
+  name                            String   @unique
+  @@map("countries")
+}
+
+model FavoriteProfessionals {
+  clientUserId                    Int       @map("client_user_id")
+  professionalId                  Int       @map("professional_id")
+  createdAt                       String    @map("created_at")
+  @@id([clientUserId, professionalId])
+  @@map("favorite_professionals")
+}
+
+model LegalDocuments {
+  id                              Int      @id @default(autoincrement())
+  documentType                    String    @map("document_type")
+  version                         String
+  title                           String
+  content                         String
+  publishedAt                     String    @map("published_at")
+  isActive                        Int      @default(1) @map("is_active")
+  @@unique([documentType, version])
+  @@map("legal_documents")
+}
+
+model MessageAttachments {
+  id                              Int      @id @default(autoincrement())
+  messageId                       Int       @map("message_id")
+  fileUrl                         String    @map("file_url")
+  originalFilename                String?   @map("original_filename")
+  mimeType                        String?   @map("mime_type")
+  sizeBytes                       Int?      @map("size_bytes")
+  createdAt                       String    @map("created_at")
+  @@map("message_attachments")
+}
+
+model Messages {
+  id                              Int      @id @default(autoincrement())
+  conversationId                  Int       @map("conversation_id")
+  senderUserId                    Int       @map("sender_user_id")
+  messageType                     String   @default("TEXT") @map("message_type")
+  content                         String?
+  sentAt                          String    @map("sent_at")
+  editedAt                        String?   @map("edited_at")
+  deletedAt                       String?   @map("deleted_at")
+  @@map("messages")
+}
+
+model Notifications {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int       @map("user_id")
+  type                            String
+  title                           String
+  body                            String
+  dataJson                        String?   @map("data_json")
+  channel                         String   @default("IN_APP")
+  status                          String   @default("PENDING")
+  sentAt                          String?   @map("sent_at")
+  readAt                          String?   @map("read_at")
+  createdAt                       String    @map("created_at")
+  @@map("notifications")
+}
+
+model OtpCodes {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int?      @map("user_id")
+  destination                     String
+  channel                         String
+  purpose                         String
+  codeHash                        String    @map("code_hash")
+  expiresAt                       String    @map("expires_at")
+  usedAt                          String?   @map("used_at")
+  attempts                        Int      @default(0)
+  createdAt                       String    @map("created_at")
+  @@map("otp_codes")
+}
+
+model PasswordResetTokens {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int       @map("user_id")
+  tokenHash                       String   @unique @map("token_hash")
+  expiresAt                       String    @map("expires_at")
+  usedAt                          String?   @map("used_at")
+  createdAt                       String    @map("created_at")
+  @@map("password_reset_tokens")
+}
+
+model ProfessionalAvailability {
+  id                              Int      @id @default(autoincrement())
+  professionalId                  Int       @map("professional_id")
+  weekday                         Int
+  startTime                       String    @map("start_time")
+  endTime                         String    @map("end_time")
+  isAvailable                     Int      @default(1) @map("is_available")
+  createdAt                       String    @map("created_at")
+  @@unique([professionalId, weekday, startTime, endTime])
+  @@map("professional_availability")
+}
+
+model ProfessionalCategories {
+  professionalId                  Int       @map("professional_id")
+  categoryId                      Int       @map("category_id")
+  isPrimary                       Int      @default(0) @map("is_primary")
+  yearsExperience                 Int      @default(0) @map("years_experience")
+  createdAt                       String    @map("created_at")
+  @@id([professionalId, categoryId])
+  @@map("professional_categories")
+}
+
+model ProfessionalDocuments {
+  id                              Int      @id @default(autoincrement())
+  professionalId                  Int       @map("professional_id")
+  documentType                    String    @map("document_type")
+  documentNumber                  String?   @map("document_number")
+  fileUrl                         String    @map("file_url")
+  status                          String   @default("PENDING")
+  expiresAt                       String?   @map("expires_at")
+  reviewedByUserId                Int?      @map("reviewed_by_user_id")
+  reviewedAt                      String?   @map("reviewed_at")
+  rejectionReason                 String?   @map("rejection_reason")
+  createdAt                       String    @map("created_at")
+  @@map("professional_documents")
+}
+
+model ProfessionalProfiles {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int      @unique @map("user_id")
+  slug                            String   @unique
+  displayName                     String    @map("display_name")
+  businessName                    String?   @map("business_name")
+  taxId                           String?   @map("tax_id")
+  bio                             String?
+  yearsExperience                 Int      @default(0) @map("years_experience")
+  profileImageUrl                 String?   @map("profile_image_url")
+  coverImageUrl                   String?   @map("cover_image_url")
+  websiteUrl                      String?   @map("website_url")
+  isVerified                      Int      @default(0) @map("is_verified")
+  isHomologated                   Int      @default(0) @map("is_homologated")
+  verificationStatus              String   @default("PENDING") @map("verification_status")
+  profileStatus                   String   @default("DRAFT") @map("profile_status")
+  ratingAverage                   Float     @map("rating_average")
+  ratingsCount                    Int      @default(0) @map("ratings_count")
+  responseTimeMinutes             Int?      @map("response_time_minutes")
+  completedJobsCount              Int      @default(0) @map("completed_jobs_count")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("professional_profiles")
+}
+
+model ProfessionalServiceAreas {
+  id                              Int      @id @default(autoincrement())
+  professionalId                  Int       @map("professional_id")
+  cityId                          Int?      @map("city_id")
+  postalCode                      String?   @map("postal_code")
+  radiusKm                        Float?    @map("radius_km")
+  isActive                        Int      @default(1) @map("is_active")
+  createdAt                       String    @map("created_at")
+  @@map("professional_service_areas")
+}
+
+model Regions {
+  id                              Int      @id @default(autoincrement())
+  countryId                       Int       @map("country_id")
+  name                            String
+  code                            String?
+  @@unique([countryId, name])
+  @@map("regions")
+}
+
+model RequestProfessionalInvitations {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int       @map("service_request_id")
+  professionalId                  Int       @map("professional_id")
+  invitedByUserId                 Int       @map("invited_by_user_id")
+  status                          String   @default("PENDING")
+  sentAt                          String    @map("sent_at")
+  respondedAt                     String?   @map("responded_at")
+  @@unique([serviceRequestId, professionalId])
+  @@map("request_professional_invitations")
+}
+
+model RequestStatusHistory {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int       @map("service_request_id")
+  previousStatus                  String?   @map("previous_status")
+  newStatus                       String    @map("new_status")
+  changedByUserId                 Int?      @map("changed_by_user_id")
+  note                            String?
+  createdAt                       String    @map("created_at")
+  @@map("request_status_history")
+}
+
+model Reviews {
+  id                              Int      @id @default(autoincrement())
+  serviceOrderId                  Int       @map("service_order_id")
+  authorUserId                    Int       @map("author_user_id")
+  professionalId                  Int       @map("professional_id")
+  rating                          Int
+  title                           String?
+  comment                         String?
+  professionalReply               String?   @map("professional_reply")
+  professionalRepliedAt           String?   @map("professional_replied_at")
+  status                          String   @default("PUBLISHED")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@unique([serviceOrderId, authorUserId])
+  @@map("reviews")
+}
+
+model Roles {
+  id                              Int      @id @default(autoincrement())
+  code                            String   @unique
+  name                            String
+  description                     String?
+  createdAt                       String    @map("created_at")
+  @@map("roles")
+}
+
+model ServiceOrders {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int      @unique @map("service_request_id")
+  acceptedBudgetId                Int      @unique @map("accepted_budget_id")
+  clientUserId                    Int       @map("client_user_id")
+  professionalId                  Int       @map("professional_id")
+  status                          String   @default("PENDING_START")
+  scheduledStartAt                String?   @map("scheduled_start_at")
+  startedAt                       String?   @map("started_at")
+  completedAt                     String?   @map("completed_at")
+  clientConfirmationCodeHash      String?   @map("client_confirmation_code_hash")
+  professionalConfirmationCodeHash String?   @map("professional_confirmation_code_hash")
+  cancellationReason              String?   @map("cancellation_reason")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("service_orders")
+}
+
+model ServiceRequestImages {
+  id                              Int      @id @default(autoincrement())
+  serviceRequestId                Int       @map("service_request_id")
+  storagePath                     String    @map("storage_path")
+  originalFilename                String?   @map("original_filename")
+  mimeType                        String?   @map("mime_type")
+  sizeBytes                       Int?      @map("size_bytes")
+  caption                         String?
+  sortOrder                       Int      @default(0) @map("sort_order")
+  visibleToAi                     Int      @default(1) @map("visible_to_ai")
+  createdAt                       String    @map("created_at")
+  @@map("service_request_images")
+}
+
+model ServiceRequests {
+  id                              Int      @id @default(autoincrement())
+  clientUserId                    Int       @map("client_user_id")
+  categoryId                      Int?      @map("category_id")
+  serviceId                       Int?      @map("service_id")
+  addressId                       Int?      @map("address_id")
+  title                           String?
+  originalDescription             String    @map("original_description")
+  finalDescription                String?   @map("final_description")
+  locationDescription             String?   @map("location_description")
+  urgency                         String   @default("NORMAL")
+  status                          String   @default("DRAFT")
+  preferredDateFrom               String?   @map("preferred_date_from")
+  preferredDateTo                 String?   @map("preferred_date_to")
+  flexibleSchedule                Int      @default(1) @map("flexible_schedule")
+  budgetMin                       Float?    @map("budget_min")
+  budgetMax                       Float?    @map("budget_max")
+  aiAssisted                      Int      @default(0) @map("ai_assisted")
+  allowProfessionalQuestions      Int      @default(1) @map("allow_professional_questions")
+  publishedAt                     String?   @map("published_at")
+  expiresAt                       String?   @map("expires_at")
+  cancelledAt                     String?   @map("cancelled_at")
+  cancellationReason              String?   @map("cancellation_reason")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  deletedAt                       String?   @map("deleted_at")
+  @@map("service_requests")
+}
+
+model ServiceStatusHistory {
+  id                              Int      @id @default(autoincrement())
+  serviceOrderId                  Int       @map("service_order_id")
+  previousStatus                  String?   @map("previous_status")
+  newStatus                       String    @map("new_status")
+  changedByUserId                 Int?      @map("changed_by_user_id")
+  note                            String?
+  createdAt                       String    @map("created_at")
+  @@map("service_status_history")
+}
+
+model Services {
+  id                              Int      @id @default(autoincrement())
+  categoryId                      Int       @map("category_id")
+  code                            String   @unique
+  name                            String
+  slug                            String   @unique
+  description                     String?
+  baseUnit                        String?   @map("base_unit")
+  sortOrder                       Int      @default(0) @map("sort_order")
+  isActive                        Int      @default(1) @map("is_active")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("services")
+}
+
+model SiteSettings {
+  id                              Int      @id @default(autoincrement())
+  settingKey                      String   @unique @map("setting_key")
+  settingValue                    String?   @map("setting_value")
+  valueType                       String   @default("STRING") @map("value_type")
+  isPublic                        Int      @default(0) @map("is_public")
+  description                     String?
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  @@map("site_settings")
+}
+
+model UserLegalAcceptances {
+  id                              Int      @id @default(autoincrement())
+  userId                          Int       @map("user_id")
+  legalDocumentId                 Int       @map("legal_document_id")
+  ipAddress                       String?   @map("ip_address")
+  acceptedAt                      String    @map("accepted_at")
+  @@unique([userId, legalDocumentId])
+  @@map("user_legal_acceptances")
+}
+
+model UserRoles {
+  userId                          Int       @map("user_id")
+  roleId                          Int       @map("role_id")
+  assignedAt                      String    @map("assigned_at")
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Users {
+  id                              Int      @id @default(autoincrement())
+  email                           String?  @unique
+  phoneCountryCode                String?   @map("phone_country_code")
+  phoneNumber                     String?   @map("phone_number")
+  passwordHash                    String?   @map("password_hash")
+  firstName                       String    @map("first_name")
+  lastName                        String    @map("last_name")
+  avatarUrl                       String?   @map("avatar_url")
+  preferredLanguage               String   @default("es") @map("preferred_language")
+  status                          String   @default("ACTIVE")
+  emailVerifiedAt                 String?   @map("email_verified_at")
+  phoneVerifiedAt                 String?   @map("phone_verified_at")
+  lastLoginAt                     String?   @map("last_login_at")
+  createdAt                       String    @map("created_at")
+  updatedAt                       String    @map("updated_at")
+  deletedAt                       String?   @map("deleted_at")
+  @@unique([phoneCountryCode, phoneNumber])
+  @@map("users")
+}
