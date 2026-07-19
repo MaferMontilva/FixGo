@@ -68,3 +68,6 @@ Thumbs.db
 # =========================
 *.tmp
 *.temp
+
+# Archivos temporales de TypeScript
+*.tsbuildinfo
