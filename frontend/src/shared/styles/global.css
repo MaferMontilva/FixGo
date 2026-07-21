@@ -5,7 +5,7 @@
   --fixgo-orange-soft: #fff4ea;
   --fixgo-yellow-orange: #f6ad36;
   --fixgo-black: #171717;
-  --fixgo-ink: #07111f;
+  --fixgo-ink: #171717;
   --fixgo-dark: #080a08;
   --fixgo-panel: #f4f4f4;
   --fixgo-gray: #6b7280;
@@ -23,6 +23,7 @@
 body {
   margin: 0;
   background: var(--fixgo-white);
+  font-weight: 400;
 }
 
 button,
@@ -52,8 +53,8 @@ button {
 }
 
 .logo-compact {
-  width: 74px;
-  height: 62px;
+  width: 92px;
+  height: 66px;
 }
 
 .brand-button {
@@ -78,20 +79,50 @@ button {
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
 }
 
+.header-menu {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(18px, 2.2vw, 32px);
+}
+
+.mobile-menu-button {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: var(--fixgo-ink);
+  background: #fff;
+  border: 1px solid var(--fixgo-border);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
 .public-nav,
 .marketplace-nav,
 .header-actions,
 .hero-actions {
   display: flex;
   align-items: center;
-  gap: 34px;
+  gap: clamp(16px, 1.8vw, 28px);
 }
 
 .public-nav button,
-.marketplace-nav button {
+.marketplace-nav button,
+.marketplace-nav a {
   color: #2b2f38;
-  font-weight: 800;
-  font-size: 17px;
+  font-weight: 600;
+  font-size: clamp(0.9rem, 0.9vw, 1rem);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header-cta {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .primary-pill,
@@ -105,7 +136,7 @@ button {
   color: #fff;
   min-height: 52px;
   padding: 0 32px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0;
   display: inline-flex;
@@ -155,7 +186,7 @@ button {
   overflow: hidden;
   background:
     radial-gradient(circle at 78% 34%, rgba(242, 138, 46, 0.12), transparent 30%),
-    linear-gradient(135deg, #061d14 0%, #050505 48%, #13152c 100%);
+    linear-gradient(135deg, #061d14 0%, #050505 48%, #171717 100%);
   padding: 1px 24px 70px;
 }
 
@@ -182,23 +213,25 @@ button {
   border-radius: 30px;
   color: #dff6ec;
   text-transform: uppercase;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
 .hero-copy h1 {
-  margin: 34px 0 28px;
+  margin: 30px 0 22px;
   max-width: 760px;
-  font-size: 74px;
-  line-height: 0.98;
+  font-size: clamp(2.25rem, 4vw, 3.6rem);
+  line-height: 1.08;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
 .hero-copy p {
   max-width: 660px;
   color: #d7dee8;
-  font-size: 23px;
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
   line-height: 1.5;
+  font-weight: 400;
 }
 
 .hero-media {
@@ -253,45 +286,57 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
+  font-weight: 700;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
 
 .marketplace-shell {
   min-height: 100vh;
   background: #fff;
-  padding-bottom: 96px;
+  display: flex;
+  flex-direction: column;
 }
 
 .marketplace-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  min-height: 92px;
-  padding: 0 clamp(24px, 10vw, 200px);
+  min-height: 88px;
+  padding: 0 clamp(24px, 7vw, 180px);
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: clamp(18px, 2.2vw, 34px);
   border-bottom: 1px solid #edf0f3;
+}
+
+.marketplace-header .header-menu {
+  align-self: stretch;
 }
 
 .marketplace-nav {
   align-self: stretch;
+  gap: clamp(14px, 1.5vw, 24px);
 }
 
-.marketplace-nav button {
+.marketplace-nav button,
+.marketplace-nav a {
   position: relative;
   height: 100%;
-  padding: 0 10px;
+  padding: 0 clamp(4px, 0.55vw, 8px);
   color: #384152;
+  display: inline-flex;
+  align-items: center;
 }
 
-.marketplace-nav button.active {
+.marketplace-nav button.active,
+.marketplace-nav a.active {
   color: #20242c;
 }
 
-.marketplace-nav button.active::after {
+.marketplace-nav button.active::after,
+.marketplace-nav a.active::after {
   content: "";
   position: absolute;
   left: 8px;
@@ -303,22 +348,23 @@ button {
 }
 
 .language-button {
-  min-width: 52px;
-  height: 42px;
+  min-width: 48px;
+  height: 38px;
   border-right: 1px solid var(--fixgo-border);
-  font-size: 20px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .login-link {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  font-weight: 900;
-  font-size: 18px;
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .marketplace-hero {
-  min-height: 485px;
+  min-height: 520px;
   display: grid;
   place-items: center;
   text-align: center;
@@ -326,34 +372,37 @@ button {
   background:
     linear-gradient(rgba(8, 10, 8, 0.38), rgba(8, 10, 8, 0.38)),
     linear-gradient(105deg, #ced5ca 0%, #eef0ec 52%, #b5c1b1 100%);
-  padding: 72px 24px;
+  padding: 58px 24px 62px;
 }
 
 .marketplace-hero h1 {
-  font-size: 54px;
-  line-height: 1;
+  max-width: 860px;
+  font-size: clamp(2.25rem, 4vw, 3.6rem);
+  line-height: 1.08;
+  font-weight: 650;
   margin: 0;
   text-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
 }
 
 .marketplace-hero p {
-  margin: 18px 0 44px;
-  font-size: 22px;
-  font-weight: 700;
+  margin: 14px 0 34px;
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  font-weight: 500;
+  line-height: 1.4;
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
 }
 
 .search-box {
   width: min(960px, calc(100vw - 48px));
-  min-height: 104px;
-  border-radius: 18px;
-  padding: 14px 12px 14px 30px;
+  min-height: 108px;
+  border-radius: 22px;
+  padding: 14px 14px 14px 30px;
   background: #fff;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 22px;
-  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.14);
+  gap: 20px;
+  box-shadow: 0 22px 38px rgba(0, 0, 0, 0.12);
 }
 
 .search-box input,
@@ -364,7 +413,7 @@ button {
   border: 0;
   outline: 0;
   color: #1f2937;
-  font-size: 20px;
+  font-size: 18px;
   background: transparent;
 }
 
@@ -374,9 +423,11 @@ button {
 }
 
 .search-box button {
-  min-width: 140px;
-  min-height: 70px;
+  min-width: 136px;
+  min-height: 64px;
   text-transform: none;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .search-icon {
@@ -424,7 +475,7 @@ button {
   place-items: center;
   gap: 12px;
   color: #262626;
-  font-weight: 900;
+  font-weight: 700;
   transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
@@ -450,7 +501,7 @@ button {
 
 .instruction {
   margin: 0 0 70px;
-  font-size: 22px;
+  font-size: 20px;
   color: #344154;
 }
 
@@ -526,7 +577,7 @@ button {
   display: block;
   color: #99a1ad;
   text-transform: uppercase;
-  font-weight: 900;
+  font-weight: 700;
   margin-bottom: 20px;
 }
 
@@ -563,7 +614,7 @@ button {
     linear-gradient(135deg, #252525, #171717);
   color: #fff;
   padding: 18px 20px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .professional-avatar {
@@ -577,7 +628,7 @@ button {
   position: absolute;
   top: 86px;
   left: 22px;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--fixgo-orange);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
 }
@@ -692,10 +743,40 @@ button {
   margin: 0 auto 44px;
 }
 
+.login-title {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: clamp(1.85rem, 3vw, 2.25rem);
+  line-height: 1.12;
+  font-weight: 700;
+}
+
+.login-intro {
+  margin: 0 auto 26px;
+  max-width: 430px;
+}
+
+.role-access-list {
+  display: grid;
+  gap: 14px;
+}
+
+.role-access-button {
+  margin: 0;
+  justify-content: flex-start;
+  padding: 0 24px;
+}
+
+.role-access-button.neutral {
+  background: #171717;
+  border-color: rgba(23, 23, 23, 0.18);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.16);
+}
+
 .login-card label {
   display: block;
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 700;
   margin-bottom: 16px;
 }
 
@@ -710,7 +791,7 @@ button {
 .phone-input button {
   border-right: 1px solid var(--fixgo-border);
   background: #fafafa;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .phone-input input {
@@ -728,7 +809,7 @@ button {
   margin: 40px 0 24px;
   background: #dfe3e9;
   color: #9ca3af;
-  font-weight: 900;
+  font-weight: 700;
   font-size: 20px;
 }
 
@@ -754,18 +835,69 @@ button {
   font-size: 17px;
 }
 
+.professional-home {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 78% 34%, rgba(242, 138, 46, 0.12), transparent 30%),
+    linear-gradient(135deg, #061d14 0%, #050505 48%, #171717 100%);
+}
+
+.professional-home-card {
+  background: #fff;
+}
+
+.primary-pill,
+.dark-pill,
+.primary-wide,
+.back-link {
+  text-decoration: none;
+}
+
+.not-found-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 78% 34%, rgba(242, 138, 46, 0.12), transparent 30%),
+    linear-gradient(135deg, #061d14 0%, #050505 48%, #171717 100%);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.not-found-card {
+  width: min(620px, calc(100vw - 40px));
+  color: #fff;
+  text-align: center;
+}
+
+.not-found-card .logo {
+  margin: 0 auto 34px;
+}
+
+.not-found-card h1 {
+  margin: 28px 0 16px;
+  font-size: clamp(2.25rem, 4vw, 3.35rem);
+  line-height: 1.08;
+  font-weight: 700;
+}
+
+.not-found-card p {
+  color: #d7dee8;
+  font-size: 20px;
+  line-height: 1.5;
+  margin: 0 auto 34px;
+  max-width: 460px;
+}
+
 .footer-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  min-height: 76px;
+  position: static;
+  min-height: 82px;
   background: #fff;
   border-top: 1px solid var(--fixgo-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 clamp(24px, 9vw, 180px);
+  margin-top: auto;
   z-index: 20;
 }
 
@@ -790,29 +922,138 @@ button {
   height: 44px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1280px) {
   .public-header,
   .marketplace-header {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    padding: 18px 24px;
+    padding-left: 24px;
+    padding-right: 24px;
     gap: 18px;
   }
 
   .public-nav,
   .marketplace-nav,
   .header-actions {
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .public-nav button,
+  .marketplace-nav button,
+  .marketplace-nav a,
+  .login-link {
+    font-size: 15px;
+  }
+
+  .primary-pill {
+    min-height: 50px;
+    padding: 0 24px;
+  }
+
+  .logo-compact {
+    width: 84px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .public-header,
+  .marketplace-header {
+    min-height: 76px;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 12px 18px;
+  }
+
+  .public-header {
+    margin-top: 18px;
+  }
+
+  .mobile-menu-button {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .header-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--fixgo-border);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  }
+
+  .header-menu.is-open {
+    display: flex;
+  }
+
+  .marketplace-header .header-menu {
+    align-self: auto;
+  }
+
+  .public-nav,
+  .marketplace-nav,
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .public-nav button,
+  .marketplace-nav button,
+  .marketplace-nav a,
+  .login-link,
+  .language-button {
+    min-height: 44px;
+    justify-content: flex-start;
+    padding: 0 12px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+
+  .marketplace-nav {
+    align-self: auto;
+  }
+
+  .marketplace-nav button,
+  .marketplace-nav a {
+    height: auto;
+  }
+
+  .marketplace-nav button.active::after,
+  .marketplace-nav a.active::after {
+    left: 12px;
+    right: auto;
+    bottom: 3px;
+    width: 34px;
+    height: 3px;
+    border-radius: 99px;
+  }
+
+  .header-actions {
+    border-top: 1px solid var(--fixgo-border);
+    padding-top: 10px;
+  }
+
+  .language-button {
+    width: 100%;
+    border-right: 0;
+  }
+
+  .header-cta {
+    width: 100%;
   }
 
   .landing-hero,
   .professionals-layout {
     grid-template-columns: 1fr;
-  }
-
-  .hero-copy h1 {
-    font-size: 52px;
   }
 
   .hero-media {
@@ -840,22 +1081,15 @@ button {
     border-radius: 18px;
   }
 
-  .public-nav,
-  .marketplace-nav {
-    width: 100%;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-  }
-
   .hero-copy h1,
   .marketplace-hero h1 {
-    font-size: 42px;
+    font-size: clamp(2rem, 9vw, 2.35rem);
+    line-height: 1.1;
   }
 
   .hero-copy p,
   .marketplace-hero p {
-    font-size: 18px;
+    font-size: clamp(1rem, 4.5vw, 1.125rem);
   }
 
   .hero-actions,

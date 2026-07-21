@@ -1,22 +1,16 @@
-import { MapPin, SlidersHorizontal, CheckCircle2 } from "lucide-react";
-import { AppRoute } from "../../app/App";
-import { FooterBar } from "../../shared/components/FooterBar";
-import { MarketplaceHeader } from "../../shared/components/MarketplaceHeader";
-import { getCategories, getProfessionals } from "../../shared/api";
-import { fallbackCategories, fallbackProfessionals } from "../../shared/data";
-import { useAsyncData } from "../../shared/useAsyncData";
+import { CheckCircle2, MapPin, SlidersHorizontal } from "lucide-react";
+import { fallbackCategories } from "../../categories/data/categoryFallbacks";
+import { getCategories } from "../../categories/services/categoriesApi";
+import { fallbackProfessionals } from "../data/professionalFallbacks";
+import { getProfessionals } from "../services/professionalsApi";
+import { useAsyncData } from "../../../shared/hooks/useAsyncData";
 
-type Props = {
-  onNavigate: (route: AppRoute) => void;
-};
-
-export function ProfessionalsPage({ onNavigate }: Props) {
+export function ProfessionalsPage() {
   const { data: categories } = useAsyncData(getCategories, fallbackCategories);
   const { data: professionals } = useAsyncData(getProfessionals, fallbackProfessionals);
 
   return (
-    <main className="marketplace-shell">
-      <MarketplaceHeader active="professionals" onNavigate={onNavigate} />
+    <>
       <section className="professionals-top">
         <h1>Encuentra tu profesional</h1>
         <p>Profesionales disponibles en la red FixGo</p>
@@ -52,7 +46,6 @@ export function ProfessionalsPage({ onNavigate }: Props) {
           ))}
         </div>
       </section>
-      <FooterBar />
-    </main>
+    </>
   );
 }

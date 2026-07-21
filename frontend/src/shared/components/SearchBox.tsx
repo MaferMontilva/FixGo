@@ -8,7 +8,7 @@ type SearchBoxProps = {
 export function SearchBox({ placeholder, buttonLabel = "Buscar" }: SearchBoxProps) {
   return (
     <div className="search-box">
-      <Search className="search-icon" size={30} />
+      <Search className="search-icon" size={26} />
       <input placeholder={placeholder} />
       <button>{buttonLabel}</button>
     </div>

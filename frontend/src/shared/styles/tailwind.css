@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-fixgo-orange: #f28a2e;
+  --color-fixgo-orange-hover: #dc6f19;
+  --color-fixgo-orange-deep: #b95212;
+  --color-fixgo-orange-soft: #fff4ea;
+  --color-fixgo-black: #171717;
+  --color-fixgo-dark: #080a08;
+  --color-fixgo-panel: #f4f4f4;
+  --color-fixgo-gray: #6b7280;
+  --color-fixgo-border: #e0e3e8;
+  --color-fixgo-white: #ffffff;
+}

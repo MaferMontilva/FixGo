@@ -1,21 +1,15 @@
-import { AppRoute } from "../../app/App";
-import { FooterBar } from "../../shared/components/FooterBar";
-import { MarketplaceHeader } from "../../shared/components/MarketplaceHeader";
-import { SearchBox } from "../../shared/components/SearchBox";
-import { getCategories } from "../../shared/api";
-import { fallbackCategories } from "../../shared/data";
-import { useAsyncData } from "../../shared/useAsyncData";
+import { useNavigate } from "react-router-dom";
+import { fallbackCategories } from "../../categories/data/categoryFallbacks";
+import { getCategories } from "../../categories/services/categoriesApi";
+import { SearchBox } from "../../../shared/components/SearchBox";
+import { useAsyncData } from "../../../shared/hooks/useAsyncData";
 
-type Props = {
-  onNavigate: (route: AppRoute) => void;
-};
-
-export function HomeMarketplacePage({ onNavigate }: Props) {
+export function HomeMarketplacePage() {
+  const navigate = useNavigate();
   const { data: categories } = useAsyncData(getCategories, fallbackCategories);
 
   return (
-    <main className="marketplace-shell">
-      <MarketplaceHeader active="home" onNavigate={onNavigate} />
+    <>
       <section className="marketplace-hero">
         <h1>Tu hogar, nuestro proyecto</h1>
         <p>Elige el servicio de instalacion, mantenimiento o reforma que necesitas</p>
@@ -28,7 +22,11 @@ export function HomeMarketplacePage({ onNavigate }: Props) {
           {categories.slice(0, 3).map((category) => {
             const Icon = category.icon;
             return (
-              <button className="season-card" key={category.name} onClick={() => onNavigate("request")}>
+              <button
+                className="season-card"
+                key={category.name}
+                onClick={() => navigate("/cliente/solicitar-presupuesto")}
+              >
                 <Icon size={44} />
                 <strong>{category.name}</strong>
               </button>
@@ -36,7 +34,6 @@ export function HomeMarketplacePage({ onNavigate }: Props) {
           })}
         </div>
       </section>
-      <FooterBar />
-    </main>
+    </>
   );
 }
