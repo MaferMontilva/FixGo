@@ -1,15 +1,27 @@
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 
-export function PublicHeader() {
+type PublicHeaderProps = {
+  accountName?: string;
+  isAuthenticated?: boolean;
+  onLogout?: () => Promise<void> | void;
+};
+
+export function PublicHeader({ accountName = "Mi cuenta", isAuthenticated = false, onLogout }: PublicHeaderProps) {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const goTo = (path: string) => {
     setIsMenuOpen(false);
     navigate(path);
+  };
+
+  const handleLogout = async () => {
+    setIsMenuOpen(false);
+    await onLogout?.();
+    navigate("/");
   };
 
   return (
@@ -33,7 +45,20 @@ export function PublicHeader() {
         <nav className="public-nav" aria-label="Navegacion publica">
           <button onClick={() => goTo("/cliente/inicio")}>Soy cliente</button>
           <button onClick={() => goTo("/profesional/inicio")}>Soy profesional</button>
-          <button onClick={() => goTo("/acceder")}>Acceder</button>
+          {isAuthenticated ? (
+            <>
+              <span className="account-label public-account-label">Hola, {accountName}</span>
+              <button className="login-link" onClick={handleLogout}>
+                <LogOut size={20} />
+                Cerrar sesion
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => goTo("/acceder")}>Iniciar sesion</button>
+              <button onClick={() => goTo("/registro")}>Crear cuenta</button>
+            </>
+          )}
         </nav>
         <button className="primary-pill header-cta" onClick={() => goTo("/cliente/solicitar-presupuesto")}>
           Pide presupuesto

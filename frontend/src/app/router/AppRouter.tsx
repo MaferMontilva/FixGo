@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { MarketplaceLayout } from "../layouts/MarketplaceLayout";
 import { PublicLayout } from "../layouts/PublicLayout";
-import { LoginPage } from "../../modules/auth";
+import { LoginPage, RegisterPage, RoleProtectedRoute } from "../../modules/auth";
 import { BudgetsPage } from "../../modules/budgets";
 import { HomeMarketplacePage, LandingPage, LegalPage, NotFoundPage } from "../../modules/home";
 import { ProfessionalHomePage, ProfessionalsPage } from "../../modules/professionals";
@@ -13,6 +13,7 @@ export function AppRouter() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/acceder" element={<LoginPage />} />
+        <Route path="/registro" element={<RegisterPage />} />
         <Route path="/profesional/inicio" element={<ProfessionalHomePage />} />
         <Route path="/legal/:documentType" element={<LegalPage />} />
       </Route>
@@ -21,7 +22,14 @@ export function AppRouter() {
         <Route index element={<Navigate to="/cliente/inicio" replace />} />
         <Route path="inicio" element={<HomeMarketplacePage />} />
         <Route path="solicitar-presupuesto" element={<ServiceRequestPage />} />
-        <Route path="mis-presupuestos" element={<BudgetsPage />} />
+        <Route
+          path="mis-presupuestos"
+          element={
+            <RoleProtectedRoute roles={["CLIENT"]}>
+              <BudgetsPage />
+            </RoleProtectedRoute>
+          }
+        />
         <Route path="profesionales" element={<ProfessionalsPage />} />
       </Route>
 

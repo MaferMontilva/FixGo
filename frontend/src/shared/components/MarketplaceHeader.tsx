@@ -1,6 +1,6 @@
-import { LogIn, Menu, X } from "lucide-react";
+import { LogIn, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 
 const items = [
@@ -10,13 +10,37 @@ const items = [
   { label: "Profesionales", path: "/cliente/profesionales" }
 ];
 
-export function MarketplaceHeader() {
+type MarketplaceHeaderProps = {
+  accountName?: string;
+  isAuthenticated?: boolean;
+  mobileAccountName?: string;
+  onLogout?: () => Promise<void> | void;
+};
+
+export function MarketplaceHeader({
+  accountName = "Mi cuenta",
+  isAuthenticated = false,
+  mobileAccountName = "Mi cuenta",
+  onLogout
+}: MarketplaceHeaderProps) {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const goTo = (path: string) => {
     setIsMenuOpen(false);
     navigate(path);
+  };
+
+  const handleSessionAction = async () => {
+    setIsMenuOpen(false);
+
+    if (!isAuthenticated) {
+      navigate("/acceder");
+      return;
+    }
+
+    await onLogout?.();
+    navigate("/");
   };
 
   return (
@@ -53,10 +77,21 @@ export function MarketplaceHeader() {
           <button className="language-button" aria-label="Idioma espanol" onClick={() => setIsMenuOpen(false)}>
             ES
           </button>
-          <button className="login-link" onClick={() => goTo("/acceder")}>
-            <LogIn size={22} />
-            Iniciar sesión
+          {isAuthenticated ? (
+            <span className="account-label" aria-label={`Usuario autenticado: ${accountName}`}>
+              <span className="account-label-desktop">Hola, {accountName}</span>
+              <span className="account-label-mobile">{mobileAccountName}</span>
+            </span>
+          ) : null}
+          <button className="login-link" onClick={handleSessionAction}>
+            {isAuthenticated ? <LogOut size={22} /> : <LogIn size={22} />}
+            {isAuthenticated ? "Cerrar sesion" : "Iniciar sesion"}
           </button>
+          {!isAuthenticated ? (
+            <Link className="register-link" to="/registro" onClick={() => setIsMenuOpen(false)}>
+              Crear cuenta
+            </Link>
+          ) : null}
         </div>
       </div>
     </header>

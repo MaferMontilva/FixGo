@@ -371,6 +371,48 @@ button {
   font-size: 16px;
 }
 
+.register-link {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--fixgo-orange-soft);
+  color: var(--fixgo-orange-deep);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.account-label {
+  max-width: 240px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #f7f8fa;
+  color: #2b2f38;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-label-desktop,
+.account-label-mobile {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-label-mobile {
+  display: none;
+}
+
 .marketplace-hero {
   min-height: 520px;
   display: grid;
@@ -960,6 +1002,108 @@ button {
   height: 44px;
 }
 
+.auth-card {
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+}
+
+.role-access-list.compact {
+  grid-template-columns: 1fr;
+  margin-bottom: 24px;
+}
+
+.role-chip {
+  min-height: 52px;
+  border-radius: 16px;
+  padding: 0 18px;
+  border: 1px solid var(--fixgo-border);
+  color: #2b2f38;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.role-chip.is-active {
+  border-color: rgba(242, 138, 46, 0.45);
+  background: var(--fixgo-orange-soft);
+}
+
+.role-chip.is-disabled {
+  color: #8b94a3;
+  background: #f4f4f5;
+  cursor: not-allowed;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-field label {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.auth-field input {
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid var(--fixgo-border);
+  border-radius: 16px;
+  outline: 0;
+  padding: 0 18px;
+  color: #1f2937;
+  background: #fff;
+}
+
+.auth-field input:focus {
+  border-color: var(--fixgo-orange);
+  box-shadow: 0 0 0 4px rgba(242, 138, 46, 0.12);
+}
+
+.auth-field input[aria-invalid="true"] {
+  border-color: #b95212;
+}
+
+.form-error {
+  margin: 8px 0 0;
+  color: #9a3412;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.server-error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff4ea;
+}
+
+.auth-submit {
+  margin: 10px 0 6px;
+}
+
+.auth-switch {
+  margin: 18px 0 0;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: var(--fixgo-orange-deep);
+  font-weight: 700;
+}
+
+.route-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #2b2f38;
+  font-weight: 700;
+}
+
 @media (max-width: 1280px) {
   .public-header,
   .marketplace-header {
@@ -977,8 +1121,14 @@ button {
   .public-nav button,
   .marketplace-nav button,
   .marketplace-nav a,
-  .login-link {
+  .login-link,
+  .account-label {
     font-size: 15px;
+  }
+
+  .account-label {
+    max-width: 190px;
+    padding: 0 12px;
   }
 
   .primary-pill {
@@ -1048,12 +1198,26 @@ button {
   .marketplace-nav button,
   .marketplace-nav a,
   .login-link,
+  .account-label,
   .language-button {
     min-height: 44px;
     justify-content: flex-start;
     padding: 0 12px;
     border-radius: 12px;
     font-size: 15px;
+  }
+
+  .account-label {
+    width: 100%;
+    max-width: none;
+  }
+
+  .account-label-desktop {
+    display: none;
+  }
+
+  .account-label-mobile {
+    display: inline;
   }
 
   .marketplace-nav {

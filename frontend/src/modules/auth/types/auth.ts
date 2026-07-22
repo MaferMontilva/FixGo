@@ -1,0 +1,32 @@
+export type AuthRole = "CLIENT" | "PROFESSIONAL" | "ADMIN";
+
+export type ClientProfile = {
+  id: number;
+  displayName: string | null;
+  notes: string | null;
+};
+
+export type AuthUser = {
+  id: number;
+  email: string | null;
+  firstName: string;
+  lastName: string;
+  roles: AuthRole[];
+  clientProfile?: ClientProfile | null;
+};
+
+export type AuthResponse = {
+  accessToken: string;
+  refreshToken: string;
+  user: AuthUser;
+};
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type RegisterPayload = LoginPayload & {
+  firstName: string;
+  lastName: string;
+};

@@ -61,6 +61,7 @@ Current routes:
 
 - `/`
 - `/acceder`
+- `/registro`
 - `/profesional/inicio`
 - `/cliente/inicio`
 - `/cliente/solicitar-presupuesto`
@@ -77,7 +78,51 @@ The shared HTTP client lives in `src/shared/http/httpClient.ts`.
 
 The frontend uses `VITE_API_URL` as the single public environment variable for the API base URL. The client normalizes the value so both `http://host:port` and `http://host:port/api` work.
 
+The client also centralizes JSON headers, optional bearer access tokens and normalized HTTP errors. It does not import React, pages, providers or feature internals, and it does not store tokens by itself.
+
 Category and professional fallbacks are temporary demonstration data. In development, API errors are logged before falling back.
+
+## Authentication Session
+
+The auth feature lives in `src/modules/auth` and is organized with:
+
+- `api`: backend calls for register, login, refresh, logout, current user and client profile.
+- `components`: auth form field and protected route components.
+- `context`: `AuthProvider`.
+- `hooks`: `useAuth`.
+- `pages`: login and client registration pages.
+- `storage`: centralized refresh-token storage.
+- `types`: auth contracts.
+
+During development, the access token is kept only in memory inside `AuthProvider`. The refresh token is stored centrally in `localStorage` as a temporary development solution so the session can be recovered after reload.
+
+This localStorage approach has XSS risk: if malicious JavaScript runs in the browser, it could read the refresh token. A later production hardening phase should move refresh tokens to secure HTTP-only cookies or another hardened session strategy.
+
+On startup, the provider:
+
+1. Reads the stored refresh token.
+2. Calls `POST /api/auth/refresh`.
+3. Replaces the stored refresh token with the rotated value.
+4. Calls `GET /api/users/me`.
+5. Stores the authenticated user in memory.
+
+If refresh fails, the stored token and in-memory session are cleared without retry loops.
+
+The public routes remain usable without session:
+
+- `/`
+- `/acceder`
+- `/registro`
+- `/cliente/inicio`
+- `/cliente/solicitar-presupuesto`
+- `/cliente/profesionales`
+- legal pages
+
+Protected client routes redirect unauthenticated users to `/acceder`. Authenticated users with role `CLIENT` can access:
+
+- `/cliente/mis-presupuestos`
+
+Logout calls the backend, clears memory and removes the stored refresh token.
 
 ## Visual Identity
 
@@ -85,12 +130,11 @@ The visual identity uses FixGo orange, white, black and neutral grays. The main 
 
 The frontend must not introduce blue as an interface color.
 
-## Future Phases
+## Pending Features
 
-- Phase 3: `auth`, `users` and `clients`.
 - Phase 4: `services` and `service-requests`.
 - Phase 5: `artificial-intelligence`.
 - Phase 6: `professionals` and `budgets`.
 - Phase 7: `reviews`, `notifications` and `administration`.
 
-These features are not fully implemented yet. Later phases should add their pages, services, types and reusable UI inside the existing structure without reorganizing the whole frontend.
+Professional login, administrator login, real service requests, AI, budgets, reviews and notifications are not implemented yet. Later phases should add their pages, services, types and reusable UI inside the existing structure without reorganizing the whole frontend.
