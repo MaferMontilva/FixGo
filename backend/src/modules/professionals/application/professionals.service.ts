@@ -1,10 +1,13 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { ProfessionalEntity } from "../domain/professional.entity";
-import { PrismaProfessionalsRepository } from "../infrastructure/prisma/prisma-professionals.repository";
+import { PROFESSIONALS_REPOSITORY, ProfessionalsRepository } from "../domain/professionals.repository";
 
 @Injectable()
 export class ProfessionalsService {
-  constructor(private readonly professionalsRepository: PrismaProfessionalsRepository) {}
+  constructor(
+    @Inject(PROFESSIONALS_REPOSITORY)
+    private readonly professionalsRepository: ProfessionalsRepository
+  ) {}
 
   findAll(): Promise<ProfessionalEntity[]> {
     return this.professionalsRepository.findAllActive();

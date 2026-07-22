@@ -1,10 +1,13 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
+import { CATEGORIES_REPOSITORY, CategoriesRepository } from "../domain/categories.repository";
 import { CategoryEntity } from "../domain/category.entity";
-import { PrismaCategoriesRepository } from "../infrastructure/prisma/prisma-categories.repository";
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly categoriesRepository: PrismaCategoriesRepository) {}
+  constructor(
+    @Inject(CATEGORIES_REPOSITORY)
+    private readonly categoriesRepository: CategoriesRepository
+  ) {}
 
   findAll(): Promise<CategoryEntity[]> {
     return this.categoriesRepository.findAllActive();

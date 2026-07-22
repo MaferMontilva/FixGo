@@ -1,11 +1,17 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ServiceRequestEntity } from "../domain/service-request.entity";
-import { PrismaServiceRequestsRepository } from "../infrastructure/prisma/prisma-service-requests.repository";
+import {
+  SERVICE_REQUESTS_REPOSITORY,
+  ServiceRequestsRepository
+} from "../domain/service-requests.repository";
 import { CreateServiceRequestCommand } from "./create-service-request.command";
 
 @Injectable()
 export class ServiceRequestsService {
-  constructor(private readonly serviceRequestsRepository: PrismaServiceRequestsRepository) {}
+  constructor(
+    @Inject(SERVICE_REQUESTS_REPOSITORY)
+    private readonly serviceRequestsRepository: ServiceRequestsRepository
+  ) {}
 
   findAll(): Promise<ServiceRequestEntity[]> {
     return this.serviceRequestsRepository.findRecent();

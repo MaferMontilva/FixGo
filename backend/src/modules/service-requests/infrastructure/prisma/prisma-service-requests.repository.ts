@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../../../shared/prisma.service";
-import { CreateServiceRequestCommand } from "../../application/create-service-request.command";
 import { ServiceRequestEntity } from "../../domain/service-request.entity";
-import { ServiceRequestsRepository } from "../../domain/service-requests.repository";
+import {
+  CreateServiceRequestData,
+  ServiceRequestsRepository
+} from "../../domain/service-requests.repository";
 
 @Injectable()
 export class PrismaServiceRequestsRepository implements ServiceRequestsRepository {
@@ -50,7 +52,7 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
     }));
   }
 
-  create(command: CreateServiceRequestCommand) {
+  create(command: CreateServiceRequestData) {
     const now = new Date().toISOString();
 
     return this.prisma.serviceRequests.create({
