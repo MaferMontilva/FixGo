@@ -18,7 +18,11 @@ export async function getProfessionals(): Promise<UiProfessional[]> {
       ratingAverage: professional.ratingAverage,
       completedJobsCount: professional.completedJobsCount
     }));
-  } catch {
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn("FixGo: usando profesionales de demostración por error de API.", error);
+    }
+
     return fallbackProfessionals;
   }
 }

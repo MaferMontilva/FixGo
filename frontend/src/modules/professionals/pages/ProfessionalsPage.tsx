@@ -1,6 +1,5 @@
 import { CheckCircle2, MapPin, SlidersHorizontal } from "lucide-react";
-import { fallbackCategories } from "../../categories/data/categoryFallbacks";
-import { getCategories } from "../../categories/services/categoriesApi";
+import { fallbackCategories, getCategories } from "../../categories";
 import { fallbackProfessionals } from "../data/professionalFallbacks";
 import { getProfessionals } from "../services/professionalsApi";
 import { useAsyncData } from "../../../shared/hooks/useAsyncData";
@@ -19,7 +18,7 @@ export function ProfessionalsPage() {
           <select aria-label="Ordenar profesionales">
             <option>Relevancia</option>
             <option>Mejor valorados</option>
-            <option>Mas cercanos</option>
+            <option>Más cercanos</option>
           </select>
         </div>
       </section>

@@ -1,14 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { MarketplaceLayout } from "../layouts/MarketplaceLayout";
 import { PublicLayout } from "../layouts/PublicLayout";
-import { LoginPage } from "../../modules/auth/pages/LoginPage";
-import { BudgetsPage } from "../../modules/budgets/pages/BudgetsPage";
-import { HomeMarketplacePage } from "../../modules/home/pages/HomeMarketplacePage";
-import { LandingPage } from "../../modules/home/pages/LandingPage";
-import { NotFoundPage } from "../../modules/home/pages/NotFoundPage";
-import { ProfessionalHomePage } from "../../modules/professionals/pages/ProfessionalHomePage";
-import { ProfessionalsPage } from "../../modules/professionals/pages/ProfessionalsPage";
-import { ServiceRequestPage } from "../../modules/service-requests/pages/ServiceRequestPage";
+import { LoginPage } from "../../modules/auth";
+import { BudgetsPage } from "../../modules/budgets";
+import { HomeMarketplacePage, LandingPage, LegalPage, NotFoundPage } from "../../modules/home";
+import { ProfessionalHomePage, ProfessionalsPage } from "../../modules/professionals";
+import { ServiceRequestPage } from "../../modules/service-requests";
 
 export function AppRouter() {
   return (
@@ -17,6 +14,7 @@ export function AppRouter() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/acceder" element={<LoginPage />} />
         <Route path="/profesional/inicio" element={<ProfessionalHomePage />} />
+        <Route path="/legal/:documentType" element={<LegalPage />} />
       </Route>
 
       <Route path="/cliente" element={<MarketplaceLayout />}>

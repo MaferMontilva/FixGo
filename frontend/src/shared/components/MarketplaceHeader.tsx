@@ -55,7 +55,7 @@ export function MarketplaceHeader() {
           </button>
           <button className="login-link" onClick={() => goTo("/acceder")}>
             <LogIn size={22} />
-            Iniciar sesion
+            Iniciar sesión
           </button>
         </div>
       </div>

@@ -17,7 +17,11 @@ export async function getCategories(): Promise<UiCategory[]> {
       iconName: category.iconName,
       icon: iconByName[category.iconName ?? ""] ?? fallbackCategories[0].icon
     }));
-  } catch {
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn("FixGo: usando categorías de demostración por error de API.", error);
+    }
+
     return fallbackCategories;
   }
 }

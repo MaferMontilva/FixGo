@@ -1,30 +1,33 @@
 import { ArrowLeft, BriefcaseBusiness, ShieldCheck, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "../../../shared/components/Button";
+import { Card } from "../../../shared/components/Card";
 import { Logo } from "../../../shared/components/Logo";
+import { PageContainer } from "../../../shared/components/PageContainer";
 
 export function LoginPage() {
   return (
-    <section className="login-shell">
-      <div className="login-card">
+    <PageContainer className="login-shell">
+      <Card className="login-card">
         <Logo compact />
         <h1 className="login-title">Acceder a FixGo</h1>
-        <p className="login-intro">Selecciona el tipo de acceso para continuar. La autenticacion real se integrara mas adelante.</p>
+        <p className="login-intro">Selecciona el tipo de acceso para continuar. La autenticación real se integrará más adelante.</p>
         <div className="role-access-list">
-          <Link className="primary-wide role-access-button" to="/cliente/inicio">
+          <Button className="role-access-button" to="/cliente/inicio" variant="wide">
             <UserRound size={22} />
             Acceder como cliente
-          </Link>
-          <Link className="primary-wide role-access-button" to="/profesional/inicio">
+          </Button>
+          <Button className="role-access-button" to="/profesional/inicio" variant="wide">
             <BriefcaseBusiness size={22} />
             Acceder como profesional
-          </Link>
-          <Link className="primary-wide role-access-button neutral" to="/acceder">
+          </Button>
+          <Button className="role-access-button" variant="neutral" disabled>
             <ShieldCheck size={22} />
-            Acceder como administrador
-          </Link>
+            Administrador próximamente
+          </Button>
         </div>
         <Link className="back-link" to="/"><ArrowLeft size={18} /> Volver al inicio</Link>
-      </div>
-    </section>
+      </Card>
+    </PageContainer>
   );
 }

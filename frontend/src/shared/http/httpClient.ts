@@ -7,7 +7,7 @@ function normalizeApiUrl(url: string) {
   return cleanUrl.endsWith("/api") ? cleanUrl : `${cleanUrl}/api`;
 }
 
-const API_BASE_URL = normalizeApiUrl(import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_URL);
+const API_BASE_URL = normalizeApiUrl(import.meta.env.VITE_API_URL ?? DEFAULT_API_URL);
 
 async function parseJsonResponse<T>(response: Response, path: string): Promise<T> {
   if (response.ok) {
@@ -16,7 +16,7 @@ async function parseJsonResponse<T>(response: Response, path: string): Promise<T
 
   const error: ApiError = {
     status: response.status,
-    message: `La API respondio con estado ${response.status}`,
+    message: `La API respondió con estado ${response.status}`,
     path
   };
 

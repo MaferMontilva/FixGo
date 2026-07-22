@@ -6,5 +6,5 @@ export const fallbackProfessionals: UiProfessional[] = [
   { name: "Instalaciones Monti", trade: "Electricidad", location: "Madrid", verified: false },
   { name: "Hogar Tecnico", trade: "Climatizacion", location: "Valencia", verified: true },
   { name: "Taller Casa Clara", trade: "Pintura", location: "Sevilla", verified: false },
-  { name: "Puertas y Reformas", trade: "Carpinteria", location: "Zaragoza", verified: true }
+  { name: "Puertas y Reformas", trade: "Carpintería", location: "Zaragoza", verified: true }
 ];
