@@ -42,6 +42,7 @@ backend/.env.*
 *.db-journal
 *.sqlite
 *.sqlite3
+backend/prisma/*.backup.prisma
 
 # =========================
 # LOGS
