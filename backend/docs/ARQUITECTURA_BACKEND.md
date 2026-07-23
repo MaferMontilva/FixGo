@@ -7,6 +7,10 @@ El backend usa NestJS con una organizacion modular orientada a arquitectura hexa
 - `categories`
 - `professionals`
 - `service-requests`
+- `services`
+- `auth`
+- `users`
+- `clients`
 
 Cada modulo funcional debe tender a esta estructura:
 
@@ -38,10 +42,10 @@ module/
 
 ## Modulos pendientes de completar
 
-- `auth`
-- `users`
-- `clients`
 - `budgets`
 - `artificial-intelligence`
+- `reviews`
+- `notifications`
+- `administration`
 
-Estos modulos existen como base, pero todavia deben migrarse a la misma estructura cuando se implemente su logica real.
+Estos modulos existen como base o esqueleto, pero todavia deben completarse cuando se implemente su logica real.

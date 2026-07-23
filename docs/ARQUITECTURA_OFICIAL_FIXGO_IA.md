@@ -97,15 +97,7 @@ src/
   main.tsx
 ```
 
-Cada modulo frontend puede dividirse asi cuando tenga suficiente logica:
-
-```text
-module/
-  domain/
-  application/
-  infrastructure/
-  presentation/
-```
+El frontend no utiliza arquitectura hexagonal. Sus módulos se organizan por funcionalidades, páginas, componentes, servicios HTTP, tipos y estado visual. La estructura `domain/application/infrastructure/presentation` aplica al backend cuando un módulo funcional requiere arquitectura hexagonal.
 
 ## Persistencia
 

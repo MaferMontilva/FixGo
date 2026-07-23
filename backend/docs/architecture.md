@@ -69,7 +69,7 @@ Controller
 - `clients`: functional for the authenticated client profile. Exposes `GET /api/clients/me` and `PATCH /api/clients/me`.
 - `budgets`: skeleton.
 - `artificial-intelligence`: skeleton.
-- `services`: skeleton.
+- `services`: functional. Exposes `GET /api/services` and `GET /api/services/:slug`, uses a domain repository port and Prisma implementation.
 - `reviews`: skeleton.
 - `notifications`: skeleton.
 - `administration`: skeleton.
@@ -111,7 +111,7 @@ Authentication currently covers client registration, login, refresh, logout, cur
 
 ## Future Phases
 
-- Phase 4: `services` and `service-requests`.
+- Phase 4B: modular service-request form.
 - Phase 5: `artificial-intelligence`.
 - Phase 6: `professionals` and `budgets`.
 - Phase 7: `reviews`, `notifications` and `administration`.

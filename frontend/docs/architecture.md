@@ -132,9 +132,9 @@ The frontend must not introduce blue as an interface color.
 
 ## Pending Features
 
-- Phase 4: `services` and `service-requests`.
+- Phase 4B: modular `service-requests` form.
 - Phase 5: `artificial-intelligence`.
 - Phase 6: `professionals` and `budgets`.
 - Phase 7: `reviews`, `notifications` and `administration`.
 
-Professional login, administrator login, real service requests, AI, budgets, reviews and notifications are not implemented yet. Later phases should add their pages, services, types and reusable UI inside the existing structure without reorganizing the whole frontend.
+Professional login, administrator login, full service-request publication, AI, budgets, reviews and notifications are not implemented yet. Later phases should add their pages, services, types and reusable UI inside the existing structure without reorganizing the whole frontend.
