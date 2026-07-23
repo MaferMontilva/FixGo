@@ -1,24 +1,22 @@
-import type { LucideIcon } from "lucide-react";
-
-export type UiCategory = {
-  id: number;
-  code: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  iconName?: string | null;
-  icon: LucideIcon;
-  sortOrder: number;
-  active: boolean;
-};
-
-export type ApiCategory = {
+export type ServiceCategoryEntity = {
   id: number;
   code: string;
   name: string;
   slug: string;
   description: string | null;
-  iconName: string | null;
   sortOrder: number;
   active: boolean;
+};
+
+export type ServiceEntity = {
+  id: number;
+  categoryId: number;
+  code: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  baseUnit: string | null;
+  sortOrder: number;
+  active: boolean;
+  category: ServiceCategoryEntity;
 };

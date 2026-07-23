@@ -43,13 +43,12 @@ export const iconByName: Record<string, LucideIcon> = {
 };
 
 export const fallbackCategories: UiCategory[] = [
-  { name: "Manitas", iconName: "Hammer", icon: Hammer },
-  { name: "Electricidad", iconName: "Zap", icon: PlugZap },
-  { name: "Fontaneria", iconName: "Droplets", icon: ShowerHead },
-  { name: "Climatizacion", iconName: "AirVent", icon: AirVent },
-  { name: "Pintura", iconName: "PaintRoller", icon: PaintRoller },
-  { name: "Albanileria", iconName: "BrickWall", icon: HardHat },
-  { name: "Cerrajeria", iconName: "KeyRound", icon: ShieldCheck },
-  { name: "Reformas", iconName: "HousePlus", icon: Wrench },
-  { name: "Iluminacion", iconName: "Lightbulb", icon: Lightbulb }
+  { id: 1, code: "HANDYMAN", name: "Manitas", slug: "manitas", iconName: "Hammer", icon: Hammer, sortOrder: 10, active: true },
+  { id: 2, code: "ELECTRICITY", name: "Electricidad", slug: "electricidad", iconName: "Zap", icon: PlugZap, sortOrder: 20, active: true },
+  { id: 3, code: "PLUMBING", name: "Fontanería", slug: "fontaneria", iconName: "Droplets", icon: ShowerHead, sortOrder: 30, active: true },
+  { id: 9, code: "PAINTING", name: "Pintura", slug: "pintura", iconName: "PaintRoller", icon: PaintRoller, sortOrder: 40, active: true },
+  { id: 15, code: "CLEANING", name: "Limpieza", slug: "limpieza", iconName: "Sparkles", icon: Sparkles, sortOrder: 50, active: true },
+  { id: 17, code: "MOVING", name: "Mudanzas", slug: "mudanzas", iconName: "Truck", icon: Truck, sortOrder: 60, active: true },
+  { id: 11, code: "LOCKSMITH", name: "Cerrajería", slug: "cerrajeria", iconName: "KeyRound", icon: ShieldCheck, sortOrder: 70, active: true },
+  { id: 16, code: "GARDENING", name: "Jardinería", slug: "jardineria", iconName: "Leaf", icon: Leaf, sortOrder: 80, active: true }
 ];

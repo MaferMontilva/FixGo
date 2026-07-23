@@ -10,3 +10,14 @@ export type CategoryEntity = {
   sortOrder: number;
   active: boolean;
 };
+
+export const MARKETPLACE_CATEGORY_CODES = [
+  "HANDYMAN",
+  "ELECTRICITY",
+  "PLUMBING",
+  "PAINTING",
+  "CLEANING",
+  "MOVING",
+  "LOCKSMITH",
+  "GARDENING"
+] as const;
