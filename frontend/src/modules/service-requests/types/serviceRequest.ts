@@ -15,3 +15,15 @@ export type ServiceRequestResponse = {
   id: number;
   status: string;
 };
+
+export type RequestStep = 1 | 2 | 3 | 4;
+
+export type ServiceRequestDraft = {
+  categoryId: number | null;
+  categorySlug: string;
+  currentStep: RequestStep;
+  originalDescription: string;
+  serviceId: number | null;
+  serviceSlug: string;
+  title: string;
+};
