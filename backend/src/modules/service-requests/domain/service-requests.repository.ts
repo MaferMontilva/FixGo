@@ -44,6 +44,7 @@ export abstract class ServiceRequestsRepository {
   ): Promise<ServiceRequestEntity | null>;
   abstract findDraftsByClientUserId(clientUserId: number): Promise<ServiceRequestEntity[]>;
   abstract findOwnedDraftById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
+  abstract findAllOwnedServiceRequests(clientUserId: number): Promise<ServiceRequestEntity[]>;
   abstract findOwnedServiceRequestById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
   abstract publishOwnedDraft(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
   abstract cancelOwnedServiceRequest(

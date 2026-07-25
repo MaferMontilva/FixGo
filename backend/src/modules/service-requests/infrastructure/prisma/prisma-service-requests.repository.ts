@@ -153,6 +153,18 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
     return request ? this.toEntity(request) : null;
   }
 
+  async findAllOwnedServiceRequests(clientUserId: number): Promise<ServiceRequestEntity[]> {
+    const requests = await this.prisma.serviceRequests.findMany({
+      where: {
+        clientUserId,
+        deletedAt: null
+      },
+      orderBy: { updatedAt: "desc" }
+    });
+
+    return requests.map((request) => this.toEntity(request));
+  }
+
   async findOwnedServiceRequestById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null> {
     const request = await this.prisma.serviceRequests.findFirst({
       where: {

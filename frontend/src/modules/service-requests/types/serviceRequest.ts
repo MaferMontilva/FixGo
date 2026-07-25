@@ -14,7 +14,18 @@ export type ServiceRequestDraftPayload = {
   flexibleSchedule: boolean;
 };
 
-export type ServiceRequestStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | string;
+export type ServiceRequestStatus =
+  | "DRAFT"
+  | "AI_PROCESSING"
+  | "READY_TO_PUBLISH"
+  | "PUBLISHED"
+  | "RECEIVING_BUDGETS"
+  | "PROFESSIONAL_SELECTED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | string;
 
 export type ServiceRequestResponse = {
   id: number;

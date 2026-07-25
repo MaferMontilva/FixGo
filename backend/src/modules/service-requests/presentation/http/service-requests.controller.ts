@@ -5,8 +5,10 @@ import { Roles } from "../../../auth/presentation/roles.decorator";
 import { RolesGuard } from "../../../auth/presentation/roles.guard";
 import { CancelServiceRequestUseCase } from "../../application/cancel-service-request.use-case";
 import { CreateServiceRequestDraftUseCase } from "../../application/create-service-request-draft.use-case";
+import { GetClientServiceRequestDetailUseCase } from "../../application/get-client-service-request-detail.use-case";
 import { GetClientServiceRequestDraftDetailUseCase } from "../../application/get-client-service-request-draft-detail.use-case";
 import { GetClientServiceRequestDraftsUseCase } from "../../application/get-client-service-request-drafts.use-case";
+import { GetClientServiceRequestsUseCase } from "../../application/get-client-service-requests.use-case";
 import { PublishServiceRequestUseCase } from "../../application/publish-service-request.use-case";
 import { UpdateServiceRequestDraftUseCase } from "../../application/update-service-request-draft.use-case";
 import { ServiceRequestEntity } from "../../domain/service-request.entity";
@@ -20,6 +22,8 @@ import { UpdateServiceRequestDraftDto } from "../dto/update-service-request-draf
 export class ServiceRequestsController {
   constructor(
     private readonly createServiceRequestDraftUseCase: CreateServiceRequestDraftUseCase,
+    private readonly getClientServiceRequestsUseCase: GetClientServiceRequestsUseCase,
+    private readonly getClientServiceRequestDetailUseCase: GetClientServiceRequestDetailUseCase,
     private readonly getClientServiceRequestDraftsUseCase: GetClientServiceRequestDraftsUseCase,
     private readonly getClientServiceRequestDraftDetailUseCase: GetClientServiceRequestDraftDetailUseCase,
     private readonly updateServiceRequestDraftUseCase: UpdateServiceRequestDraftUseCase,
@@ -35,6 +39,20 @@ export class ServiceRequestsController {
     });
 
     return this.toDraftResponse(draft);
+  }
+
+  @Get("mine")
+  async findMine(@CurrentUser() user: RequestUser) {
+    const requests = await this.getClientServiceRequestsUseCase.execute(user.id);
+
+    return requests.map((request) => this.toServiceRequestResponse(request));
+  }
+
+  @Get("mine/:id")
+  async findMineById(@CurrentUser() user: RequestUser, @Param("id", ParseIntPipe) id: number) {
+    const request = await this.getClientServiceRequestDetailUseCase.execute(id, user.id);
+
+    return this.toServiceRequestResponse(request);
   }
 
   @Get("drafts")

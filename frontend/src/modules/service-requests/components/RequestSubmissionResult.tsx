@@ -34,7 +34,7 @@ export function RequestSubmissionResult({
       </dl>
       <div className="request-submission-result-actions">
         <button className="request-publish-action" onClick={onGoToBudgets} type="button">
-          Ir a Mis presupuestos
+          Ir a mis solicitudes
         </button>
         <button className="request-save-action" onClick={onCreateAnother} type="button">
           Crear otra solicitud

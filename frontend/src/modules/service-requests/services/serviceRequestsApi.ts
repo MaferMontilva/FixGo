@@ -1,4 +1,4 @@
-import { httpPatch, httpPost } from "../../../shared/http/httpClient";
+import { httpGet, httpPatch, httpPost } from "../../../shared/http/httpClient";
 import type { ServiceRequestDraftPayload, ServiceRequestResponse } from "../types/serviceRequest";
 
 export function createServiceRequestDraft(payload: ServiceRequestDraftPayload) {
@@ -11,4 +11,18 @@ export function updateServiceRequestDraft(id: string, payload: ServiceRequestDra
 
 export function publishServiceRequestDraft(id: string) {
   return httpPost<ServiceRequestResponse, Record<string, never>>(`/service-requests/drafts/${id}/publish`, {});
+}
+
+export function getMyServiceRequests() {
+  return httpGet<ServiceRequestResponse[]>("/service-requests/mine");
+}
+
+export function getMyServiceRequestDetail(id: number) {
+  return httpGet<ServiceRequestResponse>(`/service-requests/mine/${id}`);
+}
+
+export function cancelMyServiceRequest(id: number, reason?: string) {
+  return httpPost<ServiceRequestResponse, { reason?: string }>(`/service-requests/${id}/cancel`, {
+    ...(reason?.trim() ? { reason: reason.trim() } : {})
+  });
 }
