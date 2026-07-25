@@ -1,14 +1,14 @@
+import { ServiceRequestUrgency } from "../domain/service-request.entity";
+
 export type CreateServiceRequestCommand = {
   clientUserId: number;
-  categoryId?: number;
-  serviceId?: number;
-  addressId?: number;
-  title?: string;
+  categoryId: number;
+  serviceId?: number | null;
+  title?: string | null;
   originalDescription: string;
-  finalDescription?: string;
-  locationDescription?: string;
-  urgency?: "LOW" | "NORMAL" | "HIGH" | "EMERGENCY";
-  budgetMin?: number;
-  budgetMax?: number;
-  aiAssisted?: boolean;
+  locationDescription: string;
+  urgency: ServiceRequestUrgency;
+  preferredDateFrom?: string | null;
+  preferredDateTo?: string | null;
+  flexibleSchedule: boolean;
 };

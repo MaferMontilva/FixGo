@@ -1,8 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../../../shared/prisma.service";
-import { ServiceRequestEntity } from "../../domain/service-request.entity";
+import { SERVICE_REQUEST_STATUS, ServiceRequestEntity, ServiceRequestUrgency } from "../../domain/service-request.entity";
 import {
-  CreateServiceRequestData,
+  CategoryReference,
+  ServiceReference,
+  ServiceRequestDraftData,
+  UpdateServiceRequestDraftData,
   ServiceRequestsRepository
 } from "../../domain/service-requests.repository";
 
@@ -10,69 +13,192 @@ import {
 export class PrismaServiceRequestsRepository implements ServiceRequestsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findRecent(): Promise<ServiceRequestEntity[]> {
-    const requests = await this.prisma.serviceRequests.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 50
+  async clientProfileExists(clientUserId: number): Promise<boolean> {
+    const profile = await this.prisma.clientProfiles.findUnique({
+      where: { userId: clientUserId },
+      select: { id: true }
     });
 
-    const categoryIds = requests
-      .map((request) => request.categoryId)
-      .filter((id): id is number => typeof id === "number");
-
-    const serviceIds = requests
-      .map((request) => request.serviceId)
-      .filter((id): id is number => typeof id === "number");
-
-    const [categories, services] = await Promise.all([
-      this.prisma.categories.findMany({ where: { id: { in: [...new Set(categoryIds)] } } }),
-      this.prisma.services.findMany({ where: { id: { in: [...new Set(serviceIds)] } } })
-    ]);
-
-    const categoriesById = new Map(categories.map((category) => [category.id, category]));
-    const servicesById = new Map(services.map((service) => [service.id, service]));
-
-    return requests.map((request) => ({
-      id: request.id,
-      clientUserId: request.clientUserId,
-      title: request.title,
-      originalDescription: request.originalDescription,
-      finalDescription: request.finalDescription,
-      locationDescription: request.locationDescription,
-      urgency: request.urgency,
-      status: request.status,
-      budgetMin: request.budgetMin,
-      budgetMax: request.budgetMax,
-      aiAssisted: request.aiAssisted === 1,
-      createdAt: request.createdAt,
-      updatedAt: request.updatedAt,
-      category: request.categoryId ? categoriesById.get(request.categoryId) ?? null : null,
-      service: request.serviceId ? servicesById.get(request.serviceId) ?? null : null
-    }));
+    return Boolean(profile);
   }
 
-  create(command: CreateServiceRequestData) {
+  async findActiveCategoryById(categoryId: number): Promise<CategoryReference | null> {
+    const category = await this.prisma.categories.findFirst({
+      where: {
+        id: categoryId,
+        isActive: 1
+      },
+      select: {
+        id: true,
+        isActive: true
+      }
+    });
+
+    return category
+      ? {
+          id: category.id,
+          active: category.isActive === 1
+        }
+      : null;
+  }
+
+  async findActiveServiceById(serviceId: number): Promise<ServiceReference | null> {
+    const service = await this.prisma.services.findFirst({
+      where: {
+        id: serviceId,
+        isActive: 1
+      },
+      select: {
+        id: true,
+        categoryId: true,
+        isActive: true
+      }
+    });
+
+    return service
+      ? {
+          id: service.id,
+          categoryId: service.categoryId,
+          active: service.isActive === 1
+        }
+      : null;
+  }
+
+  async createDraft(command: ServiceRequestDraftData): Promise<ServiceRequestEntity> {
     const now = new Date().toISOString();
 
-    return this.prisma.serviceRequests.create({
+    const request = await this.prisma.serviceRequests.create({
       data: {
         clientUserId: command.clientUserId,
         categoryId: command.categoryId,
-        serviceId: command.serviceId,
-        addressId: command.addressId,
+        serviceId: command.serviceId ?? null,
         title: command.title,
         originalDescription: command.originalDescription,
-        finalDescription: command.finalDescription,
         locationDescription: command.locationDescription,
-        urgency: command.urgency ?? "NORMAL",
-        status: "DRAFT",
-        budgetMin: command.budgetMin,
-        budgetMax: command.budgetMax,
-        aiAssisted: command.aiAssisted ? 1 : 0,
+        urgency: command.urgency,
+        status: SERVICE_REQUEST_STATUS.DRAFT,
+        preferredDateFrom: command.preferredDateFrom ?? null,
+        preferredDateTo: command.preferredDateTo ?? null,
+        flexibleSchedule: command.flexibleSchedule ? 1 : 0,
+        publishedAt: null,
+        cancelledAt: null,
+        deletedAt: null,
         createdAt: now,
         updatedAt: now
       }
     });
+
+    return this.toEntity(request);
+  }
+
+  async updateOwnedDraft(
+    id: number,
+    clientUserId: number,
+    data: UpdateServiceRequestDraftData
+  ): Promise<ServiceRequestEntity | null> {
+    const existing = await this.prisma.serviceRequests.findFirst({
+      where: {
+        id,
+        clientUserId,
+        status: SERVICE_REQUEST_STATUS.DRAFT,
+        deletedAt: null
+      },
+      select: { id: true }
+    });
+
+    if (!existing) return null;
+
+    const request = await this.prisma.serviceRequests.update({
+      where: { id },
+      data: {
+        categoryId: data.categoryId,
+        serviceId: data.serviceId ?? null,
+        title: data.title,
+        originalDescription: data.originalDescription,
+        locationDescription: data.locationDescription,
+        urgency: data.urgency,
+        preferredDateFrom: data.preferredDateFrom ?? null,
+        preferredDateTo: data.preferredDateTo ?? null,
+        flexibleSchedule: data.flexibleSchedule ? 1 : 0,
+        updatedAt: new Date().toISOString()
+      }
+    });
+
+    return this.toEntity(request);
+  }
+
+  async findDraftsByClientUserId(clientUserId: number): Promise<ServiceRequestEntity[]> {
+    const requests = await this.prisma.serviceRequests.findMany({
+      where: {
+        clientUserId,
+        status: SERVICE_REQUEST_STATUS.DRAFT,
+        deletedAt: null
+      },
+      orderBy: { updatedAt: "desc" }
+    });
+
+    return requests.map((request) => this.toEntity(request));
+  }
+
+  async findOwnedDraftById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null> {
+    const request = await this.prisma.serviceRequests.findFirst({
+      where: {
+        id,
+        clientUserId,
+        deletedAt: null
+      }
+    });
+
+    return request ? this.toEntity(request) : null;
+  }
+
+  private toEntity(request: {
+    id: number;
+    clientUserId: number;
+    categoryId: number | null;
+    serviceId: number | null;
+    title: string | null;
+    originalDescription: string;
+    finalDescription: string | null;
+    locationDescription: string | null;
+    urgency: string;
+    status: string;
+    preferredDateFrom: string | null;
+    preferredDateTo: string | null;
+    flexibleSchedule: number;
+    budgetMin: number | null;
+    budgetMax: number | null;
+    aiAssisted: number;
+    publishedAt: string | null;
+    cancelledAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+  }): ServiceRequestEntity {
+    return {
+      id: request.id,
+      clientUserId: request.clientUserId,
+      categoryId: request.categoryId,
+      serviceId: request.serviceId,
+      title: request.title,
+      originalDescription: request.originalDescription,
+      finalDescription: request.finalDescription,
+      locationDescription: request.locationDescription,
+      urgency: request.urgency as ServiceRequestUrgency,
+      status: request.status as ServiceRequestEntity["status"],
+      preferredDateFrom: request.preferredDateFrom,
+      preferredDateTo: request.preferredDateTo,
+      flexibleSchedule: request.flexibleSchedule === 1,
+      budgetMin: request.budgetMin,
+      budgetMax: request.budgetMax,
+      aiAssisted: request.aiAssisted === 1,
+      publishedAt: request.publishedAt,
+      cancelledAt: request.cancelledAt,
+      createdAt: request.createdAt,
+      updatedAt: request.updatedAt,
+      deletedAt: request.deletedAt,
+      category: null,
+      service: null
+    };
   }
 }

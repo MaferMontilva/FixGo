@@ -18,11 +18,12 @@ function trimText({ value }: { value: unknown }) {
   return typeof value === "string" ? value.trim() : value;
 }
 
-export class CreateServiceRequestDto {
+export class UpdateServiceRequestDraftDto {
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  categoryId!: number;
+  categoryId?: number;
 
   @IsOptional()
   @Type(() => Number)
@@ -36,20 +37,23 @@ export class CreateServiceRequestDto {
   @MaxLength(120)
   title?: string | null;
 
+  @IsOptional()
   @Transform(trimText)
   @IsString()
   @MinLength(15)
   @MaxLength(2000)
-  originalDescription!: string;
+  originalDescription?: string;
 
+  @IsOptional()
   @Transform(trimText)
   @IsString()
   @MinLength(3)
   @MaxLength(240)
-  locationDescription!: string;
+  locationDescription?: string;
 
+  @IsOptional()
   @IsIn(Object.values(SERVICE_REQUEST_URGENCY))
-  urgency!: "LOW" | "NORMAL" | "HIGH" | "EMERGENCY";
+  urgency?: "LOW" | "NORMAL" | "HIGH" | "EMERGENCY";
 
   @IsOptional()
   @IsString()
@@ -61,6 +65,7 @@ export class CreateServiceRequestDto {
   @Matches(DATE_INPUT_PATTERN)
   preferredDateTo?: string | null;
 
+  @IsOptional()
   @IsBoolean()
-  flexibleSchedule!: boolean;
+  flexibleSchedule?: boolean;
 }

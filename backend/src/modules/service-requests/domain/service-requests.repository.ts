@@ -1,23 +1,43 @@
-import { ServiceRequestEntity } from "./service-request.entity";
+import { ServiceRequestEntity, ServiceRequestUrgency } from "./service-request.entity";
 
 export const SERVICE_REQUESTS_REPOSITORY = Symbol("SERVICE_REQUESTS_REPOSITORY");
 
-export type CreateServiceRequestData = {
+export type ServiceRequestDraftData = {
   clientUserId: number;
-  categoryId?: number;
-  serviceId?: number;
-  addressId?: number;
-  title?: string;
+  categoryId: number;
+  serviceId?: number | null;
+  title?: string | null;
   originalDescription: string;
-  finalDescription?: string;
-  locationDescription?: string;
-  urgency?: "LOW" | "NORMAL" | "HIGH" | "EMERGENCY";
-  budgetMin?: number;
-  budgetMax?: number;
-  aiAssisted?: boolean;
+  locationDescription: string;
+  urgency: ServiceRequestUrgency;
+  preferredDateFrom?: string | null;
+  preferredDateTo?: string | null;
+  flexibleSchedule: boolean;
+};
+
+export type UpdateServiceRequestDraftData = Omit<ServiceRequestDraftData, "clientUserId">;
+
+export type CategoryReference = {
+  id: number;
+  active: boolean;
+};
+
+export type ServiceReference = {
+  id: number;
+  categoryId: number;
+  active: boolean;
 };
 
 export abstract class ServiceRequestsRepository {
-  abstract findRecent(): Promise<ServiceRequestEntity[]>;
-  abstract create(data: CreateServiceRequestData): Promise<unknown>;
+  abstract clientProfileExists(clientUserId: number): Promise<boolean>;
+  abstract findActiveCategoryById(categoryId: number): Promise<CategoryReference | null>;
+  abstract findActiveServiceById(serviceId: number): Promise<ServiceReference | null>;
+  abstract createDraft(data: ServiceRequestDraftData): Promise<ServiceRequestEntity>;
+  abstract updateOwnedDraft(
+    id: number,
+    clientUserId: number,
+    data: UpdateServiceRequestDraftData
+  ): Promise<ServiceRequestEntity | null>;
+  abstract findDraftsByClientUserId(clientUserId: number): Promise<ServiceRequestEntity[]>;
+  abstract findOwnedDraftById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
 }
