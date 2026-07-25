@@ -8,9 +8,11 @@ import { CategoryServiceStep } from "../components/CategoryServiceStep";
 import { DescriptionStep } from "../components/DescriptionStep";
 import { RequestStepActions } from "../components/RequestStepActions";
 import { RequestStepIndicator } from "../components/RequestStepIndicator";
+import { ReviewStep } from "../components/ReviewStep";
 import { WorkDetailsStep } from "../components/WorkDetailsStep";
 import type { ServiceRequestDraft } from "../types/serviceRequest";
-import { getDescriptionError } from "../validation/serviceRequestValidation";
+import { getDescriptionError, getWorkDetailsErrors } from "../validation/serviceRequestValidation";
+import type { WorkDetailsValidationErrors } from "../validation/serviceRequestValidation";
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -44,6 +46,7 @@ export function ServiceRequestPage() {
   const [servicesReloadKey, setServicesReloadKey] = useState(0);
   const [descriptionError, setDescriptionError] = useState("");
   const [descriptionFocusSignal, setDescriptionFocusSignal] = useState(0);
+  const [workDetailsErrors, setWorkDetailsErrors] = useState<WorkDetailsValidationErrors>({});
   const [workDetailsFocusSignal, setWorkDetailsFocusSignal] = useState(0);
   const [draft, setDraft] = useState<ServiceRequestDraft>(() => ({
     categoryId: null,
@@ -228,6 +231,28 @@ export function ServiceRequestPage() {
     setDescriptionFocusSignal((current) => current + 1);
   };
 
+  const goToReview = () => {
+    const errors = getWorkDetailsErrors({
+      flexibleSchedule: draft.flexibleSchedule,
+      locationDescription: draft.locationDescription,
+      preferredDateFrom: draft.preferredDateFrom,
+      preferredDateTo: draft.preferredDateTo,
+      urgency: draft.urgency
+    });
+    setWorkDetailsErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
+    updateDraft({ currentStep: 4 });
+  };
+
+  const goBackToWorkDetails = () => {
+    updateDraft({ currentStep: 3 });
+    setWorkDetailsFocusSignal((current) => current + 1);
+  };
+
   return (
     <section className="request-page">
       <p className="instruction">* Completa los primeros datos para preparar tu solicitud</p>
@@ -279,20 +304,58 @@ export function ServiceRequestPage() {
       {draft.currentStep === 3 ? (
         <>
           <WorkDetailsStep
-            errors={{}}
+            errors={workDetailsErrors}
             flexibleSchedule={draft.flexibleSchedule}
             focusSignal={workDetailsFocusSignal}
             locationDescription={draft.locationDescription}
-            onFlexibleScheduleChange={(value) => updateDraft({ flexibleSchedule: value })}
-            onLocationDescriptionChange={(value) => updateDraft({ locationDescription: value })}
-            onPreferredDateFromChange={(value) => updateDraft({ preferredDateFrom: value })}
-            onPreferredDateToChange={(value) => updateDraft({ preferredDateTo: value })}
-            onUrgencyChange={(value) => updateDraft({ urgency: value })}
+            onFlexibleScheduleChange={(value) => {
+              updateDraft({ flexibleSchedule: value });
+              setWorkDetailsErrors({});
+            }}
+            onLocationDescriptionChange={(value) => {
+              updateDraft({ locationDescription: value });
+              if (workDetailsErrors.locationDescription) setWorkDetailsErrors({});
+            }}
+            onPreferredDateFromChange={(value) => {
+              updateDraft({ preferredDateFrom: value });
+              if (workDetailsErrors.preferredDateFrom || workDetailsErrors.preferredDateTo) setWorkDetailsErrors({});
+            }}
+            onPreferredDateToChange={(value) => {
+              updateDraft({ preferredDateTo: value });
+              if (workDetailsErrors.preferredDateTo) setWorkDetailsErrors({});
+            }}
+            onUrgencyChange={(value) => {
+              updateDraft({ urgency: value });
+              if (workDetailsErrors.urgency) setWorkDetailsErrors({});
+            }}
             preferredDateFrom={draft.preferredDateFrom}
             preferredDateTo={draft.preferredDateTo}
             urgency={draft.urgency}
           />
-          <RequestStepActions onBack={goBackToDescription} />
+          <RequestStepActions continueLabel="Continuar a revisión" onBack={goBackToDescription} onContinue={goToReview} />
+        </>
+      ) : null}
+
+      {draft.currentStep === 4 ? (
+        <>
+          <ReviewStep
+            categoryName={selectedCategory?.name ?? "Categoría no disponible"}
+            description={draft.originalDescription}
+            flexibleSchedule={draft.flexibleSchedule}
+            locationDescription={draft.locationDescription}
+            onEditDescription={() => {
+              updateDraft({ currentStep: 2 });
+              setDescriptionFocusSignal((current) => current + 1);
+            }}
+            onEditService={() => updateDraft({ currentStep: 1 })}
+            onEditWorkDetails={goBackToWorkDetails}
+            preferredDateFrom={draft.preferredDateFrom}
+            preferredDateTo={draft.preferredDateTo}
+            serviceName={selectedService?.name ?? null}
+            title={draft.title}
+            urgency={draft.urgency}
+          />
+          <RequestStepActions onBack={goBackToWorkDetails} />
         </>
       ) : null}
     </section>

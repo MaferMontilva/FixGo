@@ -197,8 +197,6 @@ export function WorkDetailsStep({
           </label>
         </div>
       </div>
-
-      <p className="request-next-note">Siguiente: revisión de la solicitud.</p>
     </div>
   );
 }
