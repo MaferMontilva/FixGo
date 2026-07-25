@@ -1052,6 +1052,51 @@ button {
   line-height: 1.5;
 }
 
+.request-draft-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: -34px 0 34px;
+  border: 1px solid rgba(242, 138, 46, 0.28);
+  border-radius: 18px;
+  background: var(--fixgo-orange-soft);
+  color: #171717;
+  padding: 16px 18px;
+}
+
+.request-draft-notice div {
+  display: grid;
+  gap: 4px;
+}
+
+.request-draft-notice p {
+  margin: 0;
+  font-weight: 800;
+}
+
+.request-draft-notice span {
+  color: #647184;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.request-discard-button {
+  min-height: 44px;
+  border: 1px solid rgba(23, 23, 23, 0.18);
+  border-radius: 999px;
+  background: #fff;
+  color: #171717;
+  font-weight: 800;
+  padding: 0 16px;
+}
+
+.request-discard-button:focus,
+.request-discard-button:hover {
+  border-color: var(--fixgo-orange);
+  box-shadow: 0 0 0 4px rgba(242, 138, 46, 0.16);
+}
+
 .review-panel {
   gap: 18px;
 }
@@ -1919,6 +1964,16 @@ button {
 
   .request-field-help {
     flex-direction: column;
+  }
+
+  .request-draft-notice {
+    align-items: stretch;
+    flex-direction: column;
+    margin-top: -20px;
+  }
+
+  .request-discard-button {
+    width: 100%;
   }
 
   .review-card-header {

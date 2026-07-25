@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fallbackCategories, getCategories } from "../../categories";
 import type { UiCategory } from "../../categories";
@@ -6,10 +6,16 @@ import { getServices } from "../../services";
 import type { ApiService } from "../../services";
 import { CategoryServiceStep } from "../components/CategoryServiceStep";
 import { DescriptionStep } from "../components/DescriptionStep";
+import { RequestDraftNotice } from "../components/RequestDraftNotice";
 import { RequestStepActions } from "../components/RequestStepActions";
 import { RequestStepIndicator } from "../components/RequestStepIndicator";
 import { ReviewStep } from "../components/ReviewStep";
 import { WorkDetailsStep } from "../components/WorkDetailsStep";
+import {
+  loadServiceRequestDraftResult,
+  removeServiceRequestDraft,
+  saveServiceRequestDraft
+} from "../storage/serviceRequestDraftStorage";
 import type { ServiceRequestDraft } from "../types/serviceRequest";
 import { getDescriptionError, getWorkDetailsErrors } from "../validation/serviceRequestValidation";
 import type { WorkDetailsValidationErrors } from "../validation/serviceRequestValidation";
@@ -31,10 +37,69 @@ function getNowIso() {
   return new Date().toISOString();
 }
 
+function createEmptyDraft(categorySlug = "", serviceSlug = ""): ServiceRequestDraft {
+  return {
+    categoryId: null,
+    categorySlug,
+    currentStep: 1,
+    flexibleSchedule: true,
+    locationDescription: "",
+    originalDescription: "",
+    preferredDateFrom: "",
+    preferredDateTo: "",
+    serviceId: null,
+    serviceSlug,
+    title: "",
+    updatedAt: getNowIso(),
+    urgency: "NORMAL"
+  };
+}
+
+function mergeStoredDraft(storedDraft: ServiceRequestDraft | null, categoryParam: string, serviceParam: string) {
+  return {
+    ...(storedDraft ?? createEmptyDraft()),
+    categorySlug: categoryParam || storedDraft?.categorySlug || "",
+    serviceSlug: serviceParam || storedDraft?.serviceSlug || "",
+    updatedAt: storedDraft?.updatedAt || getNowIso()
+  };
+}
+
+function hasDraftContent(draft: ServiceRequestDraft) {
+  return Boolean(
+    draft.categoryId ||
+      draft.categorySlug ||
+      draft.serviceId ||
+      draft.serviceSlug ||
+      draft.title.trim() ||
+      draft.originalDescription.trim() ||
+      draft.locationDescription.trim() ||
+      draft.preferredDateFrom ||
+      draft.preferredDateTo ||
+      draft.currentStep > 1
+  );
+}
+
+function formatSavedAt(savedAt: string) {
+  if (!savedAt) return "";
+
+  const date = new Date(savedAt);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return `Guardado el ${date.toLocaleString("es-ES", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  })}`;
+}
+
 export function ServiceRequestPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") ?? "";
   const serviceParam = searchParams.get("service") ?? "";
+  const [draftLoadResult] = useState(() => loadServiceRequestDraftResult());
+  const storedDraft = draftLoadResult.storedDraft;
 
   const [categories, setCategories] = useState<UiCategory[]>(fallbackCategories);
   const [categoriesError, setCategoriesError] = useState("");
@@ -48,21 +113,14 @@ export function ServiceRequestPage() {
   const [descriptionFocusSignal, setDescriptionFocusSignal] = useState(0);
   const [workDetailsErrors, setWorkDetailsErrors] = useState<WorkDetailsValidationErrors>({});
   const [workDetailsFocusSignal, setWorkDetailsFocusSignal] = useState(0);
-  const [draft, setDraft] = useState<ServiceRequestDraft>(() => ({
-    categoryId: null,
-    categorySlug: categoryParam,
-    currentStep: 1,
-    flexibleSchedule: true,
-    locationDescription: "",
-    originalDescription: "",
-    preferredDateFrom: "",
-    preferredDateTo: "",
-    serviceId: null,
-    serviceSlug: serviceParam,
-    title: "",
-    updatedAt: getNowIso(),
-    urgency: "NORMAL"
-  }));
+  const [draftMessage, setDraftMessage] = useState(
+    storedDraft ? "Recuperamos tu borrador guardado." : draftLoadResult.failed ? "No se pudo recuperar el borrador anterior." : ""
+  );
+  const [lastSavedAt, setLastSavedAt] = useState(storedDraft?.savedAt ?? "");
+  const [hasActiveDraft, setHasActiveDraft] = useState(Boolean(storedDraft));
+  const hasMountedRef = useRef(false);
+  const saveTimeoutRef = useRef<number | null>(null);
+  const [draft, setDraft] = useState<ServiceRequestDraft>(() => mergeStoredDraft(storedDraft?.draft ?? null, categoryParam, serviceParam));
 
   const updateDraft = (partialDraft: Partial<ServiceRequestDraft>) => {
     setDraft((current) => ({
@@ -74,16 +132,47 @@ export function ServiceRequestPage() {
 
   useEffect(() => {
     setDraft((current) => {
+      if (!categoryParam && !serviceParam) return current;
       if (current.categorySlug === categoryParam && current.serviceSlug === serviceParam) return current;
 
       return {
         ...current,
-        categorySlug: categoryParam,
-        serviceSlug: serviceParam,
+        categorySlug: categoryParam || current.categorySlug,
+        serviceSlug: serviceParam || "",
         updatedAt: getNowIso()
       };
     });
   }, [categoryParam, serviceParam]);
+
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
+    if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
+
+    if (!hasDraftContent(draft)) {
+      removeServiceRequestDraft();
+      setHasActiveDraft(false);
+      setLastSavedAt("");
+      return;
+    }
+
+    setDraftMessage("Guardando borrador...");
+    saveTimeoutRef.current = window.setTimeout(() => {
+      const stored = saveServiceRequestDraft(draft);
+      if (stored) {
+        setDraftMessage("Borrador guardado");
+        setLastSavedAt(stored.savedAt);
+        setHasActiveDraft(true);
+      }
+    }, 500);
+
+    return () => {
+      if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
+    };
+  }, [draft]);
 
   useEffect(() => {
     let active = true;
@@ -164,6 +253,7 @@ export function ServiceRequestPage() {
   }, [draft.serviceSlug, services]);
 
   const invalidService = Boolean(draft.serviceSlug) && Boolean(selectedCategory) && !servicesLoading && !servicesError && !selectedService;
+  const canDiscardDraft = hasActiveDraft || hasDraftContent(draft);
 
   useEffect(() => {
     setDraft((current) => {
@@ -201,6 +291,20 @@ export function ServiceRequestPage() {
       serviceSlug: ""
     });
     setSearchParams(buildSearchParams(selectedCategory.slug, ""));
+  };
+
+  const discardDraft = () => {
+    if (!window.confirm("¿Quieres descartar el borrador de esta solicitud?")) return;
+
+    if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
+    removeServiceRequestDraft();
+    setSearchParams(new URLSearchParams());
+    setDraft(createEmptyDraft());
+    setDescriptionError("");
+    setWorkDetailsErrors({});
+    setHasActiveDraft(false);
+    setLastSavedAt("");
+    setDraftMessage("Borrador descartado.");
   };
 
   const goToDescription = () => {
@@ -261,6 +365,13 @@ export function ServiceRequestPage() {
         <p>Selecciona el servicio y describe brevemente el trabajo que necesitas.</p>
         <RequestStepIndicator currentStep={draft.currentStep} />
       </div>
+
+      <RequestDraftNotice
+        canDiscard={canDiscardDraft}
+        message={draftMessage}
+        onDiscard={discardDraft}
+        savedAtText={formatSavedAt(lastSavedAt)}
+      />
 
       {draft.currentStep === 1 ? (
         <>
