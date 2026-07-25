@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../../../shared/prisma.service";
 import { SERVICE_REQUEST_STATUS, ServiceRequestEntity, ServiceRequestUrgency } from "../../domain/service-request.entity";
 import {
+  CancelServiceRequestData,
   CategoryReference,
   ServiceReference,
   ServiceRequestDraftData,
@@ -152,6 +153,66 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
     return request ? this.toEntity(request) : null;
   }
 
+  async findOwnedServiceRequestById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null> {
+    const request = await this.prisma.serviceRequests.findFirst({
+      where: {
+        id,
+        clientUserId,
+        deletedAt: null
+      }
+    });
+
+    return request ? this.toEntity(request) : null;
+  }
+
+  async publishOwnedDraft(id: number, clientUserId: number): Promise<ServiceRequestEntity | null> {
+    const now = new Date().toISOString();
+    const updateResult = await this.prisma.serviceRequests.updateMany({
+      where: {
+        id,
+        clientUserId,
+        status: SERVICE_REQUEST_STATUS.DRAFT,
+        deletedAt: null
+      },
+      data: {
+        status: SERVICE_REQUEST_STATUS.PUBLISHED,
+        publishedAt: now,
+        updatedAt: now
+      }
+    });
+
+    if (updateResult.count === 0) return null;
+
+    return this.findOwnedServiceRequestById(id, clientUserId);
+  }
+
+  async cancelOwnedServiceRequest(
+    id: number,
+    clientUserId: number,
+    allowedStatuses: readonly string[],
+    data: CancelServiceRequestData
+  ): Promise<ServiceRequestEntity | null> {
+    const now = new Date().toISOString();
+    const updateResult = await this.prisma.serviceRequests.updateMany({
+      where: {
+        id,
+        clientUserId,
+        status: { in: [...allowedStatuses] },
+        deletedAt: null
+      },
+      data: {
+        status: SERVICE_REQUEST_STATUS.CANCELLED,
+        cancelledAt: now,
+        cancellationReason: data.cancellationReason,
+        updatedAt: now
+      }
+    });
+
+    if (updateResult.count === 0) return null;
+
+    return this.findOwnedServiceRequestById(id, clientUserId);
+  }
+
   private toEntity(request: {
     id: number;
     clientUserId: number;
@@ -170,7 +231,9 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
     budgetMax: number | null;
     aiAssisted: number;
     publishedAt: string | null;
+    expiresAt: string | null;
     cancelledAt: string | null;
+    cancellationReason: string | null;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
@@ -193,7 +256,9 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
       budgetMax: request.budgetMax,
       aiAssisted: request.aiAssisted === 1,
       publishedAt: request.publishedAt,
+      expiresAt: request.expiresAt,
       cancelledAt: request.cancelledAt,
+      cancellationReason: request.cancellationReason,
       createdAt: request.createdAt,
       updatedAt: request.updatedAt,
       deletedAt: request.deletedAt,

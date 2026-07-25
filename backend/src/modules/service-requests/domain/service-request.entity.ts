@@ -39,7 +39,9 @@ export type ServiceRequestEntity = {
   budgetMax: number | null;
   aiAssisted: boolean;
   publishedAt: string | null;
+  expiresAt: string | null;
   cancelledAt: string | null;
+  cancellationReason: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

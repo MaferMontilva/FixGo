@@ -1,4 +1,4 @@
-import { ServiceRequestEntity, ServiceRequestUrgency } from "./service-request.entity";
+import { ServiceRequestEntity, ServiceRequestStatus, ServiceRequestUrgency } from "./service-request.entity";
 
 export const SERVICE_REQUESTS_REPOSITORY = Symbol("SERVICE_REQUESTS_REPOSITORY");
 
@@ -28,6 +28,10 @@ export type ServiceReference = {
   active: boolean;
 };
 
+export type CancelServiceRequestData = {
+  cancellationReason: string | null;
+};
+
 export abstract class ServiceRequestsRepository {
   abstract clientProfileExists(clientUserId: number): Promise<boolean>;
   abstract findActiveCategoryById(categoryId: number): Promise<CategoryReference | null>;
@@ -40,4 +44,12 @@ export abstract class ServiceRequestsRepository {
   ): Promise<ServiceRequestEntity | null>;
   abstract findDraftsByClientUserId(clientUserId: number): Promise<ServiceRequestEntity[]>;
   abstract findOwnedDraftById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
+  abstract findOwnedServiceRequestById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
+  abstract publishOwnedDraft(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
+  abstract cancelOwnedServiceRequest(
+    id: number,
+    clientUserId: number,
+    allowedStatuses: readonly ServiceRequestStatus[],
+    data: CancelServiceRequestData
+  ): Promise<ServiceRequestEntity | null>;
 }
