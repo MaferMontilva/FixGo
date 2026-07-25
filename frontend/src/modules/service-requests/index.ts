@@ -6,4 +6,10 @@ export {
   removeServiceRequestDraft,
   saveServiceRequestDraft
 } from "./storage/serviceRequestDraftStorage";
-export type { ServiceRequestDraft, RequestStep } from "./types/serviceRequest";
+export type {
+  RequestStep,
+  RequestSubmissionStatus,
+  ServiceRequestDraft,
+  ServiceRequestDraftPayload,
+  ServiceRequestResponse
+} from "./types/serviceRequest";

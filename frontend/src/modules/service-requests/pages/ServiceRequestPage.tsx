@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../../auth";
 import { fallbackCategories, getCategories } from "../../categories";
 import type { UiCategory } from "../../categories";
 import { getServices } from "../../services";
@@ -7,21 +8,50 @@ import type { ApiService } from "../../services";
 import { CategoryServiceStep } from "../components/CategoryServiceStep";
 import { DescriptionStep } from "../components/DescriptionStep";
 import { RequestDraftNotice } from "../components/RequestDraftNotice";
+import { RequestSubmissionActions } from "../components/RequestSubmissionActions";
+import { RequestSubmissionResult } from "../components/RequestSubmissionResult";
 import { RequestStepActions } from "../components/RequestStepActions";
 import { RequestStepIndicator } from "../components/RequestStepIndicator";
 import { ReviewStep } from "../components/ReviewStep";
 import { WorkDetailsStep } from "../components/WorkDetailsStep";
 import {
+  createServiceRequestDraft,
+  publishServiceRequestDraft,
+  updateServiceRequestDraft
+} from "../services/serviceRequestsApi";
+import {
   loadServiceRequestDraftResult,
   removeServiceRequestDraft,
   saveServiceRequestDraft
 } from "../storage/serviceRequestDraftStorage";
-import type { ServiceRequestDraft } from "../types/serviceRequest";
+import type {
+  RequestSubmissionStatus,
+  ServiceRequestDraft,
+  ServiceRequestDraftPayload,
+  ServiceRequestResponse
+} from "../types/serviceRequest";
 import { getDescriptionError, getWorkDetailsErrors } from "../validation/serviceRequestValidation";
 import type { WorkDetailsValidationErrors } from "../validation/serviceRequestValidation";
+import type { ApiError } from "../../../shared/types/apiError";
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
+}
+
+function isApiError(error: unknown): error is ApiError {
+  return typeof error === "object" && error !== null && "status" in error;
+}
+
+function getSubmissionErrorMessage(error: unknown) {
+  if (isApiError(error)) {
+    if (error.status === 400) return "Revisa los datos de la solicitud.";
+    if (error.status === 401) return "Tu sesión ha caducado. Inicia sesión nuevamente.";
+    if (error.status === 403) return "No tienes permisos para realizar esta acción.";
+    if (error.status === 404) return "No encontramos el borrador solicitado.";
+    if (error.status === 409) return "La solicitud ya fue publicada o cambió de estado.";
+  }
+
+  return "No se pudo conectar con FixGo. Inténtalo nuevamente.";
 }
 
 function buildSearchParams(categorySlug: string, serviceSlug: string) {
@@ -47,6 +77,7 @@ function createEmptyDraft(categorySlug = "", serviceSlug = ""): ServiceRequestDr
     originalDescription: "",
     preferredDateFrom: "",
     preferredDateTo: "",
+    serverDraftId: null,
     serviceId: null,
     serviceSlug,
     title: "",
@@ -75,6 +106,7 @@ function hasDraftContent(draft: ServiceRequestDraft) {
       draft.locationDescription.trim() ||
       draft.preferredDateFrom ||
       draft.preferredDateTo ||
+      draft.serverDraftId ||
       draft.currentStep > 1
   );
 }
@@ -95,6 +127,8 @@ function formatSavedAt(savedAt: string) {
 }
 
 export function ServiceRequestPage() {
+  const navigate = useNavigate();
+  const { initializing, isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") ?? "";
   const serviceParam = searchParams.get("service") ?? "";
@@ -118,6 +152,9 @@ export function ServiceRequestPage() {
   );
   const [lastSavedAt, setLastSavedAt] = useState(storedDraft?.savedAt ?? "");
   const [hasActiveDraft, setHasActiveDraft] = useState(Boolean(storedDraft));
+  const [submissionStatus, setSubmissionStatus] = useState<RequestSubmissionStatus>("idle");
+  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [publishedRequest, setPublishedRequest] = useState<ServiceRequestResponse | null>(null);
   const hasMountedRef = useRef(false);
   const saveTimeoutRef = useRef<number | null>(null);
   const [draft, setDraft] = useState<ServiceRequestDraft>(() => mergeStoredDraft(storedDraft?.draft ?? null, categoryParam, serviceParam));
@@ -128,6 +165,178 @@ export function ServiceRequestPage() {
       ...partialDraft,
       updatedAt: getNowIso()
     }));
+  };
+
+  const persistDraftImmediately = (nextDraft: ServiceRequestDraft, message: string) => {
+    const stored = saveServiceRequestDraft(nextDraft);
+    setDraft(nextDraft);
+    setDraftMessage(message);
+    setHasActiveDraft(true);
+    if (stored) setLastSavedAt(stored.savedAt);
+  };
+
+  const validateFullRequest = () => {
+    if (!selectedCategory || !draft.categoryId) {
+      updateDraft({ currentStep: 1 });
+      setSubmissionStatus("error");
+      setSubmissionMessage("Selecciona una categoría para continuar.");
+      return false;
+    }
+
+    const nextDescriptionError = getDescriptionError(draft.originalDescription);
+    setDescriptionError(nextDescriptionError);
+
+    if (nextDescriptionError) {
+      updateDraft({ currentStep: 2 });
+      setDescriptionFocusSignal((current) => current + 1);
+      setSubmissionStatus("error");
+      setSubmissionMessage("Revisa los datos de la solicitud.");
+      return false;
+    }
+
+    const nextWorkDetailsErrors = getWorkDetailsErrors({
+      flexibleSchedule: draft.flexibleSchedule,
+      locationDescription: draft.locationDescription,
+      preferredDateFrom: draft.preferredDateFrom,
+      preferredDateTo: draft.preferredDateTo,
+      urgency: draft.urgency
+    });
+    setWorkDetailsErrors(nextWorkDetailsErrors);
+
+    if (Object.keys(nextWorkDetailsErrors).length > 0) {
+      updateDraft({ currentStep: 3 });
+      setWorkDetailsFocusSignal((current) => current + 1);
+      setSubmissionStatus("error");
+      setSubmissionMessage("Revisa los datos de la solicitud.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const buildDraftPayload = (): ServiceRequestDraftPayload => ({
+    categoryId: selectedCategory?.id ?? draft.categoryId ?? 0,
+    flexibleSchedule: draft.flexibleSchedule,
+    locationDescription: draft.locationDescription.trim(),
+    originalDescription: draft.originalDescription.trim(),
+    preferredDateFrom: draft.preferredDateFrom || null,
+    preferredDateTo: draft.preferredDateTo || null,
+    serviceId: selectedService?.id ?? draft.serviceId ?? null,
+    title: draft.title.trim() || null,
+    urgency: draft.urgency
+  });
+
+  const redirectToLoginWithDraft = () => {
+    const nextDraft = {
+      ...draft,
+      currentStep: 4 as const,
+      updatedAt: getNowIso()
+    };
+
+    persistDraftImmediately(nextDraft, "Guardamos tu borrador. Inicia sesión para continuar.");
+    navigate("/acceder", {
+      state: {
+        from: {
+          pathname: "/cliente/solicitar-presupuesto",
+          search: ""
+        }
+      }
+    });
+  };
+
+  const ensureAuthenticatedForSubmission = () => {
+    if (initializing) {
+      setSubmissionStatus("idle");
+      setSubmissionMessage("Estamos comprobando tu sesión.");
+      return false;
+    }
+
+    if (!isAuthenticated) {
+      redirectToLoginWithDraft();
+      return false;
+    }
+
+    return true;
+  };
+
+  const saveDraftOnServer = async (payload: ServiceRequestDraftPayload) => {
+    if (draft.serverDraftId) {
+      return updateServiceRequestDraft(draft.serverDraftId, payload);
+    }
+
+    return createServiceRequestDraft(payload);
+  };
+
+  const applyServerDraftId = (serverDraftId: string, message: string) => {
+    const nextDraft = {
+      ...draft,
+      currentStep: 4 as const,
+      serverDraftId,
+      updatedAt: getNowIso()
+    };
+
+    persistDraftImmediately(nextDraft, message);
+  };
+
+  const handleSaveDraft = async () => {
+    if (submissionStatus === "saving" || submissionStatus === "publishing") return;
+    if (!validateFullRequest()) return;
+    if (!ensureAuthenticatedForSubmission()) return;
+
+    try {
+      setSubmissionStatus("saving");
+      setSubmissionMessage("");
+      const response = await saveDraftOnServer(buildDraftPayload());
+      applyServerDraftId(String(response.id), "Borrador guardado en tu cuenta.");
+      setSubmissionStatus("saved");
+      setSubmissionMessage("Borrador guardado en tu cuenta.");
+    } catch (error) {
+      setSubmissionStatus("error");
+      setSubmissionMessage(getSubmissionErrorMessage(error));
+    }
+  };
+
+  const handlePublishRequest = async () => {
+    if (submissionStatus === "saving" || submissionStatus === "publishing" || submissionStatus === "published") return;
+    if (!validateFullRequest()) return;
+    if (!ensureAuthenticatedForSubmission()) return;
+
+    try {
+      setSubmissionStatus("publishing");
+      setSubmissionMessage("");
+      const savedDraft = await saveDraftOnServer(buildDraftPayload());
+      const serverDraftId = String(savedDraft.id);
+      const published = await publishServiceRequestDraft(serverDraftId);
+
+      if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
+      removeServiceRequestDraft();
+      setDraft(createEmptyDraft());
+      setSearchParams(new URLSearchParams());
+      setHasActiveDraft(false);
+      setLastSavedAt("");
+      setDraftMessage("");
+      setPublishedRequest(published);
+      setSubmissionStatus("published");
+      setSubmissionMessage("");
+    } catch (error) {
+      setSubmissionStatus("error");
+      setSubmissionMessage(getSubmissionErrorMessage(error));
+    }
+  };
+
+  const createAnotherRequest = () => {
+    if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
+    removeServiceRequestDraft();
+    setSearchParams(new URLSearchParams());
+    setDraft(createEmptyDraft());
+    setDescriptionError("");
+    setWorkDetailsErrors({});
+    setHasActiveDraft(false);
+    setLastSavedAt("");
+    setDraftMessage("");
+    setSubmissionStatus("idle");
+    setSubmissionMessage("");
+    setPublishedRequest(null);
   };
 
   useEffect(() => {
@@ -363,15 +572,23 @@ export function ServiceRequestPage() {
       <div className="request-block">
         <h1>Solicita presupuesto</h1>
         <p>Selecciona el servicio y describe brevemente el trabajo que necesitas.</p>
-        <RequestStepIndicator currentStep={draft.currentStep} />
+        {publishedRequest ? null : <RequestStepIndicator currentStep={draft.currentStep} />}
       </div>
 
-      <RequestDraftNotice
-        canDiscard={canDiscardDraft}
-        message={draftMessage}
-        onDiscard={discardDraft}
-        savedAtText={formatSavedAt(lastSavedAt)}
-      />
+      {publishedRequest ? (
+        <RequestSubmissionResult
+          onCreateAnother={createAnotherRequest}
+          onGoToBudgets={() => navigate("/cliente/mis-presupuestos")}
+          requestId={publishedRequest.id}
+        />
+      ) : (
+        <>
+          <RequestDraftNotice
+            canDiscard={canDiscardDraft}
+            message={draftMessage}
+            onDiscard={discardDraft}
+            savedAtText={formatSavedAt(lastSavedAt)}
+          />
 
       {draft.currentStep === 1 ? (
         <>
@@ -466,9 +683,17 @@ export function ServiceRequestPage() {
             title={draft.title}
             urgency={draft.urgency}
           />
+          <RequestSubmissionActions
+            message={submissionMessage}
+            onPublish={handlePublishRequest}
+            onSave={handleSaveDraft}
+            status={submissionStatus}
+          />
           <RequestStepActions onBack={goBackToWorkDetails} />
         </>
       ) : null}
+        </>
+      )}
     </section>
   );
 }

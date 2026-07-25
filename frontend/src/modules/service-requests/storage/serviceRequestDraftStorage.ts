@@ -24,6 +24,10 @@ function isNullableNumber(value: unknown): value is number | null {
   return value === null || typeof value === "number";
 }
 
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
@@ -68,6 +72,7 @@ function parseDraft(value: unknown): ServiceRequestDraft | null {
   if (!isRequestUrgency(value.urgency)) return null;
   if (!isString(value.preferredDateFrom)) return null;
   if (!isString(value.preferredDateTo)) return null;
+  if (value.serverDraftId !== undefined && !isNullableString(value.serverDraftId)) return null;
   if (typeof value.flexibleSchedule !== "boolean") return null;
   if (!isRequestStep(value.currentStep)) return null;
   if (!isString(value.updatedAt)) return null;
@@ -81,6 +86,7 @@ function parseDraft(value: unknown): ServiceRequestDraft | null {
     originalDescription: value.originalDescription,
     preferredDateFrom: value.preferredDateFrom,
     preferredDateTo: value.preferredDateTo,
+    serverDraftId: value.serverDraftId ?? null,
     serviceId: value.serviceId,
     serviceSlug: value.serviceSlug,
     title: value.title,

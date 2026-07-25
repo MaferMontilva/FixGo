@@ -126,7 +126,6 @@ export function ReviewStep({
         </dl>
       </section>
 
-      <p className="request-next-note">En el siguiente paso podrás guardar o publicar tu solicitud.</p>
     </div>
   );
 }
