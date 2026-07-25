@@ -8,7 +8,9 @@ import { CategoryServiceStep } from "../components/CategoryServiceStep";
 import { DescriptionStep } from "../components/DescriptionStep";
 import { RequestStepActions } from "../components/RequestStepActions";
 import { RequestStepIndicator } from "../components/RequestStepIndicator";
+import { WorkDetailsStep } from "../components/WorkDetailsStep";
 import type { ServiceRequestDraft } from "../types/serviceRequest";
+import { getDescriptionError } from "../validation/serviceRequestValidation";
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -21,6 +23,10 @@ function buildSearchParams(categorySlug: string, serviceSlug: string) {
   if (categorySlug && serviceSlug) params.set("service", serviceSlug);
 
   return params;
+}
+
+function getNowIso() {
+  return new Date().toISOString();
 }
 
 export function ServiceRequestPage() {
@@ -36,15 +42,32 @@ export function ServiceRequestPage() {
   const [servicesError, setServicesError] = useState("");
   const [servicesLoading, setServicesLoading] = useState(false);
   const [servicesReloadKey, setServicesReloadKey] = useState(0);
+  const [descriptionError, setDescriptionError] = useState("");
+  const [descriptionFocusSignal, setDescriptionFocusSignal] = useState(0);
+  const [workDetailsFocusSignal, setWorkDetailsFocusSignal] = useState(0);
   const [draft, setDraft] = useState<ServiceRequestDraft>(() => ({
     categoryId: null,
     categorySlug: categoryParam,
     currentStep: 1,
+    flexibleSchedule: true,
+    locationDescription: "",
     originalDescription: "",
+    preferredDateFrom: "",
+    preferredDateTo: "",
     serviceId: null,
     serviceSlug: serviceParam,
-    title: ""
+    title: "",
+    updatedAt: getNowIso(),
+    urgency: "NORMAL"
   }));
+
+  const updateDraft = (partialDraft: Partial<ServiceRequestDraft>) => {
+    setDraft((current) => ({
+      ...current,
+      ...partialDraft,
+      updatedAt: getNowIso()
+    }));
+  };
 
   useEffect(() => {
     setDraft((current) => {
@@ -53,7 +76,8 @@ export function ServiceRequestPage() {
       return {
         ...current,
         categorySlug: categoryParam,
-        serviceSlug: serviceParam
+        serviceSlug: serviceParam,
+        updatedAt: getNowIso()
       };
     });
   }, [categoryParam, serviceParam]);
@@ -93,7 +117,7 @@ export function ServiceRequestPage() {
     setDraft((current) => {
       const categoryId = selectedCategory?.id ?? null;
       if (current.categoryId === categoryId) return current;
-      return { ...current, categoryId };
+      return { ...current, categoryId, updatedAt: getNowIso() };
     });
   }, [selectedCategory]);
 
@@ -142,50 +166,66 @@ export function ServiceRequestPage() {
     setDraft((current) => {
       const serviceId = selectedService?.id ?? null;
       if (current.serviceId === serviceId) return current;
-      return { ...current, serviceId };
+      return { ...current, serviceId, updatedAt: getNowIso() };
     });
   }, [selectedService]);
 
   const selectCategory = (category: UiCategory) => {
-    setDraft((current) => ({
-      ...current,
+    updateDraft({
       categoryId: category.id,
       categorySlug: category.slug,
       serviceId: null,
       serviceSlug: ""
-    }));
+    });
     setSearchParams(buildSearchParams(category.slug, ""));
   };
 
   const selectService = (service: ApiService) => {
     if (!selectedCategory || service.category.slug !== selectedCategory.slug) return;
 
-    setDraft((current) => ({
-      ...current,
+    updateDraft({
       serviceId: service.id,
       serviceSlug: service.slug
-    }));
+    });
     setSearchParams(buildSearchParams(selectedCategory.slug, service.slug));
   };
 
   const selectUnknownService = () => {
     if (!selectedCategory) return;
 
-    setDraft((current) => ({
-      ...current,
+    updateDraft({
       serviceId: null,
       serviceSlug: ""
-    }));
+    });
     setSearchParams(buildSearchParams(selectedCategory.slug, ""));
   };
 
   const goToDescription = () => {
     if (!selectedCategory) return;
-    setDraft((current) => ({ ...current, currentStep: 2 }));
+    updateDraft({ currentStep: 2 });
+    setDescriptionFocusSignal((current) => current + 1);
   };
 
   const goToService = () => {
-    setDraft((current) => ({ ...current, currentStep: 1 }));
+    updateDraft({ currentStep: 1 });
+  };
+
+  const goToWorkDetails = () => {
+    const error = getDescriptionError(draft.originalDescription);
+    setDescriptionError(error);
+
+    if (error) {
+      setDescriptionFocusSignal((current) => current + 1);
+      return;
+    }
+
+    updateDraft({ currentStep: 3 });
+    setWorkDetailsFocusSignal((current) => current + 1);
+  };
+
+  const goBackToDescription = () => {
+    updateDraft({ currentStep: 2 });
+    setDescriptionFocusSignal((current) => current + 1);
   };
 
   return (
@@ -221,15 +261,38 @@ export function ServiceRequestPage() {
       ) : null}
 
       {draft.currentStep === 2 ? (
+        <DescriptionStep
+          description={draft.originalDescription}
+          descriptionError={descriptionError}
+          focusSignal={descriptionFocusSignal}
+          onBack={goToService}
+          onContinue={goToWorkDetails}
+          onDescriptionChange={(value) => {
+            updateDraft({ originalDescription: value });
+            if (descriptionError && !getDescriptionError(value)) setDescriptionError("");
+          }}
+          onTitleChange={(value) => updateDraft({ title: value })}
+          title={draft.title}
+        />
+      ) : null}
+
+      {draft.currentStep === 3 ? (
         <>
-          <DescriptionStep
-            description={draft.originalDescription}
-            focusDescription={draft.currentStep === 2}
-            onDescriptionChange={(value) => setDraft((current) => ({ ...current, originalDescription: value }))}
-            onTitleChange={(value) => setDraft((current) => ({ ...current, title: value }))}
-            title={draft.title}
+          <WorkDetailsStep
+            errors={{}}
+            flexibleSchedule={draft.flexibleSchedule}
+            focusSignal={workDetailsFocusSignal}
+            locationDescription={draft.locationDescription}
+            onFlexibleScheduleChange={(value) => updateDraft({ flexibleSchedule: value })}
+            onLocationDescriptionChange={(value) => updateDraft({ locationDescription: value })}
+            onPreferredDateFromChange={(value) => updateDraft({ preferredDateFrom: value })}
+            onPreferredDateToChange={(value) => updateDraft({ preferredDateTo: value })}
+            onUrgencyChange={(value) => updateDraft({ urgency: value })}
+            preferredDateFrom={draft.preferredDateFrom}
+            preferredDateTo={draft.preferredDateTo}
+            urgency={draft.urgency}
           />
-          <RequestStepActions onBack={goToService} />
+          <RequestStepActions onBack={goBackToDescription} />
         </>
       ) : null}
     </section>

@@ -18,12 +18,20 @@ export type ServiceRequestResponse = {
 
 export type RequestStep = 1 | 2 | 3 | 4;
 
+export type RequestUrgency = "LOW" | "NORMAL" | "HIGH" | "EMERGENCY";
+
 export type ServiceRequestDraft = {
   categoryId: number | null;
   categorySlug: string;
   currentStep: RequestStep;
+  flexibleSchedule: boolean;
+  locationDescription: string;
   originalDescription: string;
+  preferredDateFrom: string;
+  preferredDateTo: string;
   serviceId: number | null;
   serviceSlug: string;
   title: string;
+  updatedAt: string;
+  urgency: RequestUrgency;
 };

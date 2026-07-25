@@ -932,7 +932,8 @@ button {
 }
 
 .request-field-help strong,
-.form-error {
+.form-error,
+.field-error {
   color: #b95212;
   font-weight: 800;
 }
@@ -941,15 +942,114 @@ button {
   margin: 0;
 }
 
-.request-next-note {
-  width: fit-content;
+.field-error {
+  font-size: 14px;
+}
+
+.urgency-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 0;
   margin: 0;
-  border: 1px solid var(--fixgo-border);
-  border-radius: 999px;
-  background: #f7f8fa;
-  color: #526070;
+  border: 0;
+  padding: 0;
+}
+
+.urgency-options legend {
+  grid-column: 1 / -1;
+  margin-bottom: 4px;
+  color: #1f2937;
   font-weight: 800;
-  padding: 12px 18px;
+}
+
+.urgency-card {
+  min-width: 0;
+  min-height: 132px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  border: 1px solid var(--fixgo-border);
+  border-radius: 16px;
+  background: #fff;
+  color: #1f2937;
+  cursor: pointer;
+  padding: 16px;
+  box-shadow: 0 12px 24px rgba(14, 22, 34, 0.05);
+}
+
+.urgency-card input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--fixgo-orange);
+}
+
+.urgency-card strong {
+  color: #111111;
+  font-size: 17px;
+}
+
+.urgency-card span {
+  color: #647184;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.urgency-card.is-selected {
+  border-color: var(--fixgo-orange);
+  background: var(--fixgo-orange-soft);
+  box-shadow: 0 14px 30px rgba(242, 138, 46, 0.16);
+}
+
+.availability-panel {
+  display: grid;
+  gap: 20px;
+  border: 1px solid var(--fixgo-border);
+  border-radius: 18px;
+  background: #f7f8fa;
+  padding: 20px;
+}
+
+.request-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: #1f2937;
+}
+
+.request-checkbox input {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  accent-color: var(--fixgo-orange);
+}
+
+.request-checkbox span {
+  display: grid;
+  gap: 4px;
+}
+
+.request-checkbox strong {
+  color: #111111;
+}
+
+.request-checkbox small {
+  color: #647184;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.request-form-grid.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.request-next-note {
+  margin: 0;
+  color: #526070;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .or-divider {
@@ -1666,6 +1766,10 @@ button {
   .service-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .urgency-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -1725,7 +1829,9 @@ button {
   }
 
   .service-choice-grid,
-  .request-form-grid {
+  .request-form-grid,
+  .request-form-grid.two-columns,
+  .urgency-options {
     grid-template-columns: 1fr;
   }
 

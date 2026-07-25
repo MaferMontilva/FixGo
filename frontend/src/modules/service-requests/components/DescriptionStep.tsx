@@ -3,7 +3,10 @@ import { getDescriptionError } from "../validation/serviceRequestValidation";
 
 type DescriptionStepProps = {
   description: string;
-  focusDescription: boolean;
+  descriptionError: string;
+  focusSignal: number;
+  onBack: () => void;
+  onContinue: () => void;
   onDescriptionChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   title: string;
@@ -14,30 +17,31 @@ const descriptionErrorId = "service-request-description-error";
 
 export function DescriptionStep({
   description,
-  focusDescription,
+  descriptionError,
+  focusSignal,
+  onBack,
+  onContinue,
   onDescriptionChange,
   onTitleChange,
   title
 }: DescriptionStepProps) {
   const [descriptionTouched, setDescriptionTouched] = useState(false);
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
-  const descriptionError = descriptionTouched ? getDescriptionError(description) : "";
+  const visibleDescriptionError = descriptionError || (descriptionTouched ? getDescriptionError(description) : "");
 
   useEffect(() => {
-    if (focusDescription) {
-      descriptionRef.current?.focus();
-    }
-  }, [focusDescription]);
+    descriptionRef.current?.focus();
+  }, [focusSignal]);
 
   useEffect(() => {
-    if (descriptionTouched && descriptionError) {
+    if (visibleDescriptionError) {
       descriptionRef.current?.focus();
     }
-  }, [descriptionError, descriptionTouched]);
+  }, [visibleDescriptionError]);
 
   const updateDescription = (value: string) => {
     onDescriptionChange(value);
-    if (descriptionTouched && !getDescriptionError(value)) {
+    if ((descriptionTouched || descriptionError) && !getDescriptionError(value)) {
       setDescriptionTouched(false);
     }
   };
@@ -63,8 +67,8 @@ export function DescriptionStep({
         <label className="request-field request-field-wide" htmlFor={descriptionId}>
           <span>Descripción</span>
           <textarea
-            aria-describedby={descriptionError ? descriptionErrorId : undefined}
-            aria-invalid={descriptionError ? "true" : "false"}
+            aria-describedby={visibleDescriptionError ? descriptionErrorId : undefined}
+            aria-invalid={visibleDescriptionError ? "true" : "false"}
             id={descriptionId}
             maxLength={2000}
             onBlur={() => setDescriptionTouched(true)}
@@ -77,13 +81,20 @@ export function DescriptionStep({
         </label>
         <div className="request-field-help request-field-wide">
           <span>{description.length}/2000 caracteres</span>
-          {descriptionError ? (
-            <strong id={descriptionErrorId} role="alert">{descriptionError}</strong>
+          {visibleDescriptionError ? (
+            <strong id={descriptionErrorId} role="alert">{visibleDescriptionError}</strong>
           ) : null}
         </div>
       </div>
 
-      <p className="request-next-note">Siguiente: datos del trabajo</p>
+      <div className="request-step-actions">
+        <button className="request-secondary-action" onClick={onBack} type="button">
+          Atrás
+        </button>
+        <button className="primary-wide" onClick={onContinue} type="button">
+          Continuar
+        </button>
+      </div>
     </div>
   );
 }
