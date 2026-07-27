@@ -1,10 +1,11 @@
-import { Briefcase, LayoutDashboard, LogOut, Search, UserRound } from "lucide-react";
+import { Briefcase, FileText, LayoutDashboard, LogOut, Search, UserRound } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth";
 
 const links = [
   { to: "/profesional/panel", label: "Panel", Icon: LayoutDashboard },
   { to: "/profesional/oportunidades", label: "Oportunidades", Icon: Search },
+  { to: "/profesional/presupuestos", label: "Presupuestos", Icon: FileText },
   { to: "/profesional/trabajos", label: "Mis trabajos", Icon: Briefcase },
   { to: "/profesional/perfil", label: "Perfil", Icon: UserRound }
 ];

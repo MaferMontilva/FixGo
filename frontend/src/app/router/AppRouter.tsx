@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { MarketplaceLayout } from "../layouts/MarketplaceLayout";
 import { PublicLayout } from "../layouts/PublicLayout";
 import { LoginPage, RegisterPage, RoleProtectedRoute } from "../../modules/auth";
-import { BudgetsPage, RequestBudgetsPage } from "../../modules/budgets";
+import { BudgetsPage, ProfessionalBudgetsPage, RequestBudgetsPage } from "../../modules/budgets";
 import { ClientOrdersPage, ProfessionalOrdersPage } from "../../modules/service-orders";
 import { HomeMarketplacePage, LandingPage, LegalPage, NotFoundPage } from "../../modules/home";
 import { ProfessionalDashboardPage, ProfessionalHomePage, ProfessionalOpportunityDetailPage, ProfessionalOpportunitiesPage, ProfessionalProfilePage, ProfessionalsPage } from "../../modules/professionals";
@@ -21,6 +21,7 @@ export function AppRouter() {
         <Route path="/profesional/oportunidades" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOpportunitiesPage /></RoleProtectedRoute>} />
         <Route path="/profesional/oportunidades/:id" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOpportunityDetailPage /></RoleProtectedRoute>} />
         <Route path="/profesional/trabajos" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOrdersPage /></RoleProtectedRoute>} />
+        <Route path="/profesional/presupuestos" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalBudgetsPage /></RoleProtectedRoute>} />
         <Route path="/legal/:documentType" element={<LegalPage />} />
       </Route>
 
