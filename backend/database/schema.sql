@@ -102,16 +102,23 @@ CREATE TABLE professional_profiles (
   slug TEXT NOT NULL UNIQUE,
   display_name TEXT NOT NULL,
   business_name TEXT,
+  phone TEXT,
   tax_id TEXT,
   bio TEXT,
   years_experience INTEGER NOT NULL DEFAULT 0 CHECK(years_experience >= 0),
+  province TEXT,
+  municipality TEXT,
+  postal_code TEXT,
+  reference_address TEXT,
+  work_radius INTEGER,
+  availability TEXT,
   profile_image_url TEXT,
   cover_image_url TEXT,
   website_url TEXT,
   is_verified INTEGER NOT NULL DEFAULT 0 CHECK(is_verified IN (0,1)),
   is_homologated INTEGER NOT NULL DEFAULT 0 CHECK(is_homologated IN (0,1)),
   verification_status TEXT NOT NULL DEFAULT 'PENDING' CHECK(verification_status IN ('PENDING','IN_REVIEW','APPROVED','REJECTED','SUSPENDED')),
-  profile_status TEXT NOT NULL DEFAULT 'DRAFT' CHECK(profile_status IN ('DRAFT','ACTIVE','INACTIVE','SUSPENDED')),
+  profile_status TEXT NOT NULL DEFAULT 'INCOMPLETE' CHECK(profile_status IN ('INCOMPLETE','ACTIVE','SUSPENDED')),
   rating_average REAL NOT NULL DEFAULT 0 CHECK(rating_average BETWEEN 0 AND 5),
   ratings_count INTEGER NOT NULL DEFAULT 0 CHECK(ratings_count >= 0),
   response_time_minutes INTEGER,
@@ -245,6 +252,16 @@ CREATE TABLE professional_categories (
   FOREIGN KEY(professional_id) REFERENCES professional_profiles(id) ON DELETE CASCADE,
   FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE RESTRICT
 );
+
+CREATE TABLE professional_services (
+  professional_id INTEGER NOT NULL,
+  service_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(professional_id, service_id),
+  FOREIGN KEY(professional_id) REFERENCES professional_profiles(id) ON DELETE CASCADE,
+  FOREIGN KEY(service_id) REFERENCES services(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_professional_services_service ON professional_services(service_id);
 
 CREATE TABLE professional_service_areas (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

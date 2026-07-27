@@ -1,6 +1,7 @@
-import { httpGet } from "../../../shared/http/httpClient";
+import { httpGet, httpPatch } from "../../../shared/http/httpClient";
 import { fallbackProfessionals } from "../data/professionalFallbacks";
 import type { ApiProfessional, UiProfessional } from "../types/professional";
+import type { ProfessionalOpportunity, ProfessionalProfileApi, UpdateProfessionalProfilePayload } from "../types/professionalOnboarding";
 
 export async function getProfessionals(): Promise<UiProfessional[]> {
   try {
@@ -25,4 +26,20 @@ export async function getProfessionals(): Promise<UiProfessional[]> {
 
     return fallbackProfessionals;
   }
+}
+
+export function getMyProfessionalProfile() {
+  return httpGet<ProfessionalProfileApi | null>("/professionals/me");
+}
+
+export function saveMyProfessionalProfile(payload: UpdateProfessionalProfilePayload) {
+  return httpPatch<ProfessionalProfileApi, UpdateProfessionalProfilePayload>("/professionals/me", payload);
+}
+
+export function getProfessionalOpportunities() {
+  return httpGet<ProfessionalOpportunity[]>("/professionals/me/opportunities");
+}
+
+export function getProfessionalOpportunity(id: number) {
+  return httpGet<ProfessionalOpportunity>(`/professionals/me/opportunities/${id}`);
 }

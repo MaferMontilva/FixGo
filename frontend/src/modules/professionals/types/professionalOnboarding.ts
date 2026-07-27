@@ -1,37 +1,41 @@
-export type ProfessionalCategorySummary = {
+export type ProfessionalProfileStatus = "incomplete" | "complete" | "review" | "active";
+
+export type ProfessionalOnboardingProfile = {
+  availability: string;
+  categories: string[];
+  categoryIds: number[];
+  city: string;
+  document: string;
+  email: string;
+  experienceYears: string;
+  fullName: string;
+  phone: string;
+  photoDataUrl: string;
+  postalCode: string;
+  profileStatus: ProfessionalProfileStatus;
+  province: string;
+  referenceAddress: string;
+  shortBio: string;
+  serviceIds: number[];
+  termsAccepted: boolean;
+  workRadius: string;
+};
+
+export type ProfessionalCategory = {
   id: number;
   name: string;
   slug: string;
   iconName: string | null;
 };
 
-export type ProfessionalEntity = {
-  id: number;
-  slug: string;
-  displayName: string;
-  businessName: string | null;
-  bio: string | null;
-  location: string | null;
-  profileImageUrl: string | null;
-  coverImageUrl: string | null;
-  verified: boolean;
-  homologated: boolean;
-  ratingAverage: number;
-  ratingsCount: number;
-  completedJobsCount: number;
-  responseTimeMinutes: number | null;
-  trade: string;
-  categories: ProfessionalCategorySummary[];
-};
-
-export type ProfessionalServiceSummary = {
+export type ProfessionalService = {
   id: number;
   categoryId: number;
   name: string;
   slug: string;
 };
 
-export type ProfessionalMeEntity = {
+export type ProfessionalProfileApi = {
   id: number;
   userId: number;
   displayName: string;
@@ -51,11 +55,11 @@ export type ProfessionalMeEntity = {
   profileImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
-  categories: ProfessionalCategorySummary[];
-  services: ProfessionalServiceSummary[];
+  categories: ProfessionalCategory[];
+  services: ProfessionalService[];
 };
 
-export type UpsertProfessionalProfileData = {
+export type UpdateProfessionalProfilePayload = {
   displayName: string;
   email?: string | null;
   businessName?: string | null;
@@ -74,12 +78,12 @@ export type UpsertProfessionalProfileData = {
   serviceIds: number[];
 };
 
-export type ProfessionalOpportunityEntity = {
+export type ProfessionalOpportunity = {
   id: number;
   title: string | null;
   description: string;
-  category: ProfessionalCategorySummary | null;
-  service: ProfessionalServiceSummary | null;
+  category: ProfessionalCategory | null;
+  service: ProfessionalService | null;
   location: string | null;
   province: string | null;
   municipality: string | null;
