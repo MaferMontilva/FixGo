@@ -1,9 +1,9 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { setAccessTokenProvider } from "../../../shared/http/httpClient";
-import { getCurrentUser, login as loginRequest, logout as logoutRequest, refreshSession, registerClient } from "../api/authApi";
+import { getCurrentUser, login as loginRequest, logout as logoutRequest, refreshSession, registerClient, registerProfessional as registerProfessionalRequest } from "../api/authApi";
 import { clearStoredRefreshToken, getStoredRefreshToken, storeRefreshToken } from "../storage/authStorage";
-import type { AuthResponse, AuthUser, LoginPayload, RegisterPayload } from "../types/auth";
+import type { AuthResponse, AuthUser, LoginPayload, RegisterPayload, RegisterProfessionalPayload } from "../types/auth";
 
 type AuthStatus = "initializing" | "authenticated" | "unauthenticated";
 
@@ -14,6 +14,7 @@ type AuthContextValue = {
   user: AuthUser | null;
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
+  registerProfessional: (payload: RegisterProfessionalPayload) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (role: string) => boolean;
 };
@@ -95,6 +96,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [applyAuthResponse]
   );
 
+  const registerProfessional = useCallback(
+    async (payload: RegisterProfessionalPayload) => {
+      await applyAuthResponse(await registerProfessionalRequest(payload));
+    },
+    [applyAuthResponse]
+  );
+
   const logout = useCallback(async () => {
     const storedRefreshToken = getStoredRefreshToken();
 
@@ -113,10 +121,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       login,
       register,
+      registerProfessional,
       logout,
       hasRole: (role: string) => Boolean(user?.roles.includes(role as never))
     }),
-    [login, logout, register, status, user]
+    [login, logout, register, registerProfessional, status, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

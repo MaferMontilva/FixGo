@@ -2,7 +2,12 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../../../shared/prisma.service";
 import { AuthSessionEntity } from "../../domain/auth-session.entity";
 import { AuthUser } from "../../domain/auth-user";
-import { AuthRepository, RegisterClientData, UserWithPassword } from "../../domain/auth.repository";
+import {
+  AuthRepository,
+  RegisterClientData,
+  RegisterProfessionalData,
+  UserWithPassword
+} from "../../domain/auth.repository";
 
 type UserRecord = {
   id: number;
@@ -71,6 +76,62 @@ export class PrismaAuthRepository implements AuthRepository {
       });
 
       return this.toAuthUser(user, ["CLIENT"]);
+    });
+  }
+
+  async registerProfessional(data: RegisterProfessionalData): Promise<AuthUser> {
+    const now = new Date().toISOString();
+
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.users.create({
+        data: {
+          email: data.email,
+          passwordHash: data.passwordHash,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          preferredLanguage: "es",
+          status: "ACTIVE",
+          createdAt: now,
+          updatedAt: now
+        }
+      });
+
+      const professionalRole = await tx.roles.findUnique({ where: { code: "PROFESSIONAL" } });
+      if (!professionalRole) throw new Error("El rol PROFESSIONAL no existe.");
+
+      await tx.userRoles.create({
+        data: {
+          userId: user.id,
+          roleId: professionalRole.id,
+          assignedAt: now
+        }
+      });
+
+      const displayName = (data.businessName?.trim() || `${data.firstName} ${data.lastName}`).trim();
+      const slugBase =
+        displayName
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "") || "profesional";
+
+      await tx.professionalProfiles.create({
+        data: {
+          userId: user.id,
+          slug: `${slugBase}-${user.id}`,
+          displayName,
+          businessName: data.businessName?.trim() || null,
+          phone: data.phone?.trim() || null,
+          verificationStatus: "PENDING",
+          profileStatus: "DRAFT",
+          ratingAverage: 0,
+          createdAt: now,
+          updatedAt: now
+        }
+      });
+
+      return this.toAuthUser(user, ["PROFESSIONAL"]);
     });
   }
 

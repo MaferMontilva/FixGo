@@ -30,3 +30,8 @@ export type RegisterPayload = LoginPayload & {
   firstName: string;
   lastName: string;
 };
+
+export type RegisterProfessionalPayload = RegisterPayload & {
+  businessName?: string;
+  phone?: string;
+};

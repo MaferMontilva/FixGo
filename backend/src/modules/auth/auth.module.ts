@@ -6,6 +6,7 @@ import { LoginUseCase } from "./application/login.use-case";
 import { LogoutUseCase } from "./application/logout.use-case";
 import { RefreshSessionUseCase } from "./application/refresh-token.use-case";
 import { RegisterClientUseCase } from "./application/register-client.use-case";
+import { RegisterProfessionalUseCase } from "./application/register-professional.use-case";
 import { AUTH_REPOSITORY } from "./domain/auth.repository";
 import { PASSWORD_HASHER } from "./domain/password-hasher";
 import {
@@ -32,6 +33,7 @@ import { RolesGuard } from "./presentation/roles.guard";
     LogoutUseCase,
     RefreshSessionUseCase,
     RegisterClientUseCase,
+    RegisterProfessionalUseCase,
     JwtAuthGuard,
     RolesGuard,
     JwtStrategy,

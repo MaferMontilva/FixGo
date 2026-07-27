@@ -10,6 +10,15 @@ export type RegisterClientData = {
   passwordHash: string;
 };
 
+export type RegisterProfessionalData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  passwordHash: string;
+  businessName?: string | null;
+  phone?: string | null;
+};
+
 export type UserWithPassword = AuthUser & {
   passwordHash: string | null;
 };
@@ -18,6 +27,7 @@ export abstract class AuthRepository {
   abstract findUserByEmail(email: string): Promise<UserWithPassword | null>;
   abstract findUserById(userId: number): Promise<AuthUser | null>;
   abstract registerClient(data: RegisterClientData): Promise<AuthUser>;
+  abstract registerProfessional(data: RegisterProfessionalData): Promise<AuthUser>;
   abstract createSession(userId: number, refreshTokenHash: string, expiresAt: string): Promise<AuthSessionEntity>;
   abstract findSessionByRefreshHash(refreshTokenHash: string): Promise<AuthSessionEntity | null>;
   abstract revokeSession(sessionId: number, revokedAt: string): Promise<void>;

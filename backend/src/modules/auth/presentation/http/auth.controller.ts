@@ -3,17 +3,20 @@ import { LoginUseCase } from "../../application/login.use-case";
 import { LogoutUseCase } from "../../application/logout.use-case";
 import { RefreshSessionUseCase } from "../../application/refresh-token.use-case";
 import { RegisterClientUseCase } from "../../application/register-client.use-case";
+import { RegisterProfessionalUseCase } from "../../application/register-professional.use-case";
 import { CurrentUser, RequestUser } from "../current-user";
 import { JwtAuthGuard } from "../jwt-auth.guard";
 import { LoginDto } from "../dto/login.dto";
 import { LogoutDto } from "../dto/logout.dto";
 import { RefreshSessionDto } from "../dto/refresh-session.dto";
 import { RegisterClientDto } from "../dto/register-client.dto";
+import { RegisterProfessionalDto } from "../dto/register-professional.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(
     private readonly registerClientUseCase: RegisterClientUseCase,
+    private readonly registerProfessionalUseCase: RegisterProfessionalUseCase,
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshSessionUseCase: RefreshSessionUseCase,
     private readonly logoutUseCase: LogoutUseCase
@@ -22,6 +25,11 @@ export class AuthController {
   @Post("register")
   register(@Body() dto: RegisterClientDto) {
     return this.registerClientUseCase.execute(dto);
+  }
+
+  @Post("register-professional")
+  registerProfessional(@Body() dto: RegisterProfessionalDto) {
+    return this.registerProfessionalUseCase.execute(dto);
   }
 
   @Post("login")

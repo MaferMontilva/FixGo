@@ -1,8 +1,12 @@
 import { httpGet, httpPatch, httpPost } from "../../../shared/http/httpClient";
-import type { AuthResponse, AuthUser, ClientProfile, LoginPayload, RegisterPayload } from "../types/auth";
+import type { AuthResponse, AuthUser, ClientProfile, LoginPayload, RegisterPayload, RegisterProfessionalPayload } from "../types/auth";
 
 export function registerClient(payload: RegisterPayload) {
   return httpPost<AuthResponse, RegisterPayload>("/auth/register", payload);
+}
+
+export function registerProfessional(payload: RegisterProfessionalPayload) {
+  return httpPost<AuthResponse, RegisterProfessionalPayload>("/auth/register-professional", payload);
 }
 
 export function login(payload: LoginPayload) {

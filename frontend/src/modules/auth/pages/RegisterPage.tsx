@@ -1,4 +1,4 @@
-import { ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft, BriefcaseBusiness, UserPlus, UserRound } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../../shared/components/Button";
@@ -8,6 +8,8 @@ import { PageContainer } from "../../../shared/components/PageContainer";
 import type { ApiError } from "../../../shared/types/apiError";
 import { AuthFormField } from "../components/AuthFormField";
 import { useAuth } from "../hooks/useAuth";
+
+type AccountType = "CLIENT" | "PROFESSIONAL";
 
 type RegisterErrors = {
   firstName?: string;
@@ -19,16 +21,23 @@ type RegisterErrors = {
 export function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { initializing, isAuthenticated, register, hasRole } = useAuth();
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "" });
+  const { initializing, isAuthenticated, register, registerProfessional, hasRole } = useAuth();
+  const initialType = (location.state as { role?: AccountType } | null)?.role ?? "CLIENT";
+  const [accountType, setAccountType] = useState<AccountType>(initialType);
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", businessName: "", phone: "" });
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [serverError, setServerError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const destination = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
   const destinationPath = destination ? `${destination.pathname ?? ""}${destination.search ?? ""}` : "";
+  const isProfessional = accountType === "PROFESSIONAL";
 
   useEffect(() => {
-    if (!initializing && isAuthenticated && hasRole("CLIENT")) {
+    if (initializing || !isAuthenticated) return;
+
+    if (hasRole("PROFESSIONAL")) {
+      navigate("/profesional/inicio", { replace: true });
+    } else if (hasRole("CLIENT")) {
       navigate(destinationPath?.startsWith("/cliente") ? destinationPath : "/cliente/inicio", { replace: true });
     }
   }, [destinationPath, hasRole, initializing, isAuthenticated, navigate]);
@@ -60,12 +69,26 @@ export function RegisterPage() {
 
     try {
       setIsSubmitting(true);
-      await register(form);
-      navigate(destinationPath?.startsWith("/cliente") ? destinationPath : "/cliente/inicio", { replace: true });
+      if (isProfessional) {
+        await registerProfessional({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password,
+          businessName: form.businessName.trim() || undefined,
+          phone: form.phone.trim() || undefined
+        });
+      } else {
+        await register({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password
+        });
+      }
     } catch (error) {
       const apiError = error as ApiError;
       setServerError(apiError.message || "No pudimos crear tu cuenta. Intenta nuevamente.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -74,8 +97,30 @@ export function RegisterPage() {
     <PageContainer className="login-shell">
       <Card className="login-card auth-card">
         <Logo compact />
-        <h1 className="login-title">Crear cuenta de cliente</h1>
-        <p className="login-intro">Registra tus datos para guardar solicitudes, presupuestos y perfil de cliente.</p>
+        <h1 className="login-title">{isProfessional ? "Crear cuenta de profesional" : "Crear cuenta de cliente"}</h1>
+        <p className="login-intro">
+          {isProfessional
+            ? "Registra tus datos para ofrecer tus servicios y recibir oportunidades."
+            : "Registra tus datos para guardar solicitudes, presupuestos y perfil de cliente."}
+        </p>
+        <div className="role-segment two">
+          <button
+            className={`role-chip ${accountType === "CLIENT" ? "is-active" : ""}`}
+            type="button"
+            onClick={() => setAccountType("CLIENT")}
+          >
+            <UserRound size={18} />
+            Cliente
+          </button>
+          <button
+            className={`role-chip ${accountType === "PROFESSIONAL" ? "is-active" : ""}`}
+            type="button"
+            onClick={() => setAccountType("PROFESSIONAL")}
+          >
+            <BriefcaseBusiness size={18} />
+            Profesional
+          </button>
+        </div>
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <AuthFormField
             id="register-first-name"
@@ -93,6 +138,24 @@ export function RegisterPage() {
             error={errors.lastName}
             onChange={(event) => updateField("lastName", event.target.value)}
           />
+          {isProfessional ? (
+            <>
+              <AuthFormField
+                id="register-business-name"
+                label="Nombre del negocio (opcional)"
+                autoComplete="organization"
+                value={form.businessName}
+                onChange={(event) => updateField("businessName", event.target.value)}
+              />
+              <AuthFormField
+                id="register-phone"
+                label="Telefono (opcional)"
+                autoComplete="tel"
+                value={form.phone}
+                onChange={(event) => updateField("phone", event.target.value)}
+              />
+            </>
+          ) : null}
           <AuthFormField
             id="register-email"
             label="Correo electronico"
@@ -118,7 +181,10 @@ export function RegisterPage() {
           </Button>
         </form>
         <p className="auth-switch">
-          Ya tienes cuenta? <Link to="/acceder" state={location.state}>Iniciar sesion</Link>
+          Ya tienes cuenta?{" "}
+          <Link to="/acceder" state={{ from: destination, role: accountType }}>
+            Iniciar sesion
+          </Link>
         </p>
         <Link className="back-link" to="/">
           <ArrowLeft size={18} /> Volver al inicio
