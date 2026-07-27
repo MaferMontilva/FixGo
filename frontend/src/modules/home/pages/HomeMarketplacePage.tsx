@@ -162,7 +162,8 @@ export function HomeMarketplacePage() {
       <section className="content-section renueva-section">
         <div className="renueva-media">
           <img src={cocinaAntesDespues} alt="Antes y despues de una reforma de cocina" />
-          <span className="renueva-tag">Antes / Despues</span>
+          <span className="renueva-tag antes">Antes</span>
+          <span className="renueva-tag despues">Despues</span>
         </div>
         <div className="renueva-copy">
           <span className="eyebrow-orange">Renueva tu hogar</span>

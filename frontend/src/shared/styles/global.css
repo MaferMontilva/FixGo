@@ -4186,3 +4186,7 @@ button[aria-disabled="true"] {
 .season-grid, .category-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 @media (max-width: 1000px) { .season-grid, .category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
 @media (max-width: 680px) { .season-grid, .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+
+/* --- Etiquetas Antes/Despues, una en cada mitad (Claude) --- */
+.renueva-tag.antes { left: 14px; right: auto; background: #171717; }
+.renueva-tag.despues { left: auto; right: 14px; background: var(--fixgo-orange); }
