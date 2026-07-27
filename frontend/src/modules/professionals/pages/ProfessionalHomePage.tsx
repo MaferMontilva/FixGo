@@ -7,7 +7,7 @@ import { getServices } from "../../services";
 import type { UiCategory } from "../../categories";
 import type { ApiService } from "../../services";
 import { spanishWorkAreas } from "../data/professionalOnboardingData";
-import { saveMyProfessionalProfile } from "../services/professionalsApi";
+import { getMyProfessionalProfile, saveMyProfessionalProfile } from "../services/professionalsApi";
 import { clearProfessionalProfileDraft, loadProfessionalProfile, saveProfessionalProfile, saveProfessionalProfilePhoto } from "../storage/professionalOnboardingStorage";
 import type { ProfessionalOnboardingProfile } from "../types/professionalOnboarding";
 
@@ -27,6 +27,20 @@ export function ProfessionalHomePage() {
     () => spanishWorkAreas.find((area) => area.province === profile.province) ?? spanishWorkAreas[0],
     [profile.province]
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    void getMyProfessionalProfile()
+      .then((existingProfile) => {
+        if (!cancelled && existingProfile && (existingProfile.categories?.length ?? 0) > 0) {
+          navigate("/profesional/panel", { replace: true });
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   useEffect(() => {
     let cancelled = false;

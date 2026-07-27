@@ -32,7 +32,7 @@ export function LoginPage() {
     if (hasRole("ADMIN")) {
       navigate("/admin", { replace: true });
     } else if (hasRole("PROFESSIONAL")) {
-      navigate("/profesional/inicio", { replace: true });
+      navigate("/profesional/panel", { replace: true });
     } else if (hasRole("CLIENT")) {
       navigate(destinationPath?.startsWith("/cliente") ? destinationPath : "/cliente/inicio", { replace: true });
     }
