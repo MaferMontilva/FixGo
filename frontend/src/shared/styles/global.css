@@ -3823,3 +3823,12 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--fixgo-orange);
 /* --- Estrellas estaticas de valoraciones (Claude) --- */
 .review-stars-static { display: inline-flex; gap: 2px; color: #d1d5db; }
 .review-stars-static .is-on { color: var(--fixgo-orange); }
+
+/* --- Admin: tablas uniformes (Claude) --- */
+.admin-table th, .admin-table td { vertical-align: middle; white-space: nowrap; }
+.admin-table td { height: 56px; }
+.admin-table tbody tr:nth-child(even) td { background: #fafafa; }
+.admin-table tbody tr:hover td { background: var(--fixgo-orange-soft); }
+.admin-actions-cell { display: flex; gap: 8px; align-items: center; justify-content: flex-start; }
+.admin-action { white-space: nowrap; min-width: 96px; text-align: center; }
+.admin-content { overflow: hidden; }
