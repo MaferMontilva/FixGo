@@ -2,6 +2,7 @@ import { ArrowLeft, Euro, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProfessionalOpportunity } from "../services/professionalsApi";
+import { SendBudgetForm } from "../../budgets";
 import type { ProfessionalOpportunity } from "../types/professionalOnboarding";
 
 const urgencyLabels: Record<string, string> = {
@@ -60,8 +61,7 @@ export function ProfessionalOpportunityDetailPage() {
               <span><Euro size={18} /> {budgetText(opportunity)}</span>
               <span>Disponibilidad: {opportunity.flexibleSchedule ? "Flexible" : [opportunity.preferredDateFrom, opportunity.preferredDateTo].filter(Boolean).join(" - ") || "Por concretar"}</span>
             </div>
-            <button className="pro-muted-button" type="button" disabled>Enviar presupuesto</button>
-            <p className="pro-helper-text">Disponible en la siguiente fase.</p>
+            <SendBudgetForm serviceRequestId={opportunity.id} />
           </>
         )}
       </section>

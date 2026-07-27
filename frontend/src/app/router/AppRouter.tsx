@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { MarketplaceLayout } from "../layouts/MarketplaceLayout";
 import { PublicLayout } from "../layouts/PublicLayout";
 import { LoginPage, RegisterPage, RoleProtectedRoute } from "../../modules/auth";
-import { BudgetsPage } from "../../modules/budgets";
+import { BudgetsPage, RequestBudgetsPage } from "../../modules/budgets";
 import { HomeMarketplacePage, LandingPage, LegalPage, NotFoundPage } from "../../modules/home";
 import { ProfessionalDashboardPage, ProfessionalHomePage, ProfessionalOpportunityDetailPage, ProfessionalOpportunitiesPage, ProfessionalProfilePage, ProfessionalsPage } from "../../modules/professionals";
 import { ServiceRequestPage } from "../../modules/service-requests";
@@ -31,6 +31,14 @@ export function AppRouter() {
           element={
             <RoleProtectedRoute roles={["CLIENT"]}>
               <BudgetsPage />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="solicitudes/:id/presupuestos"
+          element={
+            <RoleProtectedRoute roles={["CLIENT"]}>
+              <RequestBudgetsPage />
             </RoleProtectedRoute>
           }
         />

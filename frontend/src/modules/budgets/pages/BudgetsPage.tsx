@@ -313,6 +313,12 @@ export function BudgetsPage() {
                     <Eye size={18} />
                     {detailLoadingId === request.id ? "Abriendo..." : "Ver detalle"}
                   </button>
+                  {["PUBLISHED", "RECEIVING_BUDGETS", "PROFESSIONAL_SELECTED", "IN_PROGRESS", "COMPLETED"].includes(request.status) ? (
+                    <button className="request-save-action" onClick={() => navigate(`/cliente/solicitudes/${request.id}/presupuestos`)} type="button">
+                      <ClipboardList size={18} />
+                      Ver presupuestos
+                    </button>
+                  ) : null}
                   {canCancel(request.status) ? (
                     <button className="client-request-cancel" disabled={cancelLoadingId === request.id} onClick={() => cancelRequest(request)} type="button">
                       <XCircle size={18} />

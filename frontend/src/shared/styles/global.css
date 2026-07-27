@@ -2807,3 +2807,206 @@ button {
 .back-link {
   margin-top: 10px;
 }
+
+/* --- Presupuestos (Claude) --- */
+.budget-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid var(--fixgo-border);
+  border-radius: 18px;
+  background: #fff;
+}
+.budget-form-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #171717;
+}
+.budget-items-head,
+.budget-item-row {
+  display: grid;
+  grid-template-columns: 1fr 70px 100px 40px;
+  gap: 8px;
+  align-items: center;
+}
+.budget-items-head {
+  font-size: 13px;
+  font-weight: 700;
+  color: #637083;
+}
+.budget-input {
+  min-height: 44px;
+  border: 1px solid var(--fixgo-border);
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 15px;
+  outline: 0;
+  background: #fff;
+}
+.budget-input:focus {
+  border-color: var(--fixgo-orange);
+}
+.budget-row-remove {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  border: 1px solid var(--fixgo-border);
+  border-radius: 12px;
+  background: #fff;
+  color: #b91c1c;
+  cursor: pointer;
+}
+.budget-add-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  background: transparent;
+  border: 0;
+  color: var(--fixgo-orange);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.budget-field {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2b2f38;
+}
+.budget-field textarea,
+.budget-field input,
+.budget-field select {
+  border: 1px solid var(--fixgo-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 15px;
+  outline: 0;
+  font-family: inherit;
+}
+.budget-duration {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 12px;
+}
+.budget-total {
+  font-size: 1.05rem;
+  margin: 4px 0 0;
+}
+.budget-sent-box {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--fixgo-orange-soft);
+  border: 1px solid rgba(242, 138, 46, 0.4);
+}
+.pro-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--fixgo-orange);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+.pro-primary-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.budgets-compare-shell {
+  display: grid;
+  gap: 14px;
+}
+.budgets-compare-title {
+  margin: 6px 0 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #171717;
+}
+.budgets-compare-intro {
+  margin: 0 0 6px;
+  color: #637083;
+}
+.budgets-compare-list {
+  display: grid;
+  gap: 16px;
+}
+.budget-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  text-align: left;
+}
+.budget-card.is-best {
+  border: 2px solid var(--fixgo-orange);
+}
+.budget-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+.budget-card-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.budget-card-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #637083;
+  margin: 4px 0 0;
+}
+.budget-card-price {
+  text-align: right;
+}
+.budget-card-price strong {
+  font-size: 1.35rem;
+  color: #171717;
+}
+.budget-best-badge {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fixgo-orange-strong, #dc6f19);
+}
+.budget-card-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--fixgo-border);
+  border-bottom: 1px solid var(--fixgo-border);
+  padding: 10px 0;
+}
+.budget-card-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: #2b2f38;
+}
+.budget-card-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #637083;
+  margin: 0;
+}
+.budget-card-notes {
+  margin: 0;
+  color: #2b2f38;
+  background: #f7f7f8;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
