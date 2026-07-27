@@ -4031,3 +4031,72 @@ button[aria-disabled="true"] {
 .admin-table thead tr:hover th {
   background: #faf7f3;
 }
+
+/* --- Preview del profesional mas dinamico (Claude) --- */
+.pro-preview-grid span { display: inline-flex; align-items: center; gap: 6px; }
+.pro-preview-avatars { display: flex; align-items: center; gap: 8px; margin-top: 18px; }
+.pro-preview-avatars i {
+  width: 34px; height: 34px; border-radius: 999px; display: inline-block;
+  border: 2px solid #171717; margin-left: -10px;
+  background: linear-gradient(135deg, var(--fixgo-orange) 0%, var(--fixgo-orange-deep) 100%);
+}
+.pro-preview-avatars i:first-child { margin-left: 0; }
+.pro-preview-avatars i:nth-child(2) { background: linear-gradient(135deg, #ffb15e, var(--fixgo-orange-hover)); }
+.pro-preview-avatars i:nth-child(3) { background: linear-gradient(135deg, #f6ad36, #b95212); }
+.pro-preview-avatars small { color: #d1d5db; font-weight: 600; margin-left: 6px; }
+
+/* --- Stepper horizontal profesional para "Solicita presupuesto" (Claude) --- */
+.request-step-list {
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 0;
+  align-items: flex-start;
+}
+.request-step-item {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  position: relative;
+}
+.request-step-item:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: -50%;
+  width: 100%;
+  height: 3px;
+  background: var(--fixgo-border);
+  z-index: 0;
+}
+.request-step-item.is-active::before,
+.request-step-item.is-complete::before {
+  background: var(--fixgo-orange);
+}
+.request-step-marker {
+  position: relative;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--fixgo-border);
+  background: #fff;
+  color: #9ca3af;
+  font-weight: 800;
+}
+.request-step-item.is-active .request-step-marker,
+.request-step-item.is-complete .request-step-marker {
+  background: var(--fixgo-orange);
+  border-color: var(--fixgo-orange);
+  color: #fff;
+}
+.request-step-text { text-align: center; gap: 1px; }
+.request-step-text span { font-size: 10px; letter-spacing: 0.4px; }
+.request-step-text strong { font-size: 13px; color: #374151; }
+.request-step-item.is-active .request-step-text strong { color: #171717; }
+.request-step-text em { display: none; }

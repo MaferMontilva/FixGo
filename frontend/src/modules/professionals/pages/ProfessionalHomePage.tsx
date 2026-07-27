@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Camera, CheckCircle2, MapPin, Phone, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, CheckCircle2, Clock, Euro, MapPin, Phone, ShieldCheck, UserRound } from "lucide-react";
 import type { ChangeEvent, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -429,9 +429,13 @@ function BriefcasePreview() {
       <div className="pro-preview-row"><span>Nueva solicitud</span><strong>Fontanería</strong></div>
       <div className="pro-preview-main">Reparación urgente en tu zona</div>
       <div className="pro-preview-grid">
-        <span>Madrid</span>
-        <span>Alta</span>
-        <span>80 EUR - 180 EUR</span>
+        <span><MapPin size={15} /> Madrid</span>
+        <span><Clock size={15} /> Alta</span>
+        <span><Euro size={15} /> 80 - 180</span>
+      </div>
+      <div className="pro-preview-avatars" aria-hidden="true">
+        <i /><i /><i />
+        <small>+120 clientes buscan profesionales hoy</small>
       </div>
     </>
   );
