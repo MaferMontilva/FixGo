@@ -3767,3 +3767,12 @@ button {
   cursor: pointer;
 }
 .pro-nav-logout:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* --- Valoraciones (Claude) --- */
+.review-form { display: grid; gap: 10px; margin-top: 10px; padding: 14px; border: 1px solid var(--fixgo-border); border-radius: 14px; background: #fafafa; }
+.review-form-label { font-weight: 700; color: #171717; }
+.review-stars { display: flex; gap: 4px; }
+.review-star { background: transparent; border: 0; padding: 2px; cursor: pointer; color: #d1d5db; }
+.review-star.is-on { color: var(--fixgo-orange); }
+.review-comment { border: 1px solid var(--fixgo-border); border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 15px; outline: 0; resize: vertical; }
+.review-done { margin: 10px 0 0; color: #1c7a43; font-weight: 700; }

@@ -4,6 +4,7 @@ import { Card } from "../../../shared/components/Card";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import type { ApiError } from "../../../shared/types/apiError";
 import { confirmOrder, getClientOrders } from "../services/serviceOrdersApi";
+import { ReviewForm } from "../../reviews";
 import type { ServiceOrder, ServiceOrderStatus } from "../types/serviceOrder";
 
 const statusLabels: Record<ServiceOrderStatus, string> = {
@@ -85,6 +86,12 @@ export function ClientOrdersPage() {
               <button className="pro-primary-button" type="button" disabled={actionId === order.id} onClick={() => confirm(order)}>
                 <CheckCircle2 size={18} /> {actionId === order.id ? "Confirmando..." : "Confirmar trabajo completado"}
               </button>
+            ) : null}
+            {order.status === "COMPLETED" && !order.hasReview ? (
+              <ReviewForm serviceOrderId={order.id} onSubmitted={() => void load()} />
+            ) : null}
+            {order.status === "COMPLETED" && order.hasReview ? (
+              <p className="review-done">Ya valoraste este trabajo. ¡Gracias!</p>
             ) : null}
           </Card>
         ))}

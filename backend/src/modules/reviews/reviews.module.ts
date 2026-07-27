@@ -1,4 +1,21 @@
 import { Module } from "@nestjs/common";
+import { CreateReviewUseCase } from "./application/create-review.use-case";
+import { GetProfessionalReviewsUseCase } from "./application/get-professional-reviews.use-case";
+import { ReplyReviewUseCase } from "./application/reply-review.use-case";
+import { REVIEWS_REPOSITORY } from "./domain/reviews.repository";
+import { PrismaReviewsRepository } from "./infrastructure/prisma/prisma-reviews.repository";
+import { ReviewsController } from "./presentation/http/reviews.controller";
 
-@Module({})
+@Module({
+  controllers: [ReviewsController],
+  providers: [
+    CreateReviewUseCase,
+    GetProfessionalReviewsUseCase,
+    ReplyReviewUseCase,
+    {
+      provide: REVIEWS_REPOSITORY,
+      useClass: PrismaReviewsRepository
+    }
+  ]
+})
 export class ReviewsModule {}
