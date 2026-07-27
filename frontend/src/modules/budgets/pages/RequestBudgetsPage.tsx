@@ -1,10 +1,11 @@
 import { ArrowLeft, Clock, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Card } from "../../../shared/components/Card";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import type { ApiError } from "../../../shared/types/apiError";
 import { getRequestBudgets } from "../services/budgetsApi";
+import { acceptBudget } from "../../service-orders";
 import type { Budget } from "../types/budget";
 
 function formatMoney(value: number, currency: string) {
@@ -24,6 +25,21 @@ export function RequestBudgetsPage() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [acceptingId, setAcceptingId] = useState<number | null>(null);
+  const navigate = useNavigate();
+
+  const handleAccept = async (budgetId: number) => {
+    try {
+      setAcceptingId(budgetId);
+      setError("");
+      await acceptBudget(budgetId);
+      navigate("/cliente/trabajos");
+    } catch (acceptError) {
+      const apiError = acceptError as { message?: string };
+      setError(apiError.message || "No pudimos aceptar el presupuesto.");
+      setAcceptingId(null);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -102,8 +118,8 @@ export function RequestBudgetsPage() {
               ) : null}
               {budget.observations ? <p className="budget-card-notes">{budget.observations}</p> : null}
 
-              <button className="request-save-action" type="button" disabled title="Disponible en el siguiente paso">
-                Aceptar presupuesto
+              <button className="pro-primary-button" type="button" disabled={acceptingId === budget.id} onClick={() => handleAccept(budget.id)}>
+                {acceptingId === budget.id ? "Aceptando..." : "Aceptar presupuesto"}
               </button>
             </Card>
           );

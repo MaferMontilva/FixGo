@@ -3697,3 +3697,23 @@ button {
 .pro-status-row svg {
   color: var(--fixgo-orange);
 }
+
+/* --- Trabajos / ordenes de servicio (Claude) --- */
+.orders-shell { display: grid; gap: 14px; }
+.orders-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.orders-title { margin: 0; font-size: 1.6rem; font-weight: 800; color: #171717; }
+.orders-intro { margin: 4px 0 0; color: #637083; }
+.orders-list { display: grid; gap: 16px; margin-top: 6px; }
+.order-card { display: grid; gap: 10px; padding: 20px; text-align: left; }
+.order-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.order-card-head h2 { margin: 0; font-size: 1.1rem; }
+.order-card-desc { margin: 0; color: #4b5563; }
+.order-card-amount { margin: 0; color: #2b2f38; }
+.order-card-meta { display: flex; gap: 28px; margin: 0; }
+.order-card-meta dt { font-size: 12px; color: #9ca3af; font-weight: 700; text-transform: uppercase; }
+.order-card-meta dd { margin: 2px 0 0; font-weight: 700; color: #171717; }
+.order-status { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: #f4f4f5; color: #374151; white-space: nowrap; }
+.order-status.status-IN_PROGRESS { background: var(--fixgo-orange-soft); color: var(--fixgo-orange-hover); }
+.order-status.status-AWAITING_CLIENT_CONFIRMATION { background: #fff4ea; color: #b95212; }
+.order-status.status-COMPLETED { background: #e7f6ec; color: #1c7a43; }
+.order-status.status-CANCELLED { background: #fdeaea; color: #b91c1c; }

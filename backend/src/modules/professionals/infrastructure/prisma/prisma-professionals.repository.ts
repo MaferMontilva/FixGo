@@ -146,10 +146,14 @@ export class PrismaProfessionalsRepository implements ProfessionalsRepository {
           });
 
       if (data.email?.trim()) {
-        await tx.users.update({
-          where: { id: userId },
-          data: { email: data.email.trim(), updatedAt: now }
-        });
+        const email = data.email.trim();
+        const emailInUse = await tx.users.findFirst({ where: { email, id: { not: userId } }, select: { id: true } });
+        if (!emailInUse) {
+          await tx.users.update({
+            where: { id: userId },
+            data: { email, updatedAt: now }
+          });
+        }
       }
 
       await tx.professionalCategories.deleteMany({ where: { professionalId: savedProfile.id } });

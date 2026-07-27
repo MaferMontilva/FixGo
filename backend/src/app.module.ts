@@ -4,6 +4,7 @@ import { AdministrationModule } from "./modules/administration/administration.mo
 import { ArtificialIntelligenceModule } from "./modules/artificial-intelligence/artificial-intelligence.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { BudgetsModule } from "./modules/budgets/budgets.module";
+import { ServiceOrdersModule } from "./modules/service-orders/service-orders.module";
 import { CategoriesModule } from "./modules/categories/categories.module";
 import { ClientsModule } from "./modules/clients/clients.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
@@ -23,6 +24,7 @@ import { UsersModule } from "./modules/users/users.module";
     ProfessionalsModule,
     ServiceRequestsModule,
     BudgetsModule,
+    ServiceOrdersModule,
     ArtificialIntelligenceModule,
     ServicesModule,
     ReviewsModule,

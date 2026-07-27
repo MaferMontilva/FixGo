@@ -3,6 +3,7 @@ import { MarketplaceLayout } from "../layouts/MarketplaceLayout";
 import { PublicLayout } from "../layouts/PublicLayout";
 import { LoginPage, RegisterPage, RoleProtectedRoute } from "../../modules/auth";
 import { BudgetsPage, RequestBudgetsPage } from "../../modules/budgets";
+import { ClientOrdersPage, ProfessionalOrdersPage } from "../../modules/service-orders";
 import { HomeMarketplacePage, LandingPage, LegalPage, NotFoundPage } from "../../modules/home";
 import { ProfessionalDashboardPage, ProfessionalHomePage, ProfessionalOpportunityDetailPage, ProfessionalOpportunitiesPage, ProfessionalProfilePage, ProfessionalsPage } from "../../modules/professionals";
 import { ServiceRequestPage } from "../../modules/service-requests";
@@ -19,6 +20,7 @@ export function AppRouter() {
         <Route path="/profesional/perfil" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalProfilePage /></RoleProtectedRoute>} />
         <Route path="/profesional/oportunidades" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOpportunitiesPage /></RoleProtectedRoute>} />
         <Route path="/profesional/oportunidades/:id" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOpportunityDetailPage /></RoleProtectedRoute>} />
+        <Route path="/profesional/trabajos" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOrdersPage /></RoleProtectedRoute>} />
         <Route path="/legal/:documentType" element={<LegalPage />} />
       </Route>
 
@@ -39,6 +41,14 @@ export function AppRouter() {
           element={
             <RoleProtectedRoute roles={["CLIENT"]}>
               <RequestBudgetsPage />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="trabajos"
+          element={
+            <RoleProtectedRoute roles={["CLIENT"]}>
+              <ClientOrdersPage />
             </RoleProtectedRoute>
           }
         />
