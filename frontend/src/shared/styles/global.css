@@ -4100,3 +4100,22 @@ button[aria-disabled="true"] {
 .request-step-text strong { font-size: 13px; color: #374151; }
 .request-step-item.is-active .request-step-text strong { color: #171717; }
 .request-step-text em { display: none; }
+
+/* --- Tarjetas de categoria pulidas y coherentes (Claude) --- */
+.category-card {
+  background: #fff !important;
+  border: 1px solid var(--fixgo-border);
+  box-shadow: 0 8px 22px rgba(14, 22, 34, 0.05);
+  min-height: 158px;
+}
+.category-card svg {
+  color: var(--fixgo-orange) !important;
+  stroke: var(--fixgo-orange) !important;
+  fill: none !important;
+}
+.category-card span { font-size: 15px; color: #1f2937; }
+.category-card:hover {
+  border-color: rgba(242, 138, 46, 0.5);
+  background: var(--fixgo-orange-soft) !important;
+}
+.category-card.is-selected { background: var(--fixgo-orange-soft) !important; }
