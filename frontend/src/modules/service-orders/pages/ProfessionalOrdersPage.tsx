@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { completeOrder, getProfessionalOrders, startOrder } from "../services/serviceOrdersApi";
 import type { ServiceOrder, ServiceOrderStatus } from "../types/serviceOrder";
 import type { ApiError } from "../../../shared/types/apiError";
+import { ProfessionalNav } from "../../professionals/components/ProfessionalNav";
 
 const statusLabels: Record<ServiceOrderStatus, string> = {
   PENDING_START: "Pendiente de inicio",
@@ -51,6 +52,7 @@ export function ProfessionalOrdersPage() {
 
   return (
     <main className="pro-dashboard-shell">
+      <ProfessionalNav />
       <section className="pro-panel">
         <div className="orders-head">
           <div>

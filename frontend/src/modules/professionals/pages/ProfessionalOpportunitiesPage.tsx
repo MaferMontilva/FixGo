@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProfessionalOpportunities } from "../services/professionalsApi";
 import type { ProfessionalOpportunity } from "../types/professionalOnboarding";
+import { ProfessionalNav } from "../components/ProfessionalNav";
 
 const urgencyLabels: Record<string, string> = {
   EMERGENCY: "Emergencia",
@@ -55,6 +56,7 @@ export function ProfessionalOpportunitiesPage() {
 
   return (
     <main className="pro-dashboard-shell">
+      <ProfessionalNav />
       <section className="pro-panel pro-marketplace-panel">
         <div className="pro-section-title">
           <Search size={24} />

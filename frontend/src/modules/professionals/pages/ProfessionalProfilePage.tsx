@@ -10,6 +10,7 @@ import { emptyProfessionalProfile, spanishWorkAreas } from "../data/professional
 import { getMyProfessionalProfile, saveMyProfessionalProfile } from "../services/professionalsApi";
 import { loadProfessionalProfilePhoto, saveProfessionalProfilePhoto } from "../storage/professionalOnboardingStorage";
 import type { ProfessionalOnboardingProfile, ProfessionalProfileApi } from "../types/professionalOnboarding";
+import { ProfessionalNav } from "../components/ProfessionalNav";
 
 function initials(name: string) {
   return name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "FG";
@@ -155,6 +156,7 @@ export function ProfessionalProfilePage() {
 
   return (
     <main className="pro-dashboard-shell">
+      <ProfessionalNav />
       <form className="pro-panel pro-profile-form" onSubmit={handleSubmit}>
         <div className="pro-section-title">
           <UserRound size={24} />

@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { getProfessionalOpportunity } from "../services/professionalsApi";
 import { SendBudgetForm } from "../../budgets";
 import type { ProfessionalOpportunity } from "../types/professionalOnboarding";
+import { ProfessionalNav } from "../components/ProfessionalNav";
 
 const urgencyLabels: Record<string, string> = {
   EMERGENCY: "Emergencia",
@@ -44,6 +45,7 @@ export function ProfessionalOpportunityDetailPage() {
 
   return (
     <main className="pro-dashboard-shell">
+      <ProfessionalNav />
       <section className="pro-panel pro-opportunity-detail">
         <Link className="pro-link-button back" to="/profesional/oportunidades"><ArrowLeft size={18} />Volver a oportunidades</Link>
         {loading && <p className="pro-empty-state">Cargando detalle...</p>}

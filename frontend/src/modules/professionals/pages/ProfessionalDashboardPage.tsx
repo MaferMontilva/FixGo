@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getMyProfessionalProfile, getProfessionalOpportunities } from "../services/professionalsApi";
 import { loadProfessionalProfilePhoto } from "../storage/professionalOnboardingStorage";
 import type { ProfessionalOpportunity, ProfessionalProfileApi } from "../types/professionalOnboarding";
+import { ProfessionalNav } from "../components/ProfessionalNav";
 
 const statusLabel: Record<string, string> = {
   ACTIVE: "Activo",
@@ -69,6 +70,7 @@ export function ProfessionalDashboardPage() {
 
   return (
     <main className="pro-dashboard-shell">
+      <ProfessionalNav />
       {message && <p className="pro-page-success" aria-live="polite">{message}</p>}
       {error && <p className="pro-page-error" role="alert">{error}</p>}
       <section className="pro-dashboard-hero">
