@@ -4181,3 +4181,8 @@ button[aria-disabled="true"] {
 .renueva-cta { display: inline-flex; align-items: center; margin-top: 22px; background: var(--fixgo-orange); color: #fff; font-weight: 800; padding: 14px 28px; border-radius: 14px; text-decoration: none; }
 .renueva-cta:hover { background: var(--fixgo-orange-hover); }
 @media (max-width: 860px) { .renueva-section { grid-template-columns: 1fr; } }
+
+/* --- Cuadricula de categorias/temporada a 4 por fila (Claude) --- */
+.season-grid, .category-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+@media (max-width: 1000px) { .season-grid, .category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+@media (max-width: 680px) { .season-grid, .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
