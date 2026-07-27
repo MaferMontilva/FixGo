@@ -9,9 +9,12 @@ import {
   getAdminServiceRequests,
   getAdminStats,
   getAdminUsers,
+  createCategory,
+  deleteCategory,
   setCategoryActive,
   setProfessionalVerification,
-  setUserStatus
+  setUserStatus,
+  updateCategory
 } from "../services/adminApi";
 import type { AdminCategory, AdminProfessional, AdminServiceRequest, AdminStats, AdminUser } from "../types/admin";
 
@@ -36,6 +39,8 @@ export function AdminDashboardPage() {
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [newCategory, setNewCategory] = useState({ code: "", name: "" });
+  const [savingCategory, setSavingCategory] = useState(false);
 
   const load = useCallback(async (current: Tab) => {
     setLoading(true);
@@ -87,6 +92,45 @@ export function AdminDashboardPage() {
       setCategories((current) => current.map((item) => (item.id === category.id ? updated : item)));
     } catch (actionError) {
       setError((actionError as ApiError).message || "No se pudo actualizar la categoria.");
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (newCategory.code.trim().length < 2 || newCategory.name.trim().length < 2) {
+      setError("Escribe un codigo y un nombre validos para la categoria.");
+      return;
+    }
+    try {
+      setSavingCategory(true);
+      setError("");
+      const created = await createCategory({ code: newCategory.code.trim().toUpperCase(), name: newCategory.name.trim() });
+      setCategories((current) => [...current, created]);
+      setNewCategory({ code: "", name: "" });
+    } catch (actionError) {
+      setError((actionError as ApiError).message || "No se pudo crear la categoria.");
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
+  const handleEditCategory = async (category: AdminCategory) => {
+    const name = window.prompt("Nuevo nombre de la categoria:", category.name);
+    if (!name || name.trim().length < 2) return;
+    try {
+      const updated = await updateCategory(category.id, { name: name.trim() });
+      setCategories((current) => current.map((item) => (item.id === category.id ? updated : item)));
+    } catch (actionError) {
+      setError((actionError as ApiError).message || "No se pudo editar la categoria.");
+    }
+  };
+
+  const handleDeleteCategory = async (category: AdminCategory) => {
+    if (!window.confirm(`Eliminar la categoria "${category.name}"? Esta accion no se puede deshacer.`)) return;
+    try {
+      await deleteCategory(category.id);
+      setCategories((current) => current.filter((item) => item.id !== category.id));
+    } catch (actionError) {
+      setError((actionError as ApiError).message || "No se pudo eliminar la categoria.");
     }
   };
 
@@ -202,6 +246,11 @@ export function AdminDashboardPage() {
 
         {tab === "categorias" ? (
           <div className="admin-table-wrap">
+            <div className="admin-create-row">
+              <input className="admin-input" placeholder="CODIGO (ej. GARDENING)" value={newCategory.code} onChange={(event) => setNewCategory((current) => ({ ...current, code: event.target.value }))} />
+              <input className="admin-input" placeholder="Nombre (ej. Jardineria)" value={newCategory.name} onChange={(event) => setNewCategory((current) => ({ ...current, name: event.target.value }))} />
+              <button className="admin-action ok" type="button" disabled={savingCategory} onClick={handleCreateCategory}>{savingCategory ? "Creando..." : "Crear categoria"}</button>
+            </div>
             <table className="admin-table">
               <thead><tr><th>ID</th><th>Nombre</th><th>Codigo</th><th>Servicios</th><th>Estado</th><th>Accion</th></tr></thead>
               <tbody>
@@ -212,10 +261,10 @@ export function AdminDashboardPage() {
                     <td>{category.code}</td>
                     <td>{category.servicesCount}</td>
                     <td><span className={`admin-badge ${category.isActive ? "status-ACTIVE" : "status-SUSPENDED"}`}>{category.isActive ? "Activa" : "Inactiva"}</span></td>
-                    <td>
-                      <button className="admin-action" type="button" onClick={() => toggleCategory(category)}>
-                        {category.isActive ? "Desactivar" : "Activar"}
-                      </button>
+                    <td className="admin-actions-cell">
+                      <button className="admin-action" type="button" onClick={() => handleEditCategory(category)}>Editar</button>
+                      <button className="admin-action" type="button" onClick={() => toggleCategory(category)}>{category.isActive ? "Desactivar" : "Activar"}</button>
+                      <button className="admin-action danger" type="button" onClick={() => handleDeleteCategory(category)}>Eliminar</button>
                     </td>
                   </tr>
                 ))}

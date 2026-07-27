@@ -1,10 +1,15 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
+import { JwtAuthGuard } from "../../../auth/presentation/jwt-auth.guard";
+import { Roles } from "../../../auth/presentation/roles.decorator";
+import { RolesGuard } from "../../../auth/presentation/roles.guard";
 import { AnalyzeServiceRequestUseCase } from "../../application/analyze-service-request.use-case";
 import { RefineServiceRequestDescriptionUseCase } from "../../application/refine-service-request-description.use-case";
 import { AnalyzeServiceRequestDto } from "../dto/analyze-service-request.dto";
 import { RefineServiceRequestDescriptionDto } from "../dto/refine-service-request-description.dto";
 
 @Controller("ai")
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles("CLIENT")
 export class ArtificialIntelligenceController {
   constructor(
     private readonly analyzeServiceRequestUseCase: AnalyzeServiceRequestUseCase,
@@ -25,6 +30,8 @@ export class ArtificialIntelligenceController {
 }
 
 @Controller("artificial-intelligence")
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles("CLIENT")
 export class ArtificialIntelligenceRefinementController {
   constructor(private readonly refineServiceRequestDescriptionUseCase: RefineServiceRequestDescriptionUseCase) {}
 

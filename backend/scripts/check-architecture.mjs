@@ -4,7 +4,7 @@ import process from "node:process";
 
 const root = process.cwd();
 const modulesRoot = path.join(root, "src", "modules");
-const checkedModules = ["auth", "users", "clients", "categories", "services", "professionals", "service-requests"];
+const checkedModules = ["auth", "users", "clients", "categories", "services", "professionals", "service-requests", "administration", "artificial-intelligence", "budgets", "reviews", "service-orders"];
 
 const rules = [
   {

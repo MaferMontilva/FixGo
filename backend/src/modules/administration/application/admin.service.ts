@@ -1,5 +1,5 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { ADMIN_REPOSITORY, AdminRepository } from "../domain/admin.repository";
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ADMIN_REPOSITORY, AdminRepository, CreateCategoryData, UpdateCategoryData } from "../domain/admin.repository";
 
 const USER_STATUSES = ["ACTIVE", "SUSPENDED", "BLOCKED"];
 const VERIFICATION_STATUSES = ["PENDING", "IN_REVIEW", "APPROVED", "REJECTED", "SUSPENDED"];
@@ -53,5 +53,35 @@ export class AdminService {
     const category = await this.repository.setCategoryActive(categoryId, isActive);
     if (!category) throw new NotFoundException("Categoria no encontrada.");
     return category;
+  }
+
+  async createCategory(data: CreateCategoryData) {
+    const code = data.code.trim().toUpperCase();
+    if (!/^[A-Z0-9_]{2,40}$/.test(code)) {
+      throw new BadRequestException("El codigo debe ser mayusculas, numeros o guion bajo (2-40).");
+    }
+    if (await this.repository.categoryCodeExists(code)) {
+      throw new ConflictException("Ya existe una categoria con ese codigo.");
+    }
+    return this.repository.createCategory({ code, name: data.name.trim(), description: data.description?.trim() || null });
+  }
+
+  async updateCategory(categoryId: number, data: UpdateCategoryData) {
+    const category = await this.repository.updateCategory(categoryId, {
+      name: data.name?.trim(),
+      description: data.description?.trim() || null
+    });
+    if (!category) throw new NotFoundException("Categoria no encontrada.");
+    return category;
+  }
+
+  async deleteCategory(categoryId: number) {
+    const usage = await this.repository.findCategoryUsage(categoryId);
+    if (usage.services > 0 || usage.requests > 0) {
+      throw new ConflictException("No se puede eliminar: la categoria tiene servicios o solicitudes asociadas. Desactivala en su lugar.");
+    }
+    const deleted = await this.repository.deleteCategory(categoryId);
+    if (!deleted) throw new NotFoundException("Categoria no encontrada.");
+    return { deleted: true };
   }
 }

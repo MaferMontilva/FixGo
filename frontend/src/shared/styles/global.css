@@ -3813,3 +3813,9 @@ button {
 .admin-action { padding: 7px 12px; border: 1px solid var(--fixgo-border); border-radius: 10px; background: #fff; font-weight: 700; cursor: pointer; color: #374151; }
 .admin-action.ok { border-color: rgba(28,122,67,0.4); color: #1c7a43; }
 .admin-action.danger { border-color: rgba(185,28,28,0.4); color: #b91c1c; }
+
+/* --- Admin: crear categoria + arreglo de azul en casillas (Claude) --- */
+.admin-create-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.admin-input { min-height: 42px; border: 1px solid var(--fixgo-border); border-radius: 10px; padding: 0 12px; font-size: 14px; outline: 0; }
+.admin-input:focus { border-color: var(--fixgo-orange); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--fixgo-orange); }

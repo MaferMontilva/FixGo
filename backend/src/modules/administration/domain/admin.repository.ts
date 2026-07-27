@@ -1,5 +1,8 @@
 import { AdminCategory, AdminProfessional, AdminServiceRequest, AdminStats, AdminUser } from "./admin.entities";
 
+export type CreateCategoryData = { code: string; name: string; description?: string | null };
+export type UpdateCategoryData = { name?: string; description?: string | null };
+
 export const ADMIN_REPOSITORY = Symbol("ADMIN_REPOSITORY");
 
 export abstract class AdminRepository {
@@ -11,4 +14,9 @@ export abstract class AdminRepository {
   abstract listServiceRequests(): Promise<AdminServiceRequest[]>;
   abstract listCategories(): Promise<AdminCategory[]>;
   abstract setCategoryActive(categoryId: number, isActive: boolean): Promise<AdminCategory | null>;
+  abstract categoryCodeExists(code: string): Promise<boolean>;
+  abstract createCategory(data: CreateCategoryData): Promise<AdminCategory>;
+  abstract updateCategory(categoryId: number, data: UpdateCategoryData): Promise<AdminCategory | null>;
+  abstract findCategoryUsage(categoryId: number): Promise<{ services: number; requests: number }>;
+  abstract deleteCategory(categoryId: number): Promise<boolean>;
 }

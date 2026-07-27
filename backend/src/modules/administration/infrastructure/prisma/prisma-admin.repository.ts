@@ -7,7 +7,7 @@ import {
   AdminStats,
   AdminUser
 } from "../../domain/admin.entities";
-import { AdminRepository } from "../../domain/admin.repository";
+import { AdminRepository, CreateCategoryData, UpdateCategoryData } from "../../domain/admin.repository";
 
 @Injectable()
 export class PrismaAdminRepository implements AdminRepository {
@@ -140,5 +140,67 @@ export class PrismaAdminRepository implements AdminRepository {
     });
     const categories = await this.listCategories();
     return categories.find((category) => category.id === categoryId) ?? null;
+  }
+
+  async categoryCodeExists(code: string): Promise<boolean> {
+    const found = await this.prisma.categories.findFirst({ where: { code }, select: { id: true } });
+    return Boolean(found);
+  }
+
+  async createCategory(data: CreateCategoryData): Promise<AdminCategory> {
+    const now = new Date().toISOString();
+    const slugBase =
+      data.name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") || "categoria";
+    const existingSlug = await this.prisma.categories.findFirst({ where: { slug: slugBase }, select: { id: true } });
+    const slug = existingSlug ? `${slugBase}-${Date.now().toString(36)}` : slugBase;
+    const maxSort = await this.prisma.categories.aggregate({ _max: { sortOrder: true } });
+    const created = await this.prisma.categories.create({
+      data: {
+        code: data.code,
+        name: data.name,
+        slug,
+        description: data.description ?? null,
+        sortOrder: (maxSort._max.sortOrder ?? 0) + 1,
+        isActive: 1,
+        createdAt: now,
+        updatedAt: now
+      }
+    });
+    return { id: created.id, code: created.code, name: created.name, slug: created.slug, isActive: created.isActive === 1, servicesCount: 0 };
+  }
+
+  async updateCategory(categoryId: number, data: UpdateCategoryData): Promise<AdminCategory | null> {
+    const existing = await this.prisma.categories.findUnique({ where: { id: categoryId } });
+    if (!existing) return null;
+    await this.prisma.categories.update({
+      where: { id: categoryId },
+      data: {
+        name: data.name ?? existing.name,
+        description: data.description ?? existing.description,
+        updatedAt: new Date().toISOString()
+      }
+    });
+    const categories = await this.listCategories();
+    return categories.find((category) => category.id === categoryId) ?? null;
+  }
+
+  async findCategoryUsage(categoryId: number): Promise<{ services: number; requests: number }> {
+    const [services, requests] = await Promise.all([
+      this.prisma.services.count({ where: { categoryId } }),
+      this.prisma.serviceRequests.count({ where: { categoryId } })
+    ]);
+    return { services, requests };
+  }
+
+  async deleteCategory(categoryId: number): Promise<boolean> {
+    const existing = await this.prisma.categories.findUnique({ where: { id: categoryId } });
+    if (!existing) return false;
+    await this.prisma.categories.delete({ where: { id: categoryId } });
+    return true;
   }
 }

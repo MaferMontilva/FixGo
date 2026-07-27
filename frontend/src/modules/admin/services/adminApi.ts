@@ -1,4 +1,4 @@
-import { httpGet, httpPatch } from "../../../shared/http/httpClient";
+import { httpDelete, httpGet, httpPatch, httpPost } from "../../../shared/http/httpClient";
 import type { AdminCategory, AdminProfessional, AdminServiceRequest, AdminStats, AdminUser } from "../types/admin";
 
 export function getAdminStats() {
@@ -24,4 +24,14 @@ export function getAdminCategories() {
 }
 export function setCategoryActive(id: number, isActive: boolean) {
   return httpPatch<AdminCategory, { isActive: boolean }>(`/admin/categories/${id}/active`, { isActive });
+}
+
+export function createCategory(payload: { code: string; name: string; description?: string }) {
+  return httpPost<AdminCategory, { code: string; name: string; description?: string }>("/admin/categories", payload);
+}
+export function updateCategory(id: number, payload: { name?: string; description?: string }) {
+  return httpPatch<AdminCategory, { name?: string; description?: string }>(`/admin/categories/${id}`, payload);
+}
+export function deleteCategory(id: number) {
+  return httpDelete<{ deleted: boolean }>(`/admin/categories/${id}`);
 }
