@@ -1,4 +1,4 @@
-import { ArrowLeft, BriefcaseBusiness, LogIn, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowLeft, LogIn } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../../shared/components/Button";
@@ -9,8 +9,6 @@ import type { ApiError } from "../../../shared/types/apiError";
 import { AuthFormField } from "../components/AuthFormField";
 import { useAuth } from "../hooks/useAuth";
 
-type LoginRole = "CLIENT" | "PROFESSIONAL";
-
 type LoginFormErrors = {
   email?: string;
   password?: string;
@@ -20,8 +18,6 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { initializing, isAuthenticated, login, hasRole } = useAuth();
-  const initialRole = (location.state as { role?: LoginRole } | null)?.role ?? "CLIENT";
-  const [role, setRole] = useState<LoginRole>(initialRole);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginFormErrors>({});
@@ -33,7 +29,9 @@ export function LoginPage() {
   useEffect(() => {
     if (initializing || !isAuthenticated) return;
 
-    if (hasRole("PROFESSIONAL")) {
+    if (hasRole("ADMIN")) {
+      navigate("/admin", { replace: true });
+    } else if (hasRole("PROFESSIONAL")) {
       navigate("/profesional/inicio", { replace: true });
     } else if (hasRole("CLIENT")) {
       navigate(destinationPath?.startsWith("/cliente") ? destinationPath : "/cliente/inicio", { replace: true });
@@ -66,39 +64,12 @@ export function LoginPage() {
     }
   };
 
-  const intro =
-    role === "PROFESSIONAL"
-      ? "Entra como profesional para gestionar tu perfil y ver oportunidades."
-      : "Entra como cliente para gestionar tus solicitudes y presupuestos.";
-
   return (
     <PageContainer className="login-shell">
       <Card className="login-card auth-card">
         <Logo compact />
         <h1 className="login-title">Acceder a FixGo</h1>
-        <p className="login-intro">{intro}</p>
-        <div className="role-segment">
-          <button
-            className={`role-chip ${role === "CLIENT" ? "is-active" : ""}`}
-            type="button"
-            onClick={() => setRole("CLIENT")}
-          >
-            <UserRound size={18} />
-            Cliente
-          </button>
-          <button
-            className={`role-chip ${role === "PROFESSIONAL" ? "is-active" : ""}`}
-            type="button"
-            onClick={() => setRole("PROFESSIONAL")}
-          >
-            <BriefcaseBusiness size={18} />
-            Profesional
-          </button>
-          <button className="role-chip is-disabled" type="button" disabled title="Disponible proximamente">
-            <ShieldCheck size={18} />
-            Admin
-          </button>
-        </div>
+        <p className="login-intro">Introduce tu correo y contrasena. Te llevaremos a tu panel segun tu tipo de cuenta.</p>
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <AuthFormField
             id="login-email"
@@ -121,13 +92,13 @@ export function LoginPage() {
           {serverError ? <p className="form-error server-error">{serverError}</p> : null}
           <Button className="auth-submit" type="submit" variant="wide" disabled={isSubmitting}>
             <LogIn size={20} />
-            {isSubmitting ? "Entrando..." : role === "PROFESSIONAL" ? "Entrar como profesional" : "Entrar como cliente"}
+            {isSubmitting ? "Entrando..." : "Entrar"}
           </Button>
         </form>
         <p className="auth-switch">
           Aun no tienes cuenta?{" "}
-          <Link to="/registro" state={{ from: destination, role }}>
-            {role === "PROFESSIONAL" ? "Crear cuenta de profesional" : "Crear cuenta de cliente"}
+          <Link to="/registro" state={{ from: destination }}>
+            Crear cuenta
           </Link>
         </p>
         <Link className="back-link" to="/">
