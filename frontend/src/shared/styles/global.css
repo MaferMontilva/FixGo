@@ -3776,3 +3776,10 @@ button {
 .review-star.is-on { color: var(--fixgo-orange); }
 .review-comment { border: 1px solid var(--fixgo-border); border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 15px; outline: 0; resize: vertical; }
 .review-done { margin: 10px 0 0; color: #1c7a43; font-weight: 700; }
+
+/* --- Estado de presupuestos aceptados (Claude) --- */
+.budgets-accepted-banner { padding: 14px 16px; border-radius: 14px; background: #e7f6ec; border: 1px solid #b7e2c6; color: #1c7a43; }
+.budgets-accepted-banner p { margin: 0; }
+.budgets-accepted-banner a { color: var(--fixgo-orange-hover); font-weight: 700; }
+.budget-accepted-badge { display: block; font-size: 12px; font-weight: 800; color: #1c7a43; }
+.budget-rejected-badge { display: block; font-size: 12px; font-weight: 700; color: #9ca3af; }

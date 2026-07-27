@@ -61,6 +61,7 @@ export function RequestBudgetsPage() {
   }, [requestId]);
 
   const cheapest = budgets.length ? Math.min(...budgets.map((budget) => budget.totalPrice)) : null;
+  const acceptedBudget = budgets.find((budget) => budget.status === "ACCEPTED") ?? null;
 
   return (
     <PageContainer className="budgets-compare-shell">
@@ -70,6 +71,14 @@ export function RequestBudgetsPage() {
       <h1 className="budgets-compare-title">Presupuestos recibidos</h1>
       <p className="budgets-compare-intro">Compara las propuestas de los profesionales para tu solicitud #{requestId}.</p>
 
+      {acceptedBudget ? (
+        <div className="budgets-accepted-banner">
+          <p>
+            Ya aceptaste el presupuesto de <strong>{acceptedBudget.professional?.businessName || acceptedBudget.professional?.displayName || "un profesional"}</strong>. Sigue el trabajo en{" "}
+            <Link to="/cliente/trabajos">Mis trabajos</Link>.
+          </p>
+        </div>
+      ) : null}
       {loading ? <p className="budgets-compare-empty">Cargando presupuestos...</p> : null}
       {error ? <p className="form-error server-error">{error}</p> : null}
 
@@ -96,7 +105,13 @@ export function RequestBudgetsPage() {
                 </div>
                 <div className="budget-card-price">
                   <strong>{formatMoney(budget.totalPrice, budget.currency)}</strong>
-                  {isCheapest ? <span className="budget-best-badge">Mas economico</span> : null}
+                  {budget.status === "ACCEPTED" ? (
+                    <span className="budget-accepted-badge">Aceptado</span>
+                  ) : budget.status === "REJECTED" ? (
+                    <span className="budget-rejected-badge">No seleccionado</span>
+                  ) : isCheapest ? (
+                    <span className="budget-best-badge">Mas economico</span>
+                  ) : null}
                 </div>
               </div>
 
@@ -118,9 +133,11 @@ export function RequestBudgetsPage() {
               ) : null}
               {budget.observations ? <p className="budget-card-notes">{budget.observations}</p> : null}
 
-              <button className="pro-primary-button" type="button" disabled={acceptingId === budget.id} onClick={() => handleAccept(budget.id)}>
-                {acceptingId === budget.id ? "Aceptando..." : "Aceptar presupuesto"}
-              </button>
+              {!acceptedBudget && (budget.status === "SENT" || budget.status === "VIEWED") ? (
+                <button className="pro-primary-button" type="button" disabled={acceptingId === budget.id} onClick={() => handleAccept(budget.id)}>
+                  {acceptingId === budget.id ? "Aceptando..." : "Aceptar presupuesto"}
+                </button>
+              ) : null}
             </Card>
           );
         })}
