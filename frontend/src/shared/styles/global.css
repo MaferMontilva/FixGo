@@ -4169,3 +4169,15 @@ button[aria-disabled="true"] {
     linear-gradient(120deg, rgba(185, 82, 18, 0.78) 0%, rgba(23, 23, 23, 0.62) 100%),
     url("../assets/fotos/foto-pros.jpg") center 30% / cover no-repeat !important;
 }
+
+/* --- Seccion "Renueva tu hogar" (antes/despues) del inicio (Claude) --- */
+.renueva-section { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
+.renueva-media { position: relative; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 44px rgba(14, 22, 34, 0.14); }
+.renueva-media img { width: 100%; display: block; }
+.renueva-tag { position: absolute; top: 14px; left: 14px; background: var(--fixgo-orange); color: #fff; font-weight: 800; font-size: 12px; padding: 6px 12px; border-radius: 999px; }
+.eyebrow-orange { color: var(--fixgo-orange); font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; font-size: 13px; }
+.renueva-copy h2 { margin: 10px 0 14px; font-size: clamp(1.6rem, 2.6vw, 2.2rem); color: #171717; }
+.renueva-copy p { color: #526070; line-height: 1.6; font-size: 1.05rem; margin: 0; }
+.renueva-cta { display: inline-flex; align-items: center; margin-top: 22px; background: var(--fixgo-orange); color: #fff; font-weight: 800; padding: 14px 28px; border-radius: 14px; text-decoration: none; }
+.renueva-cta:hover { background: var(--fixgo-orange-hover); }
+@media (max-width: 860px) { .renueva-section { grid-template-columns: 1fr; } }

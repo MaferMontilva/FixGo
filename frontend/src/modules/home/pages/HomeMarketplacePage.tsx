@@ -1,5 +1,6 @@
 import { ClipboardList, Coins, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import cocinaAntesDespues from "../../../shared/assets/fotos/cocina2.png";
+import { Link, useNavigate } from "react-router-dom";
 import { fallbackCategories, getCategories } from "../../categories";
 import type { UiCategory } from "../../categories";
 import { getServices, ServiceResultsList } from "../../services";
@@ -156,6 +157,18 @@ export function HomeMarketplacePage() {
                 </button>
               );
             })}
+        </div>
+      </section>
+      <section className="content-section renueva-section">
+        <div className="renueva-media">
+          <img src={cocinaAntesDespues} alt="Antes y despues de una reforma de cocina" />
+          <span className="renueva-tag">Antes / Despues</span>
+        </div>
+        <div className="renueva-copy">
+          <span className="eyebrow-orange">Renueva tu hogar</span>
+          <h2>Convierte tu espacio en el hogar que imaginas</h2>
+          <p>Reformas, instalaciones y mantenimiento con profesionales verificados. Describe tu proyecto y recibe presupuestos claros, sin compromiso.</p>
+          <Link className="renueva-cta" to="/cliente/solicitar-presupuesto">Solicitar presupuesto &rarr;</Link>
         </div>
       </section>
       <section className="content-section how-section">
