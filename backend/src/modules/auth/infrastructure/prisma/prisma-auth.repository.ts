@@ -124,7 +124,7 @@ export class PrismaAuthRepository implements AuthRepository {
           businessName: data.businessName?.trim() || null,
           phone: data.phone?.trim() || null,
           verificationStatus: "PENDING",
-          profileStatus: "DRAFT",
+          profileStatus: "INCOMPLETE",
           ratingAverage: 0,
           createdAt: now,
           updatedAt: now
