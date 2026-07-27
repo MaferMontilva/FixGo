@@ -10,17 +10,21 @@ type WorkDetailsStepProps = {
   locationDescription: string;
   onFlexibleScheduleChange: (value: boolean) => void;
   onLocationDescriptionChange: (value: string) => void;
+  onPostalCodeChange: (value: string) => void;
   onPreferredDateFromChange: (value: string) => void;
   onPreferredDateToChange: (value: string) => void;
   onUrgencyChange: (value: RequestUrgency) => void;
   preferredDateFrom: string;
   preferredDateTo: string;
+  postalCode: string;
   urgency: RequestUrgency;
 };
 
 const locationId = "service-request-location";
 const locationHelpId = "service-request-location-help";
 const locationErrorId = "service-request-location-error";
+const postalCodeId = "service-request-postal-code";
+const postalCodeErrorId = "service-request-postal-code-error";
 const urgencyErrorId = "service-request-urgency-error";
 const dateFromId = "service-request-date-from";
 const dateFromErrorId = "service-request-date-from-error";
@@ -29,9 +33,9 @@ const dateToErrorId = "service-request-date-to-error";
 
 const urgencyOptions: Array<{ label: string; value: RequestUrgency; helper: string }> = [
   { label: "Baja", value: "LOW", helper: "Puede realizarse sin prisa." },
-  { label: "Normal", value: "NORMAL", helper: "Necesito resolverlo próximamente." },
-  { label: "Alta", value: "HIGH", helper: "Necesito atención lo antes posible." },
-  { label: "Emergencia", value: "EMERGENCY", helper: "Existe un problema urgente que requiere atención inmediata." }
+  { label: "Normal", value: "NORMAL", helper: "Necesito resolverlo pr\u00f3ximamente." },
+  { label: "Alta", value: "HIGH", helper: "Necesito atenci\u00f3n lo antes posible." },
+  { label: "Emergencia", value: "EMERGENCY", helper: "Existe un problema urgente que requiere atenci\u00f3n inmediata." }
 ];
 
 function getTodayValue() {
@@ -50,30 +54,36 @@ export function WorkDetailsStep({
   locationDescription,
   onFlexibleScheduleChange,
   onLocationDescriptionChange,
+  onPostalCodeChange,
   onPreferredDateFromChange,
   onPreferredDateToChange,
   onUrgencyChange,
   preferredDateFrom,
   preferredDateTo,
+  postalCode,
   urgency
 }: WorkDetailsStepProps) {
   const [touchedFields, setTouchedFields] = useState({
     locationDescription: false,
+    postalCode: false,
     preferredDateFrom: false,
     preferredDateTo: false
   });
   const locationRef = useRef<HTMLInputElement | null>(null);
+  const postalCodeRef = useRef<HTMLInputElement | null>(null);
   const dateFromRef = useRef<HTMLInputElement | null>(null);
   const dateToRef = useRef<HTMLInputElement | null>(null);
   const localErrors = getWorkDetailsErrors({
     flexibleSchedule,
     locationDescription,
+    postalCode,
     preferredDateFrom,
     preferredDateTo,
     urgency
   });
   const visibleErrors: WorkDetailsValidationErrors = {
     locationDescription: errors.locationDescription || (touchedFields.locationDescription ? localErrors.locationDescription : undefined),
+    postalCode: errors.postalCode || (touchedFields.postalCode ? localErrors.postalCode : undefined),
     preferredDateFrom: errors.preferredDateFrom || (!flexibleSchedule && touchedFields.preferredDateFrom ? localErrors.preferredDateFrom : undefined),
     preferredDateTo: errors.preferredDateTo || (touchedFields.preferredDateTo ? localErrors.preferredDateTo : undefined),
     urgency: errors.urgency
@@ -87,6 +97,10 @@ export function WorkDetailsStep({
   useEffect(() => {
     if (errors.locationDescription) {
       locationRef.current?.focus();
+      return;
+    }
+    if (errors.postalCode) {
+      postalCodeRef.current?.focus();
       return;
     }
     if (errors.preferredDateFrom) {
@@ -107,7 +121,7 @@ export function WorkDetailsStep({
 
       <div className="request-form-grid">
         <label className="request-field request-field-wide" htmlFor={locationId}>
-          <span>Ubicación general</span>
+          <span>Ubicaci&oacute;n general</span>
           <input
             aria-describedby={`${locationHelpId}${visibleErrors.locationDescription ? ` ${locationErrorId}` : ""}`}
             aria-invalid={visibleErrors.locationDescription ? "true" : "false"}
@@ -115,17 +129,35 @@ export function WorkDetailsStep({
             maxLength={240}
             onBlur={() => setTouchedFields((current) => ({ ...current, locationDescription: true }))}
             onChange={(event) => onLocationDescriptionChange(event.target.value)}
-            placeholder="Ej: Madrid, Tetuán; Valencia, Benimaclet; 28020 Madrid"
+            placeholder="Ej: Madrid, Tetuan; Valencia, Benimaclet"
             ref={locationRef}
             value={locationDescription}
           />
         </label>
         <div className="request-field-help request-field-wide">
-          <span id={locationHelpId}>Indica ciudad, distrito, barrio o código postal. No escribas todavía tu dirección exacta.</span>
+          <span id={locationHelpId}>Indica ciudad, distrito o barrio. No escribas todav&iacute;a tu direcci&oacute;n exacta.</span>
           {visibleErrors.locationDescription ? (
             <strong id={locationErrorId} role="alert">{visibleErrors.locationDescription}</strong>
           ) : null}
         </div>
+        <label className="request-field" htmlFor={postalCodeId}>
+          <span>C&oacute;digo postal</span>
+          <input
+            aria-describedby={visibleErrors.postalCode ? postalCodeErrorId : undefined}
+            aria-invalid={visibleErrors.postalCode ? "true" : "false"}
+            id={postalCodeId}
+            inputMode="numeric"
+            maxLength={5}
+            onBlur={() => setTouchedFields((current) => ({ ...current, postalCode: true }))}
+            onChange={(event) => onPostalCodeChange(event.target.value.replace(/\D/g, "").slice(0, 5))}
+            placeholder="Ej: 28020"
+            ref={postalCodeRef}
+            value={postalCode}
+          />
+          {visibleErrors.postalCode ? (
+            <strong className="field-error" id={postalCodeErrorId} role="alert">{visibleErrors.postalCode}</strong>
+          ) : null}
+        </label>
       </div>
 
       <fieldset aria-describedby={visibleErrors.urgency ? urgencyErrorId : undefined} className="urgency-options">
@@ -155,7 +187,7 @@ export function WorkDetailsStep({
           />
           <span>
             <strong>Mi horario es flexible</strong>
-            <small>Podrás coordinar las fechas exactas más adelante con el profesional.</small>
+            <small>Podr&aacute;s coordinar las fechas exactas m&aacute;s adelante con el profesional.</small>
           </span>
         </label>
 

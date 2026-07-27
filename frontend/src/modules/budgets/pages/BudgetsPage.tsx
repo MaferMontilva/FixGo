@@ -1,5 +1,6 @@
 import { ClipboardList, Eye, PlusCircle, XCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../shared/components/Button";
 import { Card } from "../../../shared/components/Card";
 import { PageContainer } from "../../../shared/components/PageContainer";
@@ -10,8 +11,10 @@ import { getServices } from "../../services";
 import type { ApiService } from "../../services";
 import {
   cancelMyServiceRequest,
+  duplicateCancelledServiceRequestAsDraft,
   getMyServiceRequestDetail,
-  getMyServiceRequests
+  getMyServiceRequests,
+  hideMyServiceRequest
 } from "../../service-requests";
 import type {
   RequestUrgency,
@@ -47,6 +50,10 @@ function canCancel(status: ServiceRequestStatus) {
   return status === "DRAFT" || status === "PUBLISHED";
 }
 
+function canHide(status: ServiceRequestStatus) {
+  return status === "DRAFT" || status === "CANCELLED";
+}
+
 function formatDate(value?: string | null) {
   if (!value) return "Sin fecha";
 
@@ -64,9 +71,9 @@ function getErrorMessage(error: unknown) {
   const apiError = error as Partial<ApiError>;
 
   if (apiError.status === 401) return "Tu sesión ha caducado.";
-  if (apiError.status === 403) return "No tienes permisos para cancelar esta solicitud.";
+  if (apiError.status === 403) return "No tienes permisos para realizar esta acción.";
   if (apiError.status === 404) return "No encontramos la solicitud.";
-  if (apiError.status === 409) return "La solicitud ya no puede cancelarse.";
+  if (apiError.status === 409) return "La solicitud ya no permite esta acción.";
 
   return "No se pudo conectar con FixGo.";
 }
@@ -87,7 +94,15 @@ function formatAvailability(request: ServiceRequestResponse) {
   return "Sin fechas preferidas";
 }
 
+function formatAiPriceRange(request: ServiceRequestResponse) {
+  const { budgetMin, budgetMax } = request;
+  if (typeof budgetMin !== "number" || typeof budgetMax !== "number" || budgetMin <= 0 || budgetMax <= 0 || budgetMin > budgetMax) return "";
+
+  return `${budgetMin} EUR - ${budgetMax} EUR`;
+}
+
 export function BudgetsPage() {
+  const navigate = useNavigate();
   const detailHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const [requests, setRequests] = useState<ServiceRequestResponse[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequestResponse | null>(null);
@@ -96,6 +111,9 @@ export function BudgetsPage() {
   const [loading, setLoading] = useState(true);
   const [detailLoadingId, setDetailLoadingId] = useState<number | null>(null);
   const [cancelLoadingId, setCancelLoadingId] = useState<number | null>(null);
+  const [duplicateLoadingId, setDuplicateLoadingId] = useState<number | null>(null);
+  const [hideLoadingId, setHideLoadingId] = useState<number | null>(null);
+  const [hideCandidate, setHideCandidate] = useState<ServiceRequestResponse | null>(null);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
 
@@ -178,6 +196,41 @@ export function BudgetsPage() {
     }
   };
 
+  const duplicateCancelledRequest = async (request: ServiceRequestResponse) => {
+    if (request.status !== "CANCELLED" || duplicateLoadingId) return;
+
+    try {
+      setDuplicateLoadingId(request.id);
+      setActionMessage("");
+      setError("");
+      const draft = await duplicateCancelledServiceRequestAsDraft(request.id);
+      navigate(`/cliente/solicitar-presupuesto?draftId=${draft.id}`);
+    } catch (duplicateError) {
+      setError(getErrorMessage(duplicateError));
+    } finally {
+      setDuplicateLoadingId(null);
+    }
+  };
+
+  const confirmHideRequest = async () => {
+    if (!hideCandidate || hideLoadingId) return;
+
+    try {
+      setHideLoadingId(hideCandidate.id);
+      setActionMessage("");
+      setError("");
+      await hideMyServiceRequest(hideCandidate.id);
+      setRequests((current) => current.filter((request) => request.id !== hideCandidate.id));
+      setSelectedRequest((current) => (current?.id === hideCandidate.id ? null : current));
+      setHideCandidate(null);
+      setActionMessage("✓ Solicitud ocultada de tu lista");
+    } catch (hideError) {
+      setError(getErrorMessage(hideError));
+    } finally {
+      setHideLoadingId(null);
+    }
+  };
+
   const getCategoryName = (request: ServiceRequestResponse) => {
     return request.categoryId ? categoryById.get(request.categoryId) ?? "Categoría no disponible" : "Sin categoría";
   };
@@ -243,6 +296,12 @@ export function BudgetsPage() {
                     <dt>Urgencia</dt>
                     <dd>{urgencyLabels[request.urgency]}</dd>
                   </div>
+                  {formatAiPriceRange(request) ? (
+                    <div>
+                      <dt>Precio orientativo de FixGo IA</dt>
+                      <dd>{formatAiPriceRange(request)}</dd>
+                    </div>
+                  ) : null}
                   <div>
                     <dt>Fecha</dt>
                     <dd>{formatDate(request.publishedAt ?? request.createdAt)}</dd>
@@ -258,6 +317,17 @@ export function BudgetsPage() {
                     <button className="client-request-cancel" disabled={cancelLoadingId === request.id} onClick={() => cancelRequest(request)} type="button">
                       <XCircle size={18} />
                       {cancelLoadingId === request.id ? "Cancelando..." : "Cancelar solicitud"}
+                    </button>
+                  ) : null}
+                  {request.status === "CANCELLED" ? (
+                    <button className="request-save-action" disabled={duplicateLoadingId === request.id} onClick={() => duplicateCancelledRequest(request)} type="button">
+                      <PlusCircle size={18} />
+                      {duplicateLoadingId === request.id ? "Creando..." : "Crear copia editable"}
+                    </button>
+                  ) : null}
+                  {canHide(request.status) ? (
+                    <button className="client-request-hide" disabled={hideLoadingId === request.id} onClick={() => setHideCandidate(request)} type="button">
+                      {hideLoadingId === request.id ? "Ocultando..." : "Ocultar de mi lista"}
                     </button>
                   ) : null}
                 </div>
@@ -301,6 +371,12 @@ export function BudgetsPage() {
                   <dt>Disponibilidad</dt>
                   <dd>{formatAvailability(selectedRequest)}</dd>
                 </div>
+                {formatAiPriceRange(selectedRequest) ? (
+                  <div>
+                    <dt>Precio orientativo de FixGo IA</dt>
+                    <dd>{formatAiPriceRange(selectedRequest)}</dd>
+                  </div>
+                ) : null}
                 <div>
                   <dt>Fecha de publicación</dt>
                   <dd>{formatDate(selectedRequest.publishedAt)}</dd>
@@ -314,10 +390,35 @@ export function BudgetsPage() {
                 <h3>Descripción completa</h3>
                 <p>{selectedRequest.originalDescription}</p>
               </section>
+              {formatAiPriceRange(selectedRequest) ? (
+                <section className="client-request-detail-description client-request-ai-price">
+                  <h3>Precio orientativo de FixGo IA</h3>
+                  <strong>{formatAiPriceRange(selectedRequest)}</strong>
+                  <p>Este valor es referencial. El precio final dependera del diagnostico, los materiales, el desplazamiento y los presupuestos enviados por los profesionales.</p>
+                </section>
+              ) : null}
               {selectedRequest.cancellationReason ? (
                 <section className="client-request-detail-description">
                   <h3>Motivo de cancelación</h3>
                   <p>{selectedRequest.cancellationReason}</p>
+                </section>
+              ) : null}
+              {selectedRequest.status === "CANCELLED" ? (
+                <section className="client-request-detail-description client-request-cancelled-panel">
+                  <h3>Esta solicitud fue cancelada</h3>
+                  <p>Puedes crear un nuevo borrador con los mismos datos o retirarla de tu lista.</p>
+                  <div className="client-request-actions">
+                    <button className="request-save-action" disabled={duplicateLoadingId === selectedRequest.id} onClick={() => duplicateCancelledRequest(selectedRequest)} type="button">
+                      <PlusCircle size={18} />
+                      {duplicateLoadingId === selectedRequest.id ? "Creando..." : "Crear copia editable"}
+                    </button>
+                    <button className="client-request-hide" disabled={hideLoadingId === selectedRequest.id} onClick={() => setHideCandidate(selectedRequest)} type="button">
+                      {hideLoadingId === selectedRequest.id ? "Ocultando..." : "Ocultar de mi lista"}
+                    </button>
+                    <button className="request-secondary-action" onClick={() => setSelectedRequest(null)} type="button">
+                      Volver a mis solicitudes
+                    </button>
+                  </div>
                 </section>
               ) : null}
               {canCancel(selectedRequest.status) ? (
@@ -328,6 +429,23 @@ export function BudgetsPage() {
               ) : null}
             </aside>
           ) : null}
+        </div>
+      ) : null}
+
+      {hideCandidate ? (
+        <div className="dialog-backdrop" role="presentation">
+          <div aria-labelledby="hide-request-title" aria-modal="true" className="confirm-dialog" role="dialog">
+            <h2 id="hide-request-title">Ocultar solicitud</h2>
+            <p>La solicitud dejará de aparecer en tu lista, pero conservará su historial. ¿Deseas continuar?</p>
+            <div className="confirm-dialog-actions">
+              <button className="request-secondary-action" disabled={Boolean(hideLoadingId)} onClick={() => setHideCandidate(null)} type="button">
+                Cancelar
+              </button>
+              <button className="request-secondary-action ai-action-primary" disabled={Boolean(hideLoadingId)} onClick={confirmHideRequest} type="button">
+                {hideLoadingId ? "Ocultando..." : "Ocultar solicitud"}
+              </button>
+            </div>
+          </div>
         </div>
       ) : null}
     </PageContainer>

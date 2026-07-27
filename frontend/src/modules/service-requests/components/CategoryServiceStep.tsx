@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { UiCategory } from "../../categories";
 import type { ApiService } from "../../services";
 
@@ -12,6 +13,8 @@ type CategoryServiceStepProps = {
   onSelectCategory: (category: UiCategory) => void;
   onSelectUnknownService: () => void;
   onSelectService: (service: ApiService) => void;
+  serviceScrollSignal: number;
+  stepFocusSignal: number;
   selectedCategorySlug: string;
   selectedServiceSlug: string;
   services: ApiService[];
@@ -30,19 +33,41 @@ export function CategoryServiceStep({
   onSelectCategory,
   onSelectUnknownService,
   onSelectService,
+  serviceScrollSignal,
+  stepFocusSignal,
   selectedCategorySlug,
   selectedServiceSlug,
   services,
   servicesError,
   servicesLoading
 }: CategoryServiceStepProps) {
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const stepHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const unknownServiceRef = useRef<HTMLButtonElement | null>(null);
+  const firstServiceRef = useRef<HTMLButtonElement | null>(null);
+  const lastScrollSignalRef = useRef(0);
   const hasSelectedCategory = Boolean(selectedCategorySlug) && !invalidCategory;
   const unknownServiceSelected = hasSelectedCategory && !selectedServiceSlug;
+
+  useEffect(() => {
+    if (!hasSelectedCategory || servicesLoading || servicesError || serviceScrollSignal === 0 || lastScrollSignalRef.current === serviceScrollSignal) return;
+
+    lastScrollSignalRef.current = serviceScrollSignal;
+    const target = services.length > 0 ? headingRef.current ?? firstServiceRef.current : unknownServiceRef.current ?? headingRef.current;
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    target?.focus();
+  }, [hasSelectedCategory, serviceScrollSignal, services.length, servicesError, servicesLoading]);
+
+  useEffect(() => {
+    if (stepFocusSignal === 0) return;
+    stepHeadingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    stepHeadingRef.current?.focus();
+  }, [stepFocusSignal]);
 
   return (
     <div className="request-step-panel">
       <div className="request-step-heading">
-        <h2>Selecciona categoría y servicio</h2>
+        <h2 ref={stepHeadingRef} tabIndex={-1}>Selecciona categoría y servicio</h2>
         <p>Elige primero el tipo de trabajo. Después podrás seleccionar un servicio concreto si lo tienes claro.</p>
       </div>
 
@@ -92,7 +117,7 @@ export function CategoryServiceStep({
       {hasSelectedCategory ? (
         <div className="request-services-block">
           <div className="request-step-heading compact">
-            <h3>Servicio</h3>
+            <h3 ref={headingRef} tabIndex={-1}>Servicio</h3>
             <p>Selecciona un servicio o continúa sin especificarlo.</p>
           </div>
 
@@ -122,6 +147,7 @@ export function CategoryServiceStep({
               aria-pressed={unknownServiceSelected}
               className={unknownServiceSelected ? "service-choice-card is-selected" : "service-choice-card"}
               onClick={onSelectUnknownService}
+              ref={unknownServiceRef}
               type="button"
             >
               <strong>Todavía no sé qué servicio específico necesito</strong>
@@ -129,7 +155,7 @@ export function CategoryServiceStep({
             </button>
 
             {!servicesError &&
-              services.map((service) => {
+              services.map((service, index) => {
                 const active = selectedServiceSlug === service.slug;
 
                 return (
@@ -138,6 +164,7 @@ export function CategoryServiceStep({
                     className={active ? "service-choice-card is-selected" : "service-choice-card"}
                     key={service.id}
                     onClick={() => onSelectService(service)}
+                    ref={index === 0 ? firstServiceRef : undefined}
                     type="button"
                   >
                     <strong>{service.name}</strong>

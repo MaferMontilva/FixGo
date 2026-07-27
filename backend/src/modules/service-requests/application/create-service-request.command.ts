@@ -7,8 +7,12 @@ export type CreateServiceRequestCommand = {
   title?: string | null;
   originalDescription: string;
   locationDescription: string;
+  postalCode?: string;
   urgency: ServiceRequestUrgency;
   preferredDateFrom?: string | null;
   preferredDateTo?: string | null;
   flexibleSchedule: boolean;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  aiAssisted?: boolean;
 };

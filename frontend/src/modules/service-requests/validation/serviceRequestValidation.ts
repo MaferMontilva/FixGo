@@ -1,6 +1,7 @@
 import type { RequestUrgency } from "../types/serviceRequest";
 
 const validUrgencies: RequestUrgency[] = ["LOW", "NORMAL", "HIGH", "EMERGENCY"];
+const spanishLocationMessage = "Introduce una ubicaci\u00f3n y un c\u00f3digo postal v\u00e1lidos de Espa\u00f1a.";
 
 export function getDescriptionError(description: string) {
   const trimmedDescription = description.trim();
@@ -10,11 +11,11 @@ export function getDescriptionError(description: string) {
   }
 
   if (trimmedDescription.length < 15) {
-    return "Añade un poco más de información para que los profesionales puedan entender el trabajo.";
+    return "A\u00f1ade un poco m\u00e1s de informaci\u00f3n para que los profesionales puedan entender el trabajo.";
   }
 
   if (trimmedDescription.length > 2000) {
-    return "La descripción no puede superar 2000 caracteres.";
+    return "La descripci\u00f3n no puede superar 2000 caracteres.";
   }
 
   return "";
@@ -23,6 +24,7 @@ export function getDescriptionError(description: string) {
 export type WorkDetailsValidationInput = {
   flexibleSchedule: boolean;
   locationDescription: string;
+  postalCode: string;
   preferredDateFrom: string;
   preferredDateTo: string;
   urgency: RequestUrgency;
@@ -30,6 +32,7 @@ export type WorkDetailsValidationInput = {
 
 export type WorkDetailsValidationErrors = {
   locationDescription?: string;
+  postalCode?: string;
   preferredDateFrom?: string;
   preferredDateTo?: string;
   urgency?: string;
@@ -51,16 +54,27 @@ function isBeforeToday(dateValue: string) {
 export function getLocationDescriptionError(locationDescription: string) {
   const trimmedLocation = locationDescription.trim();
 
-  if (!trimmedLocation) {
-    return "Indica una ubicación general.";
-  }
-
-  if (trimmedLocation.length < 3) {
-    return "Añade una ubicación un poco más clara.";
+  if (!trimmedLocation || trimmedLocation.length < 3) {
+    return spanishLocationMessage;
   }
 
   if (trimmedLocation.length > 240) {
-    return "La ubicación general no puede superar 240 caracteres.";
+    return "La ubicaci\u00f3n general no puede superar 240 caracteres.";
+  }
+
+  return "";
+}
+
+export function getSpanishPostalCodeError(postalCode: string) {
+  const trimmedPostalCode = postalCode.trim();
+
+  if (!/^\d{5}$/.test(trimmedPostalCode)) {
+    return spanishLocationMessage;
+  }
+
+  const prefix = Number(trimmedPostalCode.slice(0, 2));
+  if (prefix < 1 || prefix > 52) {
+    return spanishLocationMessage;
   }
 
   return "";
@@ -69,11 +83,13 @@ export function getLocationDescriptionError(locationDescription: string) {
 export function getWorkDetailsErrors(input: WorkDetailsValidationInput): WorkDetailsValidationErrors {
   const errors: WorkDetailsValidationErrors = {};
   const locationError = getLocationDescriptionError(input.locationDescription);
+  const postalCodeError = getSpanishPostalCodeError(input.postalCode);
 
   if (locationError) errors.locationDescription = locationError;
+  if (postalCodeError) errors.postalCode = postalCodeError;
 
   if (!validUrgencies.includes(input.urgency)) {
-    errors.urgency = "Selecciona una urgencia válida.";
+    errors.urgency = "Selecciona una urgencia v\u00e1lida.";
   }
 
   if (!input.flexibleSchedule && !input.preferredDateFrom) {

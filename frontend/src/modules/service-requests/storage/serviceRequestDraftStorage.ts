@@ -65,10 +65,14 @@ function parseDraft(value: unknown): ServiceRequestDraft | null {
   if (!isNullableNumber(value.categoryId)) return null;
   if (!isString(value.categorySlug)) return null;
   if (!isNullableNumber(value.serviceId)) return null;
+  if (value.budgetMin !== undefined && !isNullableNumber(value.budgetMin)) return null;
+  if (value.budgetMax !== undefined && !isNullableNumber(value.budgetMax)) return null;
+  if (value.aiAssisted !== undefined && typeof value.aiAssisted !== "boolean") return null;
   if (!isString(value.serviceSlug)) return null;
   if (!isString(value.title)) return null;
   if (!isString(value.originalDescription)) return null;
   if (!isString(value.locationDescription)) return null;
+  if (value.postalCode !== undefined && !isString(value.postalCode)) return null;
   if (!isRequestUrgency(value.urgency)) return null;
   if (!isString(value.preferredDateFrom)) return null;
   if (!isString(value.preferredDateTo)) return null;
@@ -79,10 +83,14 @@ function parseDraft(value: unknown): ServiceRequestDraft | null {
 
   return {
     categoryId: value.categoryId,
+    budgetMin: value.budgetMin ?? null,
+    budgetMax: value.budgetMax ?? null,
+    aiAssisted: value.aiAssisted ?? false,
     categorySlug: value.categorySlug,
     currentStep: value.currentStep,
     flexibleSchedule: value.flexibleSchedule,
     locationDescription: value.locationDescription,
+    postalCode: value.postalCode ?? "",
     originalDescription: value.originalDescription,
     preferredDateFrom: value.preferredDateFrom,
     preferredDateTo: value.preferredDateTo,

@@ -13,6 +13,9 @@ export type ServiceRequestDraftData = {
   preferredDateFrom?: string | null;
   preferredDateTo?: string | null;
   flexibleSchedule: boolean;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  aiAssisted?: boolean;
 };
 
 export type UpdateServiceRequestDraftData = Omit<ServiceRequestDraftData, "clientUserId">;
@@ -20,6 +23,8 @@ export type UpdateServiceRequestDraftData = Omit<ServiceRequestDraftData, "clien
 export type CategoryReference = {
   id: number;
   active: boolean;
+  code: string;
+  name: string;
 };
 
 export type ServiceReference = {
@@ -52,5 +57,11 @@ export abstract class ServiceRequestsRepository {
     clientUserId: number,
     allowedStatuses: readonly ServiceRequestStatus[],
     data: CancelServiceRequestData
+  ): Promise<ServiceRequestEntity | null>;
+  abstract duplicateOwnedCancelledAsDraft(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
+  abstract softDeleteOwnedRequest(
+    id: number,
+    clientUserId: number,
+    allowedStatuses: readonly ServiceRequestStatus[]
   ): Promise<ServiceRequestEntity | null>;
 }

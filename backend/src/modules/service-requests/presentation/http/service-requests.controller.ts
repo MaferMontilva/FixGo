@@ -1,15 +1,17 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
 import { CurrentUser, RequestUser } from "../../../auth/presentation/current-user";
 import { JwtAuthGuard } from "../../../auth/presentation/jwt-auth.guard";
 import { Roles } from "../../../auth/presentation/roles.decorator";
 import { RolesGuard } from "../../../auth/presentation/roles.guard";
 import { CancelServiceRequestUseCase } from "../../application/cancel-service-request.use-case";
 import { CreateServiceRequestDraftUseCase } from "../../application/create-service-request-draft.use-case";
+import { DuplicateCancelledServiceRequestAsDraftUseCase } from "../../application/duplicate-cancelled-service-request-as-draft.use-case";
 import { GetClientServiceRequestDetailUseCase } from "../../application/get-client-service-request-detail.use-case";
 import { GetClientServiceRequestDraftDetailUseCase } from "../../application/get-client-service-request-draft-detail.use-case";
 import { GetClientServiceRequestDraftsUseCase } from "../../application/get-client-service-request-drafts.use-case";
 import { GetClientServiceRequestsUseCase } from "../../application/get-client-service-requests.use-case";
 import { PublishServiceRequestUseCase } from "../../application/publish-service-request.use-case";
+import { SoftDeleteServiceRequestUseCase } from "../../application/soft-delete-service-request.use-case";
 import { UpdateServiceRequestDraftUseCase } from "../../application/update-service-request-draft.use-case";
 import { ServiceRequestEntity } from "../../domain/service-request.entity";
 import { CancelServiceRequestDto } from "../dto/cancel-service-request.dto";
@@ -28,7 +30,9 @@ export class ServiceRequestsController {
     private readonly getClientServiceRequestDraftDetailUseCase: GetClientServiceRequestDraftDetailUseCase,
     private readonly updateServiceRequestDraftUseCase: UpdateServiceRequestDraftUseCase,
     private readonly publishServiceRequestUseCase: PublishServiceRequestUseCase,
-    private readonly cancelServiceRequestUseCase: CancelServiceRequestUseCase
+    private readonly cancelServiceRequestUseCase: CancelServiceRequestUseCase,
+    private readonly duplicateCancelledServiceRequestAsDraftUseCase: DuplicateCancelledServiceRequestAsDraftUseCase,
+    private readonly softDeleteServiceRequestUseCase: SoftDeleteServiceRequestUseCase
   ) {}
 
   @Post("drafts")
@@ -100,6 +104,22 @@ export class ServiceRequestsController {
     return this.toServiceRequestResponse(request);
   }
 
+  @Post(":id/duplicate-as-draft")
+  @HttpCode(HttpStatus.CREATED)
+  async duplicateCancelledAsDraft(@CurrentUser() user: RequestUser, @Param("id", ParseIntPipe) id: number) {
+    const draft = await this.duplicateCancelledServiceRequestAsDraftUseCase.execute(id, user.id);
+
+    return this.toDraftResponse(draft);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.OK)
+  async softDeleteRequest(@CurrentUser() user: RequestUser, @Param("id", ParseIntPipe) id: number) {
+    const request = await this.softDeleteServiceRequestUseCase.execute(id, user.id);
+
+    return this.toServiceRequestResponse(request);
+  }
+
   private toDraftResponse(draft: ServiceRequestEntity) {
     return {
       id: draft.id,
@@ -112,6 +132,9 @@ export class ServiceRequestsController {
       preferredDateFrom: draft.preferredDateFrom,
       preferredDateTo: draft.preferredDateTo,
       flexibleSchedule: draft.flexibleSchedule,
+      budgetMin: draft.budgetMin,
+      budgetMax: draft.budgetMax,
+      aiAssisted: draft.aiAssisted,
       status: draft.status,
       createdAt: draft.createdAt,
       updatedAt: draft.updatedAt
@@ -130,6 +153,9 @@ export class ServiceRequestsController {
       preferredDateFrom: request.preferredDateFrom,
       preferredDateTo: request.preferredDateTo,
       flexibleSchedule: request.flexibleSchedule,
+      budgetMin: request.budgetMin,
+      budgetMax: request.budgetMax,
+      aiAssisted: request.aiAssisted,
       status: request.status,
       publishedAt: request.publishedAt,
       cancelledAt: request.cancelledAt,

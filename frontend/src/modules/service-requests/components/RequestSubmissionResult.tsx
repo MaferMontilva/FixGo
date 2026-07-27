@@ -1,17 +1,32 @@
 import { useEffect, useRef } from "react";
+import type { RequestUrgency } from "../types/serviceRequest";
 
 type RequestSubmissionResultProps = {
+  budgetMax: number | null;
+  budgetMin: number | null;
+  urgency: RequestUrgency;
   requestId: number;
   onCreateAnother: () => void;
   onGoToBudgets: () => void;
 };
 
+const urgencyLabels: Record<RequestUrgency, string> = {
+  LOW: "Baja",
+  NORMAL: "Normal",
+  HIGH: "Alta",
+  EMERGENCY: "Emergencia"
+};
+
 export function RequestSubmissionResult({
+  budgetMax,
+  budgetMin,
+  urgency,
   requestId,
   onCreateAnother,
   onGoToBudgets
 }: RequestSubmissionResultProps) {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const hasPriceRange = typeof budgetMin === "number" && typeof budgetMax === "number" && budgetMin > 0 && budgetMax > 0 && budgetMin <= budgetMax;
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -31,6 +46,16 @@ export function RequestSubmissionResult({
           <dt>Estado</dt>
           <dd>Publicada</dd>
         </div>
+        <div>
+          <dt>Urgencia</dt>
+          <dd>{urgencyLabels[urgency]}</dd>
+        </div>
+        {hasPriceRange ? (
+          <div>
+            <dt>Precio orientativo de FixGo IA</dt>
+            <dd>{budgetMin} EUR - {budgetMax} EUR</dd>
+          </div>
+        ) : null}
       </dl>
       <div className="request-submission-result-actions">
         <button className="request-publish-action" onClick={onGoToBudgets} type="button">

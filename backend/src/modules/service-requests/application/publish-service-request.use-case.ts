@@ -57,7 +57,10 @@ export class PublishServiceRequestUseCase {
       urgency: request.urgency,
       preferredDateFrom: request.preferredDateFrom,
       preferredDateTo: request.preferredDateTo,
-      flexibleSchedule: request.flexibleSchedule
+      flexibleSchedule: request.flexibleSchedule,
+      budgetMin: request.budgetMin,
+      budgetMax: request.budgetMax,
+      aiAssisted: request.aiAssisted
     };
   }
 }

@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import type { RequestUrgency } from "../types/serviceRequest";
 
 type ReviewStepProps = {
+  budgetMax: number | null;
+  budgetMin: number | null;
   categoryName: string;
   description: string;
   flexibleSchedule: boolean;
@@ -32,7 +34,15 @@ function formatDateForSpain(dateValue: string) {
   return `${day}/${month}/${year}`;
 }
 
+function formatPriceRange(min: number | null, max: number | null) {
+  if (typeof min !== "number" || typeof max !== "number" || min <= 0 || max <= 0 || min > max) return "";
+
+  return `${min} EUR - ${max} EUR`;
+}
+
 export function ReviewStep({
+  budgetMax,
+  budgetMin,
   categoryName,
   description,
   flexibleSchedule,
@@ -49,6 +59,7 @@ export function ReviewStep({
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const formattedDateFrom = formatDateForSpain(preferredDateFrom);
   const formattedDateTo = formatDateForSpain(preferredDateTo);
+  const formattedPriceRange = formatPriceRange(budgetMin, budgetMax);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -125,6 +136,18 @@ export function ReviewStep({
           </div>
         </dl>
       </section>
+
+      {formattedPriceRange ? (
+        <section className="review-card" aria-labelledby="review-ai-price-title">
+          <div className="review-card-header">
+            <h3 id="review-ai-price-title">Precio orientativo de FixGo IA</h3>
+          </div>
+          <div className="review-ai-price">
+            <strong>{formattedPriceRange}</strong>
+            <p>Este valor es referencial. El precio final dependera del diagnostico, los materiales, el desplazamiento y los presupuestos enviados por los profesionales.</p>
+          </div>
+        </section>
+      ) : null}
 
     </div>
   );

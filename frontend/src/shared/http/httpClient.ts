@@ -84,3 +84,12 @@ export async function httpPatch<TResponse, TBody>(path: string, body: TBody): Pr
 
   return parseJsonResponse<TResponse>(response, path);
 }
+
+export async function httpDelete<TResponse>(path: string): Promise<TResponse> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "DELETE",
+    headers: getHeaders()
+  });
+
+  return parseJsonResponse<TResponse>(response, path);
+}

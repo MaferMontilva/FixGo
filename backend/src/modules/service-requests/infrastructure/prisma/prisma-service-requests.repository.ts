@@ -31,6 +31,8 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
       },
       select: {
         id: true,
+        code: true,
+        name: true,
         isActive: true
       }
     });
@@ -38,7 +40,9 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
     return category
       ? {
           id: category.id,
-          active: category.isActive === 1
+          active: category.isActive === 1,
+          code: category.code,
+          name: category.name
         }
       : null;
   }
@@ -81,6 +85,9 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
         preferredDateFrom: command.preferredDateFrom ?? null,
         preferredDateTo: command.preferredDateTo ?? null,
         flexibleSchedule: command.flexibleSchedule ? 1 : 0,
+        budgetMin: command.budgetMin ?? null,
+        budgetMax: command.budgetMax ?? null,
+        aiAssisted: command.aiAssisted ? 1 : 0,
         publishedAt: null,
         cancelledAt: null,
         deletedAt: null,
@@ -121,6 +128,9 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
         preferredDateFrom: data.preferredDateFrom ?? null,
         preferredDateTo: data.preferredDateTo ?? null,
         flexibleSchedule: data.flexibleSchedule ? 1 : 0,
+        budgetMin: data.budgetMin ?? null,
+        budgetMax: data.budgetMax ?? null,
+        aiAssisted: data.aiAssisted ? 1 : 0,
         updatedAt: new Date().toISOString()
       }
     });
@@ -223,6 +233,78 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
     if (updateResult.count === 0) return null;
 
     return this.findOwnedServiceRequestById(id, clientUserId);
+  }
+
+  async duplicateOwnedCancelledAsDraft(id: number, clientUserId: number): Promise<ServiceRequestEntity | null> {
+    const now = new Date().toISOString();
+
+    const request = await this.prisma.$transaction(async (tx) => {
+      const source = await tx.serviceRequests.findFirst({
+        where: {
+          id,
+          clientUserId,
+          status: SERVICE_REQUEST_STATUS.CANCELLED,
+          deletedAt: null
+        }
+      });
+
+      if (!source) return null;
+
+      // Historical relations such as budgets, invitations, orders, reviews or future execution data are intentionally not copied.
+      return tx.serviceRequests.create({
+        data: {
+          aiAssisted: source.aiAssisted,
+          allowProfessionalQuestions: source.allowProfessionalQuestions,
+          budgetMax: source.budgetMax,
+          budgetMin: source.budgetMin,
+          cancelledAt: null,
+          cancellationReason: null,
+          categoryId: source.categoryId,
+          clientUserId: source.clientUserId,
+          createdAt: now,
+          deletedAt: null,
+          expiresAt: null,
+          finalDescription: source.finalDescription,
+          flexibleSchedule: source.flexibleSchedule,
+          locationDescription: source.locationDescription,
+          originalDescription: source.originalDescription,
+          preferredDateFrom: source.preferredDateFrom,
+          preferredDateTo: source.preferredDateTo,
+          publishedAt: null,
+          serviceId: source.serviceId,
+          status: SERVICE_REQUEST_STATUS.DRAFT,
+          title: source.title,
+          updatedAt: now,
+          urgency: source.urgency
+        }
+      });
+    });
+
+    return request ? this.toEntity(request) : null;
+  }
+
+  async softDeleteOwnedRequest(id: number, clientUserId: number, allowedStatuses: readonly string[]): Promise<ServiceRequestEntity | null> {
+    const now = new Date().toISOString();
+    const updateResult = await this.prisma.serviceRequests.updateMany({
+      where: {
+        id,
+        clientUserId,
+        deletedAt: null,
+        status: { in: [...allowedStatuses] }
+      },
+      data: {
+        deletedAt: now,
+        updatedAt: now
+      }
+    });
+
+    if (updateResult.count === 0) return null;
+
+    const request = await this.prisma.serviceRequests.findFirst({
+      where: { id, clientUserId }
+    });
+
+    return request ? this.toEntity(request) : null;
   }
 
   private toEntity(request: {

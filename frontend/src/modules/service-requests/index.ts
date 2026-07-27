@@ -9,8 +9,11 @@ export {
 export {
   cancelMyServiceRequest,
   createServiceRequestDraft,
+  duplicateCancelledServiceRequestAsDraft,
+  getMyServiceRequestDraftDetail,
   getMyServiceRequestDetail,
   getMyServiceRequests,
+  hideMyServiceRequest,
   publishServiceRequestDraft,
   updateServiceRequestDraft
 } from "./services/serviceRequestsApi";

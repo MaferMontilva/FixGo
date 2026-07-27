@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -52,6 +53,11 @@ export class UpdateServiceRequestDraftDto {
   locationDescription?: string;
 
   @IsOptional()
+  @IsString()
+  @Matches(/^\d{5}$/)
+  postalCode?: string;
+
+  @IsOptional()
   @IsIn(Object.values(SERVICE_REQUEST_URGENCY))
   urgency?: "LOW" | "NORMAL" | "HIGH" | "EMERGENCY";
 
@@ -68,4 +74,20 @@ export class UpdateServiceRequestDraftDto {
   @IsOptional()
   @IsBoolean()
   flexibleSchedule?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.01)
+  budgetMin?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.01)
+  budgetMax?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  aiAssisted?: boolean;
 }
