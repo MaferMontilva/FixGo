@@ -1,4 +1,8 @@
 export { ProfessionalHomePage } from "./pages/ProfessionalHomePage";
+export { ProfessionalDashboardPage } from "./pages/ProfessionalDashboardPage";
+export { ProfessionalProfilePage } from "./pages/ProfessionalProfilePage";
+export { ProfessionalOpportunitiesPage } from "./pages/ProfessionalOpportunitiesPage";
+export { ProfessionalOpportunityDetailPage } from "./pages/ProfessionalOpportunityDetailPage";
 export { ProfessionalsPage } from "./pages/ProfessionalsPage";
 export { fallbackProfessionals } from "./data/professionalFallbacks";
 export { getProfessionals } from "./services/professionalsApi";

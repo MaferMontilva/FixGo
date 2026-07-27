@@ -339,6 +339,14 @@ model ProfessionalCategories {
   @@map("professional_categories")
 }
 
+model ProfessionalServices {
+  professionalId                  Int       @map("professional_id")
+  serviceId                       Int       @map("service_id")
+  createdAt                       String    @map("created_at")
+  @@id([professionalId, serviceId])
+  @@map("professional_services")
+}
+
 model ProfessionalDocuments {
   id                              Int      @id @default(autoincrement())
   professionalId                  Int       @map("professional_id")
@@ -360,9 +368,16 @@ model ProfessionalProfiles {
   slug                            String   @unique
   displayName                     String    @map("display_name")
   businessName                    String?   @map("business_name")
+  phone                           String?
   taxId                           String?   @map("tax_id")
   bio                             String?
   yearsExperience                 Int      @default(0) @map("years_experience")
+  province                        String?
+  municipality                    String?
+  postalCode                      String?   @map("postal_code")
+  referenceAddress                String?   @map("reference_address")
+  workRadius                      Int?      @map("work_radius")
+  availability                    String?
   profileImageUrl                 String?   @map("profile_image_url")
   coverImageUrl                   String?   @map("cover_image_url")
   websiteUrl                      String?   @map("website_url")
