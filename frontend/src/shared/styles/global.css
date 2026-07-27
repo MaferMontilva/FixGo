@@ -3832,3 +3832,202 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--fixgo-orange);
 .admin-actions-cell { display: flex; gap: 8px; align-items: center; justify-content: flex-start; }
 .admin-action { white-space: nowrap; min-width: 96px; text-align: center; }
 .admin-content { overflow: hidden; }
+
+/* =====================================================================
+   PULIDO VISUAL — Consistencia global (Claude)
+   Capa de armonizacion: no cambia estructura ni logica; unifica
+   tarjetas, botones, insignias, formularios y estados en toda la app.
+   ===================================================================== */
+
+/* --- Tokens de diseno compartidos --- */
+:root {
+  --fixgo-radius-card: 18px;
+  --fixgo-radius-btn: 14px;
+  --fixgo-shadow-card: 0 12px 30px rgba(14, 22, 34, 0.07);
+  --fixgo-shadow-card-hover: 0 18px 42px rgba(14, 22, 34, 0.12);
+  --fixgo-focus-ring: 0 0 0 4px rgba(242, 138, 46, 0.18);
+  --fixgo-green: #1c7a43;
+  --fixgo-green-soft: #e7f6ec;
+  --fixgo-red: #b91c1c;
+  --fixgo-red-soft: #fdeaea;
+  --fixgo-muted: #6b7280;
+}
+
+/* --- Tarjetas: radios, sombras y superficie uniformes --- */
+.order-card,
+.budget-card {
+  border: 1px solid var(--fixgo-border);
+  border-radius: var(--fixgo-radius-card);
+  background: #fff;
+  box-shadow: var(--fixgo-shadow-card);
+}
+
+.review-card,
+.pro-request-card,
+.admin-stat {
+  border-radius: var(--fixgo-radius-card);
+  box-shadow: var(--fixgo-shadow-card);
+}
+
+/* Realce sutil al pasar el cursor en tarjetas de lista */
+.order-card,
+.budget-card,
+.pro-request-card {
+  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.order-card:hover,
+.budget-card:hover,
+.pro-request-card:hover {
+  box-shadow: var(--fixgo-shadow-card-hover);
+  border-color: rgba(242, 138, 46, 0.35);
+}
+
+/* La mejor oferta conserva su borde naranja marcado */
+.budget-card.is-best {
+  border-color: var(--fixgo-orange);
+}
+
+/* --- Botones: sistema coherente (transiciones, foco, hover, disabled) --- */
+.pro-primary-button,
+.pro-secondary-button,
+.pro-muted-button,
+.pro-upload-button,
+.auth-submit,
+.primary-wide,
+.admin-action,
+.admin-logout,
+.pro-nav-logout,
+.request-save-action,
+.request-publish-action,
+.request-secondary-action,
+.request-discard-button,
+.client-request-cancel,
+.client-request-hide,
+.review-edit-button,
+.budget-add-row,
+.role-access-button {
+  transition: background 160ms ease, box-shadow 160ms ease, border-color 160ms ease,
+    color 160ms ease, transform 160ms ease, filter 160ms ease;
+}
+
+.pro-primary-button:focus-visible,
+.pro-secondary-button:focus-visible,
+.pro-muted-button:focus-visible,
+.pro-upload-button:focus-visible,
+.auth-submit:focus-visible,
+.admin-action:focus-visible,
+.admin-logout:focus-visible,
+.pro-nav-logout:focus-visible,
+.request-save-action:focus-visible,
+.request-publish-action:focus-visible,
+.request-secondary-action:focus-visible,
+.request-discard-button:focus-visible,
+.review-edit-button:focus-visible,
+.budget-add-row:focus-visible {
+  outline: none;
+  box-shadow: var(--fixgo-focus-ring);
+}
+
+/* Secundario contorno: hover naranja tenue coherente */
+.pro-secondary-button:hover,
+.pro-upload-button:hover {
+  background: var(--fixgo-orange-soft);
+  border-color: var(--fixgo-orange-hover);
+}
+
+.budget-add-row:hover {
+  color: var(--fixgo-orange-hover);
+}
+
+.pro-muted-button:not(:disabled):hover {
+  background: #ececee;
+  color: #4b5563;
+}
+
+/* Acciones de tabla admin: mismos hover que el resto del sistema */
+.admin-action:hover {
+  border-color: var(--fixgo-orange);
+  background: var(--fixgo-orange-soft);
+  color: var(--fixgo-orange-hover);
+}
+
+.admin-action.ok:hover {
+  border-color: rgba(28, 122, 67, 0.5);
+  background: var(--fixgo-green-soft);
+  color: var(--fixgo-green);
+}
+
+.admin-action.danger:hover {
+  border-color: rgba(185, 28, 28, 0.5);
+  background: var(--fixgo-red-soft);
+  color: var(--fixgo-red);
+}
+
+.admin-logout:hover,
+.pro-nav-logout:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Deshabilitado atenuado y uniforme */
+button:disabled,
+button[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* --- Insignias de estado: mismas formas y tamanos (pill) --- */
+.admin-badge,
+.order-status,
+.client-request-status,
+.pro-request-header span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* --- Formularios: foco naranja consistente en toda la app --- */
+.budget-input:focus,
+.admin-input:focus,
+.review-comment:focus,
+.budget-field textarea:focus,
+.budget-field input:focus,
+.budget-field select:focus,
+.professional-search-row input:focus,
+.professional-search-row select:focus,
+.search-box input:focus {
+  border-color: var(--fixgo-orange);
+  box-shadow: var(--fixgo-focus-ring);
+}
+
+/* --- Estados vacios / carga: estilo uniforme y agradable --- */
+.admin-loading {
+  display: block;
+  margin: 0;
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--fixgo-muted);
+  font-weight: 700;
+}
+
+.route-loading {
+  gap: 12px;
+}
+
+/* --- Tabla admin: cabecera clara y ordenada --- */
+.admin-table thead th {
+  background: #faf7f3;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.admin-table thead tr:hover th {
+  background: #faf7f3;
+}
