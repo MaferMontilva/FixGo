@@ -95,7 +95,7 @@ export class PrismaAdminRepository implements AdminRepository {
   }
 
   async listServiceRequests(): Promise<AdminServiceRequest[]> {
-    const requests = await this.prisma.serviceRequests.findMany({ orderBy: [{ id: "desc" }], take: 100 });
+    const requests = await this.prisma.serviceRequests.findMany({ where: { deletedAt: null }, orderBy: [{ id: "desc" }], take: 100 });
     const clientIds = [...new Set(requests.map((request) => request.clientUserId))];
     const categoryIds = [...new Set(requests.map((request) => request.categoryId).filter((id): id is number => id != null))];
     const [clients, categories] = await Promise.all([
@@ -201,6 +201,28 @@ export class PrismaAdminRepository implements AdminRepository {
     const existing = await this.prisma.categories.findUnique({ where: { id: categoryId } });
     if (!existing) return false;
     await this.prisma.categories.delete({ where: { id: categoryId } });
+    return true;
+  }
+
+  async cancelServiceRequest(requestId: number): Promise<AdminServiceRequest | null> {
+    const existing = await this.prisma.serviceRequests.findUnique({ where: { id: requestId } });
+    if (!existing) return null;
+    const now = new Date().toISOString();
+    await this.prisma.serviceRequests.update({
+      where: { id: requestId },
+      data: { status: "CANCELLED", cancelledAt: now, cancellationReason: "Cancelada por administracion", updatedAt: now }
+    });
+    const requests = await this.listServiceRequests();
+    return requests.find((request) => request.id === requestId) ?? null;
+  }
+
+  async softDeleteServiceRequest(requestId: number): Promise<boolean> {
+    const existing = await this.prisma.serviceRequests.findUnique({ where: { id: requestId } });
+    if (!existing) return false;
+    await this.prisma.serviceRequests.update({
+      where: { id: requestId },
+      data: { deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+    });
     return true;
   }
 }

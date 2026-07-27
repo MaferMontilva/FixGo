@@ -4,6 +4,7 @@ import { JwtAuthGuard } from "../../../auth/presentation/jwt-auth.guard";
 import { Roles } from "../../../auth/presentation/roles.decorator";
 import { RolesGuard } from "../../../auth/presentation/roles.guard";
 import { CreateReviewUseCase } from "../../application/create-review.use-case";
+import { GetMyReviewsUseCase } from "../../application/get-my-reviews.use-case";
 import { GetProfessionalReviewsUseCase } from "../../application/get-professional-reviews.use-case";
 import { ReplyReviewUseCase } from "../../application/reply-review.use-case";
 import { ReviewEntity } from "../../domain/review.entity";
@@ -15,6 +16,7 @@ export class ReviewsController {
   constructor(
     private readonly createReviewUseCase: CreateReviewUseCase,
     private readonly getProfessionalReviewsUseCase: GetProfessionalReviewsUseCase,
+    private readonly getMyReviewsUseCase: GetMyReviewsUseCase,
     private readonly replyReviewUseCase: ReplyReviewUseCase
   ) {}
 
@@ -24,6 +26,14 @@ export class ReviewsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@CurrentUser() user: RequestUser, @Body() dto: CreateReviewDto) {
     return this.toResponse(await this.createReviewUseCase.execute({ ...dto, authorUserId: user.id }));
+  }
+
+  @Get("mine")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("PROFESSIONAL")
+  async mine(@CurrentUser() user: RequestUser) {
+    const reviews = await this.getMyReviewsUseCase.execute(user.id);
+    return reviews.map((review) => this.toResponse(review));
   }
 
   @Get("professional/:id")

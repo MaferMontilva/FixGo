@@ -19,4 +19,6 @@ export abstract class AdminRepository {
   abstract updateCategory(categoryId: number, data: UpdateCategoryData): Promise<AdminCategory | null>;
   abstract findCategoryUsage(categoryId: number): Promise<{ services: number; requests: number }>;
   abstract deleteCategory(categoryId: number): Promise<boolean>;
+  abstract cancelServiceRequest(requestId: number): Promise<AdminServiceRequest | null>;
+  abstract softDeleteServiceRequest(requestId: number): Promise<boolean>;
 }

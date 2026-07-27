@@ -42,6 +42,16 @@ export class AdminController {
     return this.adminService.listServiceRequests();
   }
 
+  @Patch("service-requests/:id/cancel")
+  cancelServiceRequest(@Param("id", ParseIntPipe) id: number) {
+    return this.adminService.cancelServiceRequest(id);
+  }
+
+  @Delete("service-requests/:id")
+  deleteServiceRequest(@Param("id", ParseIntPipe) id: number) {
+    return this.adminService.deleteServiceRequest(id);
+  }
+
   @Get("categories")
   categories() {
     return this.adminService.listCategories();

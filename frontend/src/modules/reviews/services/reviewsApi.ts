@@ -8,3 +8,7 @@ export function createReview(payload: CreateReviewPayload) {
 export function getProfessionalReviews(professionalId: number) {
   return httpGet<Review[]>(`/reviews/professional/${professionalId}`);
 }
+
+export function getMyReviews() {
+  return httpGet<Review[]>("/reviews/mine");
+}

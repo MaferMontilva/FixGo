@@ -9,8 +9,10 @@ import {
   getAdminServiceRequests,
   getAdminStats,
   getAdminUsers,
+  cancelServiceRequest,
   createCategory,
   deleteCategory,
+  deleteServiceRequest,
   setCategoryActive,
   setProfessionalVerification,
   setUserStatus,
@@ -134,6 +136,26 @@ export function AdminDashboardPage() {
     }
   };
 
+  const handleCancelRequest = async (request: AdminServiceRequest) => {
+    if (!window.confirm(`Cancelar la solicitud #${request.id}?`)) return;
+    try {
+      const updated = await cancelServiceRequest(request.id);
+      setRequests((current) => current.map((item) => (item.id === request.id ? updated : item)));
+    } catch (actionError) {
+      setError((actionError as ApiError).message || "No se pudo cancelar la solicitud.");
+    }
+  };
+
+  const handleDeleteRequest = async (request: AdminServiceRequest) => {
+    if (!window.confirm(`Eliminar la solicitud #${request.id} de la lista?`)) return;
+    try {
+      await deleteServiceRequest(request.id);
+      setRequests((current) => current.filter((item) => item.id !== request.id));
+    } catch (actionError) {
+      setError((actionError as ApiError).message || "No se pudo eliminar la solicitud.");
+    }
+  };
+
   return (
     <main className="admin-shell">
       <header className="admin-header">
@@ -227,7 +249,7 @@ export function AdminDashboardPage() {
         {tab === "solicitudes" ? (
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead><tr><th>ID</th><th>Titulo</th><th>Cliente</th><th>Categoria</th><th>Urgencia</th><th>Estado</th></tr></thead>
+              <thead><tr><th>ID</th><th>Titulo</th><th>Cliente</th><th>Categoria</th><th>Urgencia</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
                 {requests.map((request) => (
                   <tr key={request.id}>
@@ -237,6 +259,12 @@ export function AdminDashboardPage() {
                     <td>{request.categoryName || "-"}</td>
                     <td>{request.urgency}</td>
                     <td><span className="admin-badge">{request.status}</span></td>
+                    <td className="admin-actions-cell">
+                      {request.status !== "CANCELLED" && request.status !== "COMPLETED" ? (
+                        <button className="admin-action" type="button" onClick={() => handleCancelRequest(request)}>Cancelar</button>
+                      ) : null}
+                      <button className="admin-action danger" type="button" onClick={() => handleDeleteRequest(request)}>Eliminar</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -5,6 +5,7 @@ import { LoginPage, RegisterPage, RoleProtectedRoute } from "../../modules/auth"
 import { BudgetsPage, ProfessionalBudgetsPage, RequestBudgetsPage } from "../../modules/budgets";
 import { ClientOrdersPage, ProfessionalOrdersPage } from "../../modules/service-orders";
 import { AdminDashboardPage } from "../../modules/admin";
+import { ProfessionalReviewsPage } from "../../modules/reviews";
 import { HomeMarketplacePage, LandingPage, LegalPage, NotFoundPage } from "../../modules/home";
 import { ProfessionalDashboardPage, ProfessionalHomePage, ProfessionalOpportunityDetailPage, ProfessionalOpportunitiesPage, ProfessionalProfilePage, ProfessionalsPage } from "../../modules/professionals";
 import { ServiceRequestPage } from "../../modules/service-requests";
@@ -23,6 +24,7 @@ export function AppRouter() {
         <Route path="/profesional/oportunidades/:id" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOpportunityDetailPage /></RoleProtectedRoute>} />
         <Route path="/profesional/trabajos" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalOrdersPage /></RoleProtectedRoute>} />
         <Route path="/profesional/presupuestos" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalBudgetsPage /></RoleProtectedRoute>} />
+        <Route path="/profesional/valoraciones" element={<RoleProtectedRoute roles={["PROFESSIONAL"]}><ProfessionalReviewsPage /></RoleProtectedRoute>} />
         <Route path="/legal/:documentType" element={<LegalPage />} />
       </Route>
 

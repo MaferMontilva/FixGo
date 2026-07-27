@@ -35,3 +35,10 @@ export function updateCategory(id: number, payload: { name?: string; description
 export function deleteCategory(id: number) {
   return httpDelete<{ deleted: boolean }>(`/admin/categories/${id}`);
 }
+
+export function cancelServiceRequest(id: number) {
+  return httpPatch<AdminServiceRequest, Record<string, never>>(`/admin/service-requests/${id}/cancel`, {});
+}
+export function deleteServiceRequest(id: number) {
+  return httpDelete<{ deleted: boolean }>(`/admin/service-requests/${id}`);
+}

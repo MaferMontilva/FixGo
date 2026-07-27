@@ -84,4 +84,16 @@ export class AdminService {
     if (!deleted) throw new NotFoundException("Categoria no encontrada.");
     return { deleted: true };
   }
+
+  async cancelServiceRequest(requestId: number) {
+    const request = await this.repository.cancelServiceRequest(requestId);
+    if (!request) throw new NotFoundException("Solicitud no encontrada.");
+    return request;
+  }
+
+  async deleteServiceRequest(requestId: number) {
+    const deleted = await this.repository.softDeleteServiceRequest(requestId);
+    if (!deleted) throw new NotFoundException("Solicitud no encontrada.");
+    return { deleted: true };
+  }
 }
