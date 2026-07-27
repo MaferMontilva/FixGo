@@ -1,3 +1,4 @@
+import { ClipboardList, Coins, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { fallbackCategories, getCategories } from "../../categories";
 import type { UiCategory } from "../../categories";
@@ -155,6 +156,27 @@ export function HomeMarketplacePage() {
                 </button>
               );
             })}
+        </div>
+      </section>
+      <section className="content-section how-section">
+        <h2>Como funciona</h2>
+        <p>De tu necesidad a un profesional recomendado, en 3 pasos.</p>
+        <div className="how-grid">
+          <article className="how-step">
+            <span className="how-step-icon"><ClipboardList size={26} /></span>
+            <h3>Describe lo que necesitas</h3>
+            <p>Cuentanos el trabajo. Nuestra IA corrige y mejora tu descripcion y te recomienda el servicio adecuado.</p>
+          </article>
+          <article className="how-step">
+            <span className="how-step-icon"><Coins size={26} /></span>
+            <h3>Compara presupuestos</h3>
+            <p>Recibe propuestas de profesionales de tu zona y elige la que mejor te encaje.</p>
+          </article>
+          <article className="how-step">
+            <span className="how-step-icon"><Star size={26} /></span>
+            <h3>Contrata y valora</h3>
+            <p>Sigue el trabajo hasta completarlo y valora al profesional al terminar.</p>
+          </article>
         </div>
       </section>
     </>
