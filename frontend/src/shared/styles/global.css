@@ -4162,3 +4162,10 @@ button[aria-disabled="true"] {
 .how-step-icon { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 999px; background: var(--fixgo-orange-soft); color: var(--fixgo-orange); margin-bottom: 16px; }
 .how-step h3 { margin: 0 0 8px; font-size: 1.1rem; color: #171717; }
 .how-step p { margin: 0; color: #526070; line-height: 1.5; }
+
+/* --- Heroe del inicio del cliente con foto real (Claude) --- */
+.marketplace-hero {
+  background:
+    linear-gradient(120deg, rgba(185, 82, 18, 0.78) 0%, rgba(23, 23, 23, 0.62) 100%),
+    url("../assets/fotos/foto-pros.jpg") center 30% / cover no-repeat !important;
+}
