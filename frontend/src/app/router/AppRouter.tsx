@@ -4,6 +4,7 @@ import { PublicLayout } from "../layouts/PublicLayout";
 import { LoginPage, RegisterPage, RoleProtectedRoute } from "../../modules/auth";
 import { BudgetsPage, ProfessionalBudgetsPage, RequestBudgetsPage } from "../../modules/budgets";
 import { ClientOrdersPage, ProfessionalOrdersPage } from "../../modules/service-orders";
+import { AdminDashboardPage } from "../../modules/admin";
 import { HomeMarketplacePage, LandingPage, LegalPage, NotFoundPage } from "../../modules/home";
 import { ProfessionalDashboardPage, ProfessionalHomePage, ProfessionalOpportunityDetailPage, ProfessionalOpportunitiesPage, ProfessionalProfilePage, ProfessionalsPage } from "../../modules/professionals";
 import { ServiceRequestPage } from "../../modules/service-requests";
@@ -56,6 +57,14 @@ export function AppRouter() {
         <Route path="profesionales" element={<ProfessionalsPage />} />
       </Route>
 
+      <Route
+        path="/admin"
+        element={
+          <RoleProtectedRoute roles={["ADMIN"]}>
+            <AdminDashboardPage />
+          </RoleProtectedRoute>
+        }
+      />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
