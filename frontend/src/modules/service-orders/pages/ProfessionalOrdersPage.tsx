@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { completeOrder, getProfessionalOrders, startOrder } from "../services/serviceOrdersApi";
 import type { ServiceOrder, ServiceOrderStatus } from "../types/serviceOrder";
 import type { ApiError } from "../../../shared/types/apiError";
-import { ProfessionalNav } from "../../professionals/components/ProfessionalNav";
+import { ProfessionalNav } from "../../professionals";
 
 const statusLabels: Record<ServiceOrderStatus, string> = {
   PENDING_START: "Pendiente de inicio",
