@@ -37,7 +37,7 @@ export class PrismaBudgetsRepository implements BudgetsRepository {
   async findServiceRequestForBudget(serviceRequestId: number): Promise<ServiceRequestForBudget | null> {
     const request = await this.prisma.serviceRequests.findUnique({
       where: { id: serviceRequestId },
-      select: { id: true, clientUserId: true, categoryId: true, status: true, deletedAt: true }
+      select: { id: true, clientUserId: true, categoryId: true, status: true, title: true, deletedAt: true }
     });
 
     return request ?? null;

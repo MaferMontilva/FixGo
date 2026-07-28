@@ -41,21 +41,23 @@ Cliente crea solicitud
 -> administrador puede supervisar y auditar
 ```
 
-## Módulos relacionados
+## Módulos implementados (backend)
 
 - `auth`
 - `users`
 - `clients`
-- `professionals`
 - `categories`
 - `services`
+- `professionals`
 - `service-requests`
 - `artificial-intelligence`
 - `budgets`
-- `notifications`
+- `service-orders`
 - `reviews`
+- `notifications`
 - `administration`
-- `audit`, cuando sea incorporado
+
+La auditoría formal queda como evolución futura.
 
 ## Principios de trabajo
 

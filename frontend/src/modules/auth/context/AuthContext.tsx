@@ -16,6 +16,7 @@ type AuthContextValue = {
   register: (payload: RegisterPayload) => Promise<void>;
   registerProfessional: (payload: RegisterProfessionalPayload) => Promise<void>;
   logout: () => Promise<void>;
+  reloadUser: () => Promise<void>;
   hasRole: (role: string) => boolean;
 };
 
@@ -103,6 +104,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [applyAuthResponse]
   );
 
+  const reloadUser = useCallback(async () => {
+    const currentUser = await getCurrentUser();
+    setUser(currentUser);
+  }, []);
+
   const logout = useCallback(async () => {
     const storedRefreshToken = getStoredRefreshToken();
 
@@ -123,9 +129,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       register,
       registerProfessional,
       logout,
+      reloadUser,
       hasRole: (role: string) => Boolean(user?.roles.includes(role as never))
     }),
-    [login, logout, register, registerProfessional, status, user]
+    [login, logout, register, registerProfessional, reloadUser, status, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

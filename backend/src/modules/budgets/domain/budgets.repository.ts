@@ -30,6 +30,7 @@ export type ServiceRequestForBudget = {
   clientUserId: number;
   categoryId: number | null;
   status: string;
+  title: string | null;
   deletedAt: string | null;
 };
 

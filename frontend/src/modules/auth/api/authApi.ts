@@ -13,6 +13,21 @@ export function login(payload: LoginPayload) {
   return httpPost<AuthResponse, LoginPayload>("/auth/login", payload);
 }
 
+export type ResetPasswordPayload = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+};
+
+export function resetPassword(payload: ResetPasswordPayload) {
+  return httpPost<{ updated: boolean }, ResetPasswordPayload>("/auth/reset-password", payload);
+}
+
+export function changePassword(password: string) {
+  return httpPost<{ changed: true }, { password: string }>("/auth/change-password", { password });
+}
+
 export function refreshSession(refreshToken: string) {
   return httpPost<AuthResponse, { refreshToken: string }>("/auth/refresh", { refreshToken });
 }

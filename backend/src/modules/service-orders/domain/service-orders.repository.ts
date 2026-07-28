@@ -4,6 +4,7 @@ export const SERVICE_ORDERS_REPOSITORY = Symbol("SERVICE_ORDERS_REPOSITORY");
 
 export abstract class ServiceOrdersRepository {
   abstract findProfessionalIdByUserId(userId: number): Promise<number | null>;
+  abstract findProfessionalUserId(professionalId: number): Promise<number | null>;
   abstract acceptBudget(clientUserId: number, budgetId: number): Promise<ServiceOrderEntity>;
   abstract findOrdersByClientUserId(clientUserId: number): Promise<ServiceOrderEntity[]>;
   abstract findOrdersByProfessionalId(professionalId: number): Promise<ServiceOrderEntity[]>;

@@ -54,6 +54,29 @@ const WORK_PROFILES: WorkProfile[] = [
 
 const DEFAULT_BUDGET: BudgetRangeSuggestion = { confidence: "LOW", currency: "EUR", min: 45, max: 180 };
 
+// Rangos de referencia por categoria (mercado espanol aproximado). Se usan como
+// respaldo por categoria cuando la IA real no responde o no da un precio valido.
+// Son valores orientativos, no precios cerrados. Ej.: una mudanza (sobre todo
+// interprovincial) es mucho mas cara que una reparacion pequena.
+const CATEGORY_BUDGETS: { keywords: string[]; budget: BudgetRangeSuggestion }[] = [
+  { keywords: ["mudanza"], budget: { confidence: "LOW", currency: "EUR", min: 300, max: 1500 } },
+  { keywords: ["pintura", "pintar"], budget: { confidence: "LOW", currency: "EUR", min: 150, max: 800 } },
+  { keywords: ["jardin"], budget: { confidence: "LOW", currency: "EUR", min: 60, max: 300 } },
+  { keywords: ["limpieza"], budget: { confidence: "LOW", currency: "EUR", min: 50, max: 200 } },
+  { keywords: ["fontaneria", "fontanero"], budget: { confidence: "MEDIUM", currency: "EUR", min: 60, max: 250 } },
+  { keywords: ["electricidad", "electrico"], budget: { confidence: "MEDIUM", currency: "EUR", min: 60, max: 250 } },
+  { keywords: ["climatizacion", "aire", "caldera"], budget: { confidence: "MEDIUM", currency: "EUR", min: 70, max: 300 } },
+  { keywords: ["cerrajeria", "cerrajero"], budget: { confidence: "MEDIUM", currency: "EUR", min: 70, max: 220 } },
+  { keywords: ["manitas", "montaje"], budget: { confidence: "MEDIUM", currency: "EUR", min: 45, max: 180 } }
+];
+
+function budgetForCategory(categoryName?: string | null): BudgetRangeSuggestion | null {
+  if (!categoryName) return null;
+  const normalized = normalizeText(categoryName);
+  const match = CATEGORY_BUDGETS.find((entry) => entry.keywords.some((keyword) => normalized.includes(keyword)));
+  return match ? match.budget : null;
+}
+
 function normalizeText(value: string) {
   return value
     .toLowerCase()
@@ -114,7 +137,7 @@ export class RuleBasedServiceRequestAiAnalyzer implements ServiceRequestAiAnalyz
       suggestedCategoryCode: profile.categoryCode || null,
       suggestedCategoryId: suggestedCategoryName && normalizeText(suggestedCategoryName) === normalizeText(input.categoryName ?? "") ? input.categoryId ?? null : null,
       suggestedCategoryName: suggestedCategoryName ?? (profile.categoryCode ? profile.label : null),
-      suggestedBudgetRange: this.adjustBudgetByUrgency(profile.budget, suggestedUrgency),
+      suggestedBudgetRange: this.adjustBudgetByUrgency(budgetForCategory(input.categoryName) ?? profile.budget, suggestedUrgency),
       suggestedServiceId: suggestedServiceName ? input.serviceId ?? null : null,
       suggestedServiceName,
       suggestedServiceSlug: null,
@@ -410,7 +433,7 @@ export class RuleBasedServiceRequestAiAnalyzer implements ServiceRequestAiAnalyz
     return truncateText(`${workType} en domicilio`, 120);
   }
 
-  private buildImprovedDescription(input: AnalyzeServiceRequestInput, _workType: string, _urgency: ServiceRequestAiUrgency) {
+  private buildImprovedDescription(input: AnalyzeServiceRequestInput, workType: string, _urgency: ServiceRequestAiUrgency) {
     const description = compactText(input.description);
     const normalizedDescription = normalizeText(description);
 
@@ -418,11 +441,51 @@ export class RuleBasedServiceRequestAiAnalyzer implements ServiceRequestAiAnalyz
       return "Necesito realizar el montaje de los muebles de la cocina, que actualmente se encuentran desmontados.";
     }
 
-    if (description.length < 45) {
-      return truncateText(`Necesito que un profesional revise y realice este trabajo: ${description.toLowerCase()}.`, 2000);
-    }
+    const core = this.stripEmotionalFiller(description);
+    const base = normalizeText(core).replace(/[^a-z0-9]/g, "").length >= 8 ? core : description;
+    const intro = compactText(workType);
+    const professional = intro
+      ? `Se solicita un servicio profesional relacionado con ${intro.toLowerCase()}. ${capitalizeSentence(base)}`
+      : `Se solicita un servicio profesional para el siguiente trabajo: ${capitalizeSentence(base)}`;
+    const withPeriod = /[.!?]$/.test(professional) ? professional : `${professional}.`;
 
-    return truncateText(capitalizeSentence(description), 2000);
+    return truncateText(withPeriod, 2000);
+  }
+
+  private stripEmotionalFiller(value: string) {
+    let text = value;
+    const fillerPhrases: RegExp[] = [
+      /\bno s[eé] qu[eé] hacer\b/gi,
+      /\bno tengo nada\b/gi,
+      /\bme siento sol[oa]\b/gi,
+      /\bcon (mucho )?miedo\b/gi,
+      /\btengo (mucho )?miedo\b/gi,
+      /\bestoy (muy )?desesperad[oa]\b/gi,
+      /\bno aguanto (mas|más)\b/gi,
+      /\bpor favor\b/gi,
+      /\bay[uú]d[ae]nme\b/gi
+    ];
+    for (const phrase of fillerPhrases) text = text.replace(phrase, " ");
+    text = text.replace(/^\s*(necesito ayuda con|necesito que me ayuden con|ayuda con)\s+/i, "");
+
+    const fragments = text
+      .split(/(?<=[.!?])\s+/)
+      .map((fragment) => this.tidyFragment(fragment))
+      .filter((fragment) => normalizeText(fragment).replace(/[^a-z0-9]/g, "").length >= 6);
+
+    const joined = fragments.map((fragment) => capitalizeSentence(fragment)).join(". ");
+    return compactText(joined);
+  }
+
+  private tidyFragment(fragment: string) {
+    return compactText(fragment)
+      .replace(/^[\s,;.]+/, "")
+      .replace(/[\s,;.]+$/, "")
+      .replace(/\s+(y|porque|pero|o)\s*$/i, "")
+      .replace(/^(y|porque|pero|o)\s+/i, "")
+      .replace(/\s+([,;.])/g, "$1")
+      .replace(/\s{2,}/g, " ")
+      .trim();
   }
 
   private buildSummary(input: AnalyzeServiceRequestInput, workType: string, urgency: ServiceRequestAiUrgency, description: string) {

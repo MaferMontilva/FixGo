@@ -20,8 +20,8 @@ export class AnalyzeServiceRequestDto {
 
   @Transform(trimText)
   @IsString()
-  @MinLength(15)
-  @MaxLength(2000)
+  @MinLength(15, { message: "La descripcion debe tener al menos 15 caracteres." })
+  @MaxLength(2000, { message: "La descripcion no puede superar los 2000 caracteres." })
   description!: string;
 
   @IsOptional()

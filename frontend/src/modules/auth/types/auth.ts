@@ -1,4 +1,4 @@
-export type AuthRole = "CLIENT" | "PROFESSIONAL" | "ADMIN";
+export type AuthRole = "CLIENT" | "PROFESSIONAL" | "ADMIN" | "SUPER_ADMIN";
 
 export type ClientProfile = {
   id: number;
@@ -12,6 +12,7 @@ export type AuthUser = {
   firstName: string;
   lastName: string;
   roles: AuthRole[];
+  mustChangePassword?: boolean;
   clientProfile?: ClientProfile | null;
 };
 

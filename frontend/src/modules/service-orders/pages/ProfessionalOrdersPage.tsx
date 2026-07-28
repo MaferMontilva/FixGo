@@ -16,6 +16,11 @@ const statusLabels: Record<ServiceOrderStatus, string> = {
   CANCELLED: "Cancelado"
 };
 
+function shortText(text: string, max = 160) {
+  const clean = (text ?? "").replace(/\s+/g, " ").trim();
+  return clean.length > max ? `${clean.slice(0, max).trim()}…` : clean;
+}
+
 export function ProfessionalOrdersPage() {
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,25 +71,30 @@ export function ProfessionalOrdersPage() {
         {error ? <p className="pro-page-error" role="alert">{error}</p> : null}
         {!loading && !error && orders.length === 0 ? <p className="pro-empty-state">Aun no tienes trabajos. Cuando un cliente acepte tu presupuesto, apareceran aqui.</p> : null}
 
-        <div className="orders-list">
+        <div className="opp-list">
           {orders.map((order) => (
-            <article className="pro-request-card" key={order.id}>
-              <div className="order-card-head">
-                <h2>{order.requestTitle || `Solicitud #${order.serviceRequestId}`}</h2>
-                <span className={`order-status status-${order.status}`}>{statusLabels[order.status]}</span>
+            <article className="opp-card" key={order.id}>
+              <div className="opp-card-main">
+                <div className="opp-card-top">
+                  <span className="opp-badge">Trabajo #{order.serviceRequestId}</span>
+                </div>
+                <h3>{order.requestTitle || `Solicitud #${order.serviceRequestId}`}</h3>
+                {order.requestDescription ? <p>{shortText(order.requestDescription)}</p> : null}
               </div>
-              {order.requestDescription ? <p className="order-card-desc">{order.requestDescription}</p> : null}
-              <p className="order-card-amount">Importe acordado: <strong>{order.totalPrice != null ? `${order.totalPrice.toFixed(2)} ${order.currency ?? "EUR"}` : "-"}</strong></p>
-              {["PENDING_START", "SCHEDULED"].includes(order.status) ? (
-                <button className="pro-primary-button" type="button" disabled={actionId === order.id} onClick={() => runAction(order, startOrder)}>
-                  <PlayCircle size={18} /> {actionId === order.id ? "Iniciando..." : "Iniciar trabajo"}
-                </button>
-              ) : null}
-              {order.status === "IN_PROGRESS" ? (
-                <button className="pro-primary-button" type="button" disabled={actionId === order.id} onClick={() => runAction(order, completeOrder)}>
-                  <CheckCircle2 size={18} /> {actionId === order.id ? "Guardando..." : "Marcar como completado"}
-                </button>
-              ) : null}
+              <div className="opp-card-side">
+                <span className={`order-status status-${order.status}`}>{statusLabels[order.status]}</span>
+                <div className="opp-price">{order.totalPrice != null ? `${order.totalPrice.toFixed(2)} ${order.currency ?? "EUR"}` : "-"}</div>
+                {["PENDING_START", "SCHEDULED"].includes(order.status) ? (
+                  <button className="pro-primary-button" type="button" disabled={actionId === order.id} onClick={() => runAction(order, startOrder)}>
+                    <PlayCircle size={18} /> {actionId === order.id ? "Iniciando..." : "Iniciar trabajo"}
+                  </button>
+                ) : null}
+                {order.status === "IN_PROGRESS" ? (
+                  <button className="pro-primary-button" type="button" disabled={actionId === order.id} onClick={() => runAction(order, completeOrder)}>
+                    <CheckCircle2 size={18} /> {actionId === order.id ? "Guardando..." : "Completar"}
+                  </button>
+                ) : null}
+              </div>
             </article>
           ))}
         </div>

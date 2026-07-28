@@ -2,6 +2,8 @@ import { AdminCategory, AdminProfessional, AdminServiceRequest, AdminStats, Admi
 
 export type CreateCategoryData = { code: string; name: string; description?: string | null };
 export type UpdateCategoryData = { name?: string; description?: string | null };
+export type CreatableRole = "CLIENT" | "PROFESSIONAL" | "ADMIN";
+export type CreateUserData = { firstName: string; lastName: string; email: string; password: string; role: CreatableRole };
 
 export const ADMIN_REPOSITORY = Symbol("ADMIN_REPOSITORY");
 
@@ -9,6 +11,9 @@ export abstract class AdminRepository {
   abstract getStats(): Promise<AdminStats>;
   abstract listUsers(): Promise<AdminUser[]>;
   abstract setUserStatus(userId: number, status: string): Promise<AdminUser | null>;
+  abstract emailExists(email: string): Promise<boolean>;
+  abstract createUser(data: CreateUserData): Promise<AdminUser>;
+  abstract setUserAdminRole(userId: number, grant: boolean): Promise<AdminUser | null>;
   abstract listProfessionals(): Promise<AdminProfessional[]>;
   abstract setProfessionalVerification(profileId: number, verificationStatus: string): Promise<AdminProfessional | null>;
   abstract listServiceRequests(): Promise<AdminServiceRequest[]>;

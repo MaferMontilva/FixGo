@@ -72,7 +72,6 @@ function buildAdditionalDetailsPlaceholder(items: string[]) {
     .map((item) => {
       if (item.includes("marca") || item.includes("modelo")) return "la marca o modelo";
       if (item.includes("desde") || item.includes("cuándo") || item.includes("cuando")) return "cuándo comenzó el problema";
-      if (item.includes("foto")) return "si tienes fotos";
       if (item.includes("medida")) return "las medidas aproximadas";
       if (item.includes("cambio")) return "si hubo cambios recientes";
       return item;
@@ -117,7 +116,10 @@ export function DescriptionStep({
   const visibleDescriptionError = descriptionError || (descriptionTouched ? getDescriptionError(description) : "");
   const titleFieldClassName = aiHighlightedFields.includes("title") ? "request-field ai-field-highlight" : "request-field";
   const descriptionFieldClassName = aiHighlightedFields.includes("description") ? "request-field request-field-wide ai-field-highlight" : "request-field request-field-wide";
-  const additionalDetailsPlaceholder = aiAnalysis ? buildAdditionalDetailsPlaceholder(aiAnalysis.professionalInformationNeeded ?? []) : "";
+  const professionalInfoItems = (aiAnalysis?.professionalInformationNeeded ?? []).filter(
+    (item) => !/\bfoto|fotograf|imagen|imág|im[aá]genes\b/i.test(item)
+  );
+  const additionalDetailsPlaceholder = aiAnalysis ? buildAdditionalDetailsPlaceholder(professionalInfoItems) : "";
 
   useEffect(() => {
     descriptionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -274,14 +276,14 @@ export function DescriptionStep({
           {(
             <div className="ai-professional-information">
               <strong>Información útil para recibir un presupuesto más preciso</strong>
-              {aiAnalysis.professionalInformationNeeded?.length ? (
+              {professionalInfoItems.length ? (
                 <ul>
-                  {aiAnalysis.professionalInformationNeeded.slice(0, 4).map((item) => (
+                  {professionalInfoItems.slice(0, 4).map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               ) : null}
-              <p>Puedes añadir estos datos a la descripción antes de continuar.</p>
+              <p>Escribe estos datos abajo y la IA los integrará en tu descripción.</p>
               <label className="request-field ai-additional-details-field" htmlFor={additionalDetailsId}>
                 <span>Añade los detalles que conozcas</span>
                 <small>No es obligatorio responder todo. Escribe únicamente la información que conozcas.</small>
@@ -302,7 +304,7 @@ export function DescriptionStep({
               {additionalDetailsError ? <p className="field-error" id={additionalDetailsErrorId} role="alert">{additionalDetailsError}</p> : null}
               {additionalDetailsMessage ? <p className="ai-inline-success" role="status">{additionalDetailsMessage}</p> : null}
               {detailsProviderMessage ? <p className="ai-provider-detail">{detailsProviderMessage}</p> : null}
-              <button className="request-secondary-action" disabled={detailsStatus === "refining"} onClick={refineAdditionalDetails} type="button">
+              <button className="request-secondary-action ai-details-action" disabled={detailsStatus === "refining"} onClick={refineAdditionalDetails} type="button">
                 {detailsStatus === "refining" ? "Mejorando detalles..." : "Mejorar e integrar detalles con IA"}
               </button>
             </div>

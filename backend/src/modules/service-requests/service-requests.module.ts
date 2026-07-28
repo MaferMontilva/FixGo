@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { NotificationsModule } from "../notifications/notifications.module";
 import { CancelServiceRequestUseCase } from "./application/cancel-service-request.use-case";
 import { CreateServiceRequestDraftUseCase } from "./application/create-service-request-draft.use-case";
 import { DuplicateCancelledServiceRequestAsDraftUseCase } from "./application/duplicate-cancelled-service-request-as-draft.use-case";
@@ -15,6 +16,7 @@ import { PrismaServiceRequestsRepository } from "./infrastructure/prisma/prisma-
 import { ServiceRequestsController } from "./presentation/http/service-requests.controller";
 
 @Module({
+  imports: [NotificationsModule],
   controllers: [ServiceRequestsController],
   providers: [
     ServiceRequestsService,

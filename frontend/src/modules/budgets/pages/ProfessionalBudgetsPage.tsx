@@ -56,25 +56,30 @@ export function ProfessionalBudgetsPage() {
           <p className="pro-empty-state">Aun no has enviado presupuestos. Ve a Oportunidades y envia el primero.</p>
         ) : null}
 
-        <div className="orders-list">
+        <div className="opp-list">
           {budgets.map((budget) => (
-            <article className="pro-request-card" key={budget.id}>
-              <div className="order-card-head">
-                <h2>Solicitud #{budget.serviceRequestId}</h2>
+            <article className="opp-card" key={budget.id}>
+              <div className="opp-card-main">
+                <div className="opp-card-top">
+                  <span className="opp-badge">Solicitud #{budget.serviceRequestId}</span>
+                </div>
+                <h3>Presupuesto enviado</h3>
+                <ul className="budget-card-items">
+                  {budget.items.map((item) => (
+                    <li key={item.id}>
+                      <span>{item.description}</span>
+                      <span>{item.quantity} × {item.unitPrice.toFixed(2)} = {item.total.toFixed(2)} {budget.currency}</span>
+                    </li>
+                  ))}
+                </ul>
+                {budget.observations ? <p className="budget-card-notes">{budget.observations}</p> : null}
+              </div>
+              <div className="opp-card-side">
                 <span className={`order-status status-${budget.status === "ACCEPTED" ? "COMPLETED" : budget.status === "REJECTED" ? "CANCELLED" : "IN_PROGRESS"}`}>
                   {statusLabels[budget.status]}
                 </span>
+                <div className="opp-price">{budget.totalPrice.toFixed(2)} {budget.currency}</div>
               </div>
-              <ul className="budget-card-items">
-                {budget.items.map((item) => (
-                  <li key={item.id}>
-                    <span>{item.description}</span>
-                    <span>{item.quantity} x {item.unitPrice.toFixed(2)} = {item.total.toFixed(2)} {budget.currency}</span>
-                  </li>
-                ))}
-              </ul>
-              {budget.observations ? <p className="budget-card-notes">{budget.observations}</p> : null}
-              <p className="order-card-amount">Total: <strong>{budget.totalPrice.toFixed(2)} {budget.currency}</strong></p>
             </article>
           ))}
         </div>

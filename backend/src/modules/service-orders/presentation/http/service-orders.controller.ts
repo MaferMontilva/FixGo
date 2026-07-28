@@ -78,6 +78,7 @@ export class ServiceOrdersController {
       requestTitle: order.requestTitle,
       requestDescription: order.requestDescription,
       professionalName: order.professionalName,
+      professionalPhone: order.professionalPhone,
       totalPrice: order.totalPrice,
       currency: order.currency,
       hasReview: order.hasReview

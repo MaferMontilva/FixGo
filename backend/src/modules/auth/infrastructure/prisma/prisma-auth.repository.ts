@@ -26,8 +26,9 @@ export class PrismaAuthRepository implements AuthRepository {
     if (!user) return null;
 
     return {
-      ...this.toAuthUser(user, await this.findRolesByUserId(user.id)),
-      passwordHash: user.passwordHash
+      ...this.toAuthUser(user, await this.findRolesByUserId(user.id), await this.readMustChangePassword(user.id)),
+      passwordHash: user.passwordHash,
+      status: user.status
     };
   }
 
@@ -35,7 +36,28 @@ export class PrismaAuthRepository implements AuthRepository {
     const user = await this.prisma.users.findUnique({ where: { id: userId } });
     if (!user) return null;
 
-    return this.toAuthUser(user, await this.findRolesByUserId(user.id));
+    return this.toAuthUser(user, await this.findRolesByUserId(user.id), await this.readMustChangePassword(user.id));
+  }
+
+  async updatePasswordByEmail(email: string, passwordHash: string): Promise<boolean> {
+    const user = await this.prisma.users.findUnique({ where: { email } });
+    if (!user) return false;
+
+    await this.prisma.users.update({
+      where: { id: user.id },
+      data: { passwordHash, updatedAt: new Date().toISOString() }
+    });
+
+    return true;
+  }
+
+  async setPasswordById(userId: number, passwordHash: string): Promise<void> {
+    await this.prisma.users.update({
+      where: { id: userId },
+      data: { passwordHash, updatedAt: new Date().toISOString() }
+    });
+    // Al cambiar la clave se limpia la obligacion de cambiarla (SQL directo).
+    await this.prisma.$executeRawUnsafe("UPDATE users SET must_change_password = 0 WHERE id = ?", userId);
   }
 
   async registerClient(data: RegisterClientData): Promise<AuthUser> {
@@ -169,13 +191,24 @@ export class PrismaAuthRepository implements AuthRepository {
     return roles.map((role) => role.code);
   }
 
-  private toAuthUser(user: UserRecord, roles: string[]): AuthUser {
+  private toAuthUser(user: UserRecord, roles: string[], mustChangePassword = false): AuthUser {
     return {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      roles
+      roles,
+      mustChangePassword
     };
+  }
+
+  // El flag must_change_password se lee con SQL directo para no depender de
+  // regenerar el cliente Prisma (la columna existe en la base).
+  private async readMustChangePassword(userId: number): Promise<boolean> {
+    const rows = await this.prisma.$queryRawUnsafe<{ must_change_password: number | bigint }[]>(
+      "SELECT must_change_password FROM users WHERE id = ? LIMIT 1",
+      userId
+    );
+    return rows.length > 0 && Number(rows[0].must_change_password) === 1;
   }
 }

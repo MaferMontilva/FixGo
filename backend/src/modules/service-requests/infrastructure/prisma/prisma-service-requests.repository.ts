@@ -208,6 +208,34 @@ export class PrismaServiceRequestsRepository implements ServiceRequestsRepositor
     return this.findOwnedServiceRequestById(id, clientUserId);
   }
 
+  async findCompatibleProfessionalUserIds(categoryId: number, location: string | null): Promise<number[]> {
+    const links = await this.prisma.professionalCategories.findMany({
+      where: { categoryId },
+      select: { professionalId: true }
+    });
+    if (links.length === 0) return [];
+
+    const professionalIds = [...new Set(links.map((link) => link.professionalId))];
+    // Solo reciben oportunidades los profesionales con perfil activo y verificacion
+    // aprobada, cuyo usuario no este suspendido, y de la MISMA provincia que la
+    // solicitud (asi solo se notifica a quien realmente puede atenderla).
+    const profiles = await this.prisma.professionalProfiles.findMany({
+      where: { id: { in: professionalIds }, profileStatus: "ACTIVE", verificationStatus: "APPROVED" },
+      select: { userId: true, province: true }
+    });
+    const loc = (location ?? "").toLowerCase();
+    const inProvince = profiles.filter((profile) => profile.province && loc.includes(profile.province.toLowerCase()));
+    if (inProvince.length === 0) return [];
+
+    const activeUsers = await this.prisma.users.findMany({
+      where: { id: { in: inProvince.map((profile) => profile.userId) }, status: "ACTIVE" },
+      select: { id: true }
+    });
+    const activeUserIds = new Set(activeUsers.map((user) => user.id));
+
+    return inProvince.map((profile) => profile.userId).filter((userId) => activeUserIds.has(userId));
+  }
+
   async cancelOwnedServiceRequest(
     id: number,
     clientUserId: number,

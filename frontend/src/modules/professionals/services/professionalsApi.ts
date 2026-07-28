@@ -28,6 +28,11 @@ export async function getProfessionals(): Promise<UiProfessional[]> {
   }
 }
 
+export function getCompatibleProfessionalsCount(categoryId: number, location: string): Promise<{ count: number }> {
+  const params = new URLSearchParams({ categoryId: String(categoryId), location });
+  return httpGet<{ count: number }>(`/professionals/compatible-count?${params.toString()}`);
+}
+
 export function getMyProfessionalProfile() {
   return httpGet<ProfessionalProfileApi | null>("/professionals/me");
 }

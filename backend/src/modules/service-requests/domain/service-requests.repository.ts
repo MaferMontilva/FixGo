@@ -52,6 +52,7 @@ export abstract class ServiceRequestsRepository {
   abstract findAllOwnedServiceRequests(clientUserId: number): Promise<ServiceRequestEntity[]>;
   abstract findOwnedServiceRequestById(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
   abstract publishOwnedDraft(id: number, clientUserId: number): Promise<ServiceRequestEntity | null>;
+  abstract findCompatibleProfessionalUserIds(categoryId: number, location: string | null): Promise<number[]>;
   abstract cancelOwnedServiceRequest(
     id: number,
     clientUserId: number,

@@ -2,11 +2,13 @@ import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { AuthTokenFactory } from "./application/auth-token-factory";
+import { ChangePasswordUseCase } from "./application/change-password.use-case";
 import { LoginUseCase } from "./application/login.use-case";
 import { LogoutUseCase } from "./application/logout.use-case";
 import { RefreshSessionUseCase } from "./application/refresh-token.use-case";
 import { RegisterClientUseCase } from "./application/register-client.use-case";
 import { RegisterProfessionalUseCase } from "./application/register-professional.use-case";
+import { ResetPasswordUseCase } from "./application/reset-password.use-case";
 import { AUTH_REPOSITORY } from "./domain/auth.repository";
 import { PASSWORD_HASHER } from "./domain/password-hasher";
 import {
@@ -34,6 +36,8 @@ import { RolesGuard } from "./presentation/roles.guard";
     RefreshSessionUseCase,
     RegisterClientUseCase,
     RegisterProfessionalUseCase,
+    ResetPasswordUseCase,
+    ChangePasswordUseCase,
     JwtAuthGuard,
     RolesGuard,
     JwtStrategy,

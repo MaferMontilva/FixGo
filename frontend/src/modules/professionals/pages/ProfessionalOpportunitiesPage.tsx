@@ -18,6 +18,18 @@ function budgetText(opportunity: ProfessionalOpportunity) {
   return `${opportunity.budgetMin ?? opportunity.budgetMax} EUR`;
 }
 
+function formatOppDate(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function shortText(text: string, max = 180) {
+  const clean = (text ?? "").replace(/\s+/g, " ").trim();
+  return clean.length > max ? `${clean.slice(0, max).trim()}…` : clean;
+}
+
 export function ProfessionalOpportunitiesPage() {
   const [opportunities, setOpportunities] = useState<ProfessionalOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,20 +94,27 @@ export function ProfessionalOpportunitiesPage() {
         {error && <p className="pro-page-error" role="alert">{error}</p>}
         {loading && <p className="pro-empty-state">Cargando oportunidades...</p>}
         {!loading && filtered.length === 0 && <p className="pro-empty-state">No hay oportunidades compatibles en este momento.</p>}
-        <div className="pro-request-grid">
+        <div className="opp-list">
           {filtered.map((request) => (
-            <article className="pro-request-card" key={request.id}>
-              <div className="pro-request-header"><span>Coincide con tu perfil</span><small>{request.publishedAt ?? request.createdAt}</small></div>
-              <h3>{request.title || "Solicitud sin título"}</h3>
-              <p>{request.description}</p>
-              <div className="pro-request-meta">
-                <span>{request.category?.name ?? "Categoría"}</span>
-                <span>{request.service?.name ?? "Servicio por concretar"}</span>
-                <span><MapPin size={16} /> {request.location ?? "Zona aproximada pendiente"}</span>
-                <span>{urgencyLabels[request.urgency] ?? request.urgency}</span>
-                <span><Euro size={16} /> {budgetText(request)}</span>
+            <article className="opp-card" key={request.id}>
+              <div className="opp-card-main">
+                <div className="opp-card-top">
+                  <span className="opp-badge">Coincide con tu perfil</span>
+                  <small>{formatOppDate(request.publishedAt ?? request.createdAt)}</small>
+                </div>
+                <h3>{request.title || "Solicitud sin título"}</h3>
+                <p>{shortText(request.description)}</p>
+                <div className="opp-chips">
+                  <span className="opp-chip">{request.category?.name ?? "Categoría"}</span>
+                  <span className="opp-chip">{request.service?.name ?? "Servicio por concretar"}</span>
+                  <span className="opp-chip"><MapPin size={14} /> {request.location ?? "Zona pendiente"}</span>
+                  <span className="opp-chip">{urgencyLabels[request.urgency] ?? request.urgency}</span>
+                </div>
               </div>
-              <Link className="pro-primary-button" to={`/profesional/oportunidades/${request.id}`}>Ver oportunidad</Link>
+              <div className="opp-card-side">
+                <div className="opp-price"><Euro size={16} /> {budgetText(request)}</div>
+                <Link className="pro-primary-button" to={`/profesional/oportunidades/${request.id}`}>Ver oportunidad</Link>
+              </div>
             </article>
           ))}
         </div>

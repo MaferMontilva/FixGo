@@ -1,4 +1,4 @@
-import { ArrowLeft, BriefcaseBusiness, UserPlus, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, BriefcaseBusiness, UserPlus, UserRound } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../../shared/components/Button";
@@ -16,14 +16,20 @@ type RegisterErrors = {
   lastName?: string;
   email?: string;
   password?: string;
+  businessName?: string;
+  phone?: string;
 };
+
+const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/;
+const BUSINESS_NAME_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ.,&' -]+$/;
+const PHONE_REGEX = /^[+]?[\d\s()-]{7,20}$/;
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { initializing, isAuthenticated, register, registerProfessional, hasRole } = useAuth();
-  const initialType = (location.state as { role?: AccountType } | null)?.role ?? "CLIENT";
-  const [accountType, setAccountType] = useState<AccountType>(initialType);
+  const initialType = (location.state as { role?: AccountType } | null)?.role ?? null;
+  const [accountType, setAccountType] = useState<AccountType | null>(initialType);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", businessName: "", phone: "" });
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [serverError, setServerError] = useState("");
@@ -48,13 +54,39 @@ export function RegisterPage() {
 
   const validate = () => {
     const nextErrors: RegisterErrors = {};
+    const trimmedFirstName = form.firstName.trim();
+    const trimmedLastName = form.lastName.trim();
+    const trimmedBusinessName = form.businessName.trim();
+    const trimmedPhone = form.phone.trim();
 
-    if (form.firstName.trim().length < 2) nextErrors.firstName = "Minimo 2 caracteres.";
-    if (form.lastName.trim().length < 2) nextErrors.lastName = "Minimo 2 caracteres.";
+    if (trimmedFirstName.length < 2 || trimmedFirstName.length > 80) {
+      nextErrors.firstName = "El nombre debe tener entre 2 y 80 caracteres.";
+    } else if (!NAME_REGEX.test(trimmedFirstName)) {
+      nextErrors.firstName = "El nombre solo puede contener letras.";
+    }
+
+    if (trimmedLastName.length < 2 || trimmedLastName.length > 80) {
+      nextErrors.lastName = "El apellido debe tener entre 2 y 80 caracteres.";
+    } else if (!NAME_REGEX.test(trimmedLastName)) {
+      nextErrors.lastName = "El apellido solo puede contener letras.";
+    }
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) nextErrors.email = "Escribe un correo valido.";
     if (form.password.length < 8) nextErrors.password = "Minimo 8 caracteres.";
     if (!/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) {
       nextErrors.password = "Debe contener al menos una letra y un numero.";
+    }
+
+    if (isProfessional && trimmedBusinessName) {
+      if (trimmedBusinessName.length < 2 || trimmedBusinessName.length > 120) {
+        nextErrors.businessName = "El nombre del negocio debe tener entre 2 y 120 caracteres.";
+      } else if (!BUSINESS_NAME_REGEX.test(trimmedBusinessName)) {
+        nextErrors.businessName = "El nombre del negocio contiene caracteres no permitidos.";
+      }
+    }
+
+    if (isProfessional && trimmedPhone && !PHONE_REGEX.test(trimmedPhone)) {
+      nextErrors.phone = "Escribe un telefono valido.";
     }
 
     setErrors(nextErrors);
@@ -93,35 +125,59 @@ export function RegisterPage() {
     }
   };
 
+  if (accountType === null) {
+    return (
+      <PageContainer className="login-shell">
+        <Card className="login-card auth-card">
+          <Logo compact />
+          <h1 className="login-title">Crear cuenta</h1>
+          <p className="login-intro">Elige cómo quieres usar FixGo para empezar.</p>
+          <div className="role-choice-list">
+            <button className="role-choice-card" type="button" onClick={() => setAccountType("CLIENT")}>
+              <span className="role-choice-icon"><UserRound size={24} /></span>
+              <span className="role-choice-text">
+                <strong>Soy cliente</strong>
+                <small>Solicita servicios para tu hogar y recibe presupuestos.</small>
+              </span>
+              <ArrowRight size={20} />
+            </button>
+            <button className="role-choice-card" type="button" onClick={() => setAccountType("PROFESSIONAL")}>
+              <span className="role-choice-icon"><BriefcaseBusiness size={24} /></span>
+              <span className="role-choice-text">
+                <strong>Soy profesional</strong>
+                <small>Ofrece tus servicios y recibe oportunidades de trabajo.</small>
+              </span>
+              <ArrowRight size={20} />
+            </button>
+          </div>
+          <p className="auth-switch">
+            Ya tienes cuenta?{" "}
+            <Link to="/acceder" state={{ from: destination }}>
+              Iniciar sesion
+            </Link>
+          </p>
+          <Link className="back-link" to="/">
+            <ArrowLeft size={18} /> Volver al inicio
+          </Link>
+        </Card>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer className="login-shell">
       <Card className="login-card auth-card">
         <Logo compact />
+        <button className="auth-back-choice" type="button" onClick={() => setAccountType(null)}>
+          <ArrowLeft size={16} /> Cambiar tipo de cuenta
+        </button>
         <h1 className="login-title">{isProfessional ? "Crear cuenta de profesional" : "Crear cuenta de cliente"}</h1>
         <p className="login-intro">
           {isProfessional
             ? "Registra tus datos para ofrecer tus servicios y recibir oportunidades."
             : "Registra tus datos para guardar solicitudes, presupuestos y perfil de cliente."}
         </p>
-        <div className="role-segment two">
-          <button
-            className={`role-chip ${accountType === "CLIENT" ? "is-active" : ""}`}
-            type="button"
-            onClick={() => setAccountType("CLIENT")}
-          >
-            <UserRound size={18} />
-            Cliente
-          </button>
-          <button
-            className={`role-chip ${accountType === "PROFESSIONAL" ? "is-active" : ""}`}
-            type="button"
-            onClick={() => setAccountType("PROFESSIONAL")}
-          >
-            <BriefcaseBusiness size={18} />
-            Profesional
-          </button>
-        </div>
-        <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <form className="auth-form auth-form-grid" onSubmit={handleSubmit} noValidate>
           <AuthFormField
             id="register-first-name"
             label="Nombre"
@@ -145,6 +201,7 @@ export function RegisterPage() {
                 label="Nombre del negocio (opcional)"
                 autoComplete="organization"
                 value={form.businessName}
+                error={errors.businessName}
                 onChange={(event) => updateField("businessName", event.target.value)}
               />
               <AuthFormField
@@ -152,6 +209,7 @@ export function RegisterPage() {
                 label="Telefono (opcional)"
                 autoComplete="tel"
                 value={form.phone}
+                error={errors.phone}
                 onChange={(event) => updateField("phone", event.target.value)}
               />
             </>

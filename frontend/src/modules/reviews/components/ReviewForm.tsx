@@ -19,9 +19,25 @@ export function ReviewForm({ serviceOrderId, onSubmitted }: ReviewFormProps) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      setError("Selecciona una valoracion entre 1 y 5 estrellas.");
+      return;
+    }
+
+    const trimmedComment = comment.trim();
+    if (trimmedComment && trimmedComment.length < 3) {
+      setError("El comentario debe tener al menos 3 caracteres.");
+      return;
+    }
+    if (trimmedComment.length > 1000) {
+      setError("El comentario no puede superar los 1000 caracteres.");
+      return;
+    }
+
     try {
       setSubmitting(true);
-      await createReview({ serviceOrderId, rating, comment: comment.trim() || undefined });
+      await createReview({ serviceOrderId, rating, comment: trimmedComment || undefined });
       setDone(true);
       onSubmitted?.();
     } catch (submitError) {

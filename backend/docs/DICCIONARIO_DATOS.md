@@ -1,6 +1,6 @@
 # Diccionario de datos — FixGo v1
 
-Base de datos: SQLite  |  Tablas: 43
+Base de datos: SQLite  |  Tablas: 44
 
 Este modelo cubre autenticación, clientes, profesionales, ubicación, categorías, solicitudes, IA, presupuestos, contratación, mensajería, valoraciones, notificaciones, legal y auditoría.
 
@@ -748,6 +748,7 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `avatar_url` | TEXT | No |  | — |
 | `preferred_language` | TEXT | Sí |  | 'es' |
 | `status` | TEXT | Sí |  | 'ACTIVE' |
+| `must_change_password` | INTEGER | Sí |  | 0 |
 | `email_verified_at` | TEXT | No |  | — |
 | `phone_verified_at` | TEXT | No |  | — |
 | `last_login_at` | TEXT | No |  | — |

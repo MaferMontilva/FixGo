@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { NotificationsModule } from "../notifications/notifications.module";
 import { CreateReviewUseCase } from "./application/create-review.use-case";
 import { GetMyReviewsUseCase } from "./application/get-my-reviews.use-case";
 import { GetProfessionalReviewsUseCase } from "./application/get-professional-reviews.use-case";
@@ -8,6 +9,7 @@ import { PrismaReviewsRepository } from "./infrastructure/prisma/prisma-reviews.
 import { ReviewsController } from "./presentation/http/reviews.controller";
 
 @Module({
+  imports: [NotificationsModule],
   controllers: [ReviewsController],
   providers: [
     CreateReviewUseCase,

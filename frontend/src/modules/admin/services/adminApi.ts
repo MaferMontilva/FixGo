@@ -10,6 +10,13 @@ export function getAdminUsers() {
 export function setUserStatus(id: number, status: string) {
   return httpPatch<AdminUser, { status: string }>(`/admin/users/${id}/status`, { status });
 }
+export type CreateUserPayload = { firstName: string; lastName: string; email: string; password: string; role: "CLIENT" | "PROFESSIONAL" | "ADMIN" };
+export function createUser(payload: CreateUserPayload) {
+  return httpPost<AdminUser, CreateUserPayload>("/admin/users", payload);
+}
+export function setUserAdminRole(id: number, grant: boolean) {
+  return httpPatch<AdminUser, { grant: boolean }>(`/admin/users/${id}/admin-role`, { grant });
+}
 export function getAdminProfessionals() {
   return httpGet<AdminProfessional[]>("/admin/professionals");
 }

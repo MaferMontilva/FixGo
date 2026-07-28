@@ -65,17 +65,20 @@ export function RequestBudgetsPage() {
 
   return (
     <PageContainer className="budgets-compare-shell">
-      <Link className="request-secondary-action" to="/cliente/mis-presupuestos">
+      <Link className="budgets-back-link" to="/cliente/mis-presupuestos">
         <ArrowLeft size={18} /> Volver a mis solicitudes
       </Link>
-      <h1 className="budgets-compare-title">Presupuestos recibidos</h1>
-      <p className="budgets-compare-intro">Compara las propuestas de los profesionales para tu solicitud #{requestId}.</p>
+      <section className="client-requests-header">
+        <span className="client-requests-kicker">Área del cliente</span>
+        <h1>Presupuestos recibidos</h1>
+        <p>Compara las propuestas de los profesionales para tu solicitud #{requestId}.</p>
+      </section>
 
       {acceptedBudget ? (
         <div className="budgets-accepted-banner">
           <p>
-            Ya aceptaste el presupuesto de <strong>{acceptedBudget.professional?.businessName || acceptedBudget.professional?.displayName || "un profesional"}</strong>. Sigue el trabajo en{" "}
-            <Link to="/cliente/trabajos">Mis trabajos</Link>.
+            Ya aceptaste el presupuesto de <strong>{acceptedBudget.professional?.businessName || acceptedBudget.professional?.displayName || "un profesional"}</strong>. Sigue el servicio en{" "}
+            <Link to="/cliente/trabajos">Servicios contratados</Link>.
           </p>
         </div>
       ) : null}

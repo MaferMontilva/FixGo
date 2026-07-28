@@ -1,9 +1,12 @@
-import { useEffect, useRef } from "react";
+import { Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { getCompatibleProfessionalsCount } from "../../professionals";
 import type { RequestUrgency } from "../types/serviceRequest";
 
 type ReviewStepProps = {
   budgetMax: number | null;
   budgetMin: number | null;
+  categoryId?: number | null;
   categoryName: string;
   description: string;
   flexibleSchedule: boolean;
@@ -43,6 +46,7 @@ function formatPriceRange(min: number | null, max: number | null) {
 export function ReviewStep({
   budgetMax,
   budgetMin,
+  categoryId,
   categoryName,
   description,
   flexibleSchedule,
@@ -60,10 +64,29 @@ export function ReviewStep({
   const formattedDateFrom = formatDateForSpain(preferredDateFrom);
   const formattedDateTo = formatDateForSpain(preferredDateTo);
   const formattedPriceRange = formatPriceRange(budgetMin, budgetMax);
+  const [compatibleCount, setCompatibleCount] = useState<number | null>(null);
 
   useEffect(() => {
     headingRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!categoryId || !locationDescription.trim()) {
+      setCompatibleCount(null);
+      return;
+    }
+    getCompatibleProfessionalsCount(categoryId, locationDescription)
+      .then((result) => {
+        if (!cancelled) setCompatibleCount(result.count);
+      })
+      .catch(() => {
+        if (!cancelled) setCompatibleCount(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId, locationDescription]);
 
   return (
     <div className="request-step-panel review-panel">
@@ -71,6 +94,17 @@ export function ReviewStep({
         <h2 ref={headingRef} tabIndex={-1}>Revisa tu solicitud</h2>
         <p>Comprueba que la información sea correcta antes de continuar.</p>
       </div>
+
+      {compatibleCount !== null ? (
+        <div className={`review-availability ${compatibleCount > 0 ? "has-pros" : "no-pros"}`}>
+          <Users size={18} />
+          {compatibleCount > 0 ? (
+            <span><strong>{compatibleCount}</strong> {compatibleCount === 1 ? "profesional" : "profesionales"} de {categoryName} en tu zona {compatibleCount === 1 ? "podrá" : "podrán"} ver tu solicitud.</span>
+          ) : (
+            <span>Ahora mismo no hay profesionales de {categoryName} en tu zona. Puedes publicarla igualmente y te avisaremos si aparece alguno.</span>
+          )}
+        </div>
+      ) : null}
 
       <section className="review-card" aria-labelledby="review-service-title">
         <div className="review-card-header">
@@ -99,11 +133,11 @@ export function ReviewStep({
           </button>
         </div>
         <dl className="review-details">
-          <div>
+          <div className="review-full-row">
             <dt>Título</dt>
             <dd>{title.trim() || "Sin título adicional"}</dd>
           </div>
-          <div>
+          <div className="review-full-row">
             <dt>Detalle</dt>
             <dd className="review-description-text">{description}</dd>
           </div>
@@ -126,7 +160,7 @@ export function ReviewStep({
             <dt>Urgencia</dt>
             <dd>{urgencyLabels[urgency]}</dd>
           </div>
-          <div>
+          <div className="review-full-row">
             <dt>Disponibilidad</dt>
             <dd>
               {flexibleSchedule ? "Horario flexible" : "Horario con fechas preferidas"}

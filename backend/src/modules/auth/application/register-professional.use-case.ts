@@ -26,7 +26,7 @@ export class RegisterProfessionalUseCase {
     const existingUser = await this.authRepository.findUserByEmail(email);
 
     if (existingUser) {
-      throw new ConflictException("No se pudo completar el registro.");
+      throw new ConflictException("Ese correo ya tiene una cuenta. Inicia sesión o usa otro correo.");
     }
 
     const user = await this.authRepository.registerProfessional({

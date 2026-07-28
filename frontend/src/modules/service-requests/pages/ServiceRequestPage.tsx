@@ -1006,6 +1006,7 @@ export function ServiceRequestPage() {
         {publishedRequest ? null : <RequestStepIndicator currentStep={draft.currentStep} />}
       </div>
 
+      <div className="request-content-card">
       {publishedRequest ? (
         <RequestSubmissionResult
           budgetMax={publishedRequest.budgetMax}
@@ -1130,6 +1131,7 @@ export function ServiceRequestPage() {
       {draft.currentStep === 4 ? (
         <>
           <ReviewStep
+            categoryId={draft.categoryId}
             categoryName={selectedCategory?.name ?? "Categoría no disponible"}
             description={draft.originalDescription}
             flexibleSchedule={draft.flexibleSchedule}
@@ -1165,6 +1167,7 @@ export function ServiceRequestPage() {
       ) : null}
         </>
       )}
+      </div>
     </section>
   );
 }

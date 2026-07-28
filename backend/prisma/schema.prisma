@@ -591,6 +591,7 @@ model Users {
   avatarUrl                       String?   @map("avatar_url")
   preferredLanguage               String   @default("es") @map("preferred_language")
   status                          String   @default("ACTIVE")
+  mustChangePassword              Int      @default(0) @map("must_change_password")
   emailVerifiedAt                 String?   @map("email_verified_at")
   phoneVerifiedAt                 String?   @map("phone_verified_at")
   lastLoginAt                     String?   @map("last_login_at")

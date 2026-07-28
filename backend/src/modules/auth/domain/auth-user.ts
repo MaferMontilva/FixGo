@@ -4,4 +4,5 @@ export type AuthUser = {
   firstName: string;
   lastName: string;
   roles: string[];
+  mustChangePassword: boolean;
 };

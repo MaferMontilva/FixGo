@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, ParseIntPipe, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, ParseIntPipe, Query, UseGuards } from "@nestjs/common";
 import { CurrentUser, RequestUser } from "../../../auth/presentation/current-user";
 import { JwtAuthGuard } from "../../../auth/presentation/jwt-auth.guard";
 import { Roles } from "../../../auth/presentation/roles.decorator";
@@ -36,6 +36,11 @@ export class ProfessionalsController {
   @Roles("PROFESSIONAL")
   findOpportunity(@CurrentUser() user: RequestUser, @Param("id", ParseIntPipe) id: number) {
     return this.professionalsService.findOpportunity(user.id, id);
+  }
+
+  @Get("compatible-count")
+  countCompatible(@Query("categoryId") categoryId?: string, @Query("location") location?: string) {
+    return this.professionalsService.countCompatible(Number(categoryId), location ?? null);
   }
 
   @Get()

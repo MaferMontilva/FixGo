@@ -42,12 +42,27 @@ export function SendBudgetForm({ serviceRequestId, onSent }: SendBudgetFormProps
 
   const validate = () => {
     for (const item of items) {
-      if (item.description.trim().length < 2) return "Cada concepto necesita una descripcion.";
+      const description = item.description.trim();
+      if (description.length < 2) return "Cada concepto necesita una descripcion de al menos 2 caracteres.";
+      if (description.length > 200) return "La descripcion de un concepto no puede superar los 200 caracteres.";
+
       const quantity = Number(item.quantity);
-      const unitPrice = Number(item.unitPrice);
       if (!Number.isFinite(quantity) || quantity <= 0) return "La cantidad debe ser mayor que cero.";
-      if (!Number.isFinite(unitPrice) || unitPrice < 0) return "Revisa el precio de los conceptos.";
+      if (quantity > 100000) return "La cantidad no puede superar 100000.";
+
+      const unitPrice = Number(item.unitPrice);
+      if (!Number.isFinite(unitPrice) || unitPrice <= 0) return "El precio debe ser mayor que cero.";
+      if (unitPrice > 1000000) return "El precio no puede superar 1000000.";
     }
+
+    if (observations.trim().length > 1000) return "Las observaciones no pueden superar los 1000 caracteres.";
+
+    if (durationValue) {
+      const duration = Number(durationValue);
+      if (!Number.isFinite(duration) || duration <= 0) return "La duracion estimada debe ser mayor que cero.";
+      if (duration > 3650) return "La duracion estimada no es valida.";
+    }
+
     return "";
   };
 

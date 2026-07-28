@@ -1,6 +1,7 @@
 import { Briefcase, FileText, LayoutDashboard, LogOut, Search, Star, UserRound } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth";
+import { NotificationBell } from "../../notifications";
 
 const links = [
   { to: "/profesional/panel", label: "Panel", Icon: LayoutDashboard },
@@ -14,7 +15,7 @@ const links = [
 export function ProfessionalNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -34,10 +35,13 @@ export function ProfessionalNav() {
           </Link>
         ))}
       </nav>
-      <button className="pro-nav-logout" type="button" onClick={handleLogout}>
-        <LogOut size={18} />
-        Salir
-      </button>
+      <div className="pro-nav-actions">
+        {isAuthenticated ? <NotificationBell /> : null}
+        <button className="pro-nav-logout" type="button" onClick={handleLogout}>
+          <LogOut size={18} />
+          Salir
+        </button>
+      </div>
     </header>
   );
 }

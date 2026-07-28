@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { NotificationsModule } from "../notifications/notifications.module";
 import { AcceptBudgetUseCase } from "./application/accept-budget.use-case";
 import { CompleteOrderUseCase, ConfirmOrderUseCase, StartOrderUseCase } from "./application/advance-order.use-case";
 import { GetClientOrdersUseCase } from "./application/get-client-orders.use-case";
@@ -8,6 +9,7 @@ import { PrismaServiceOrdersRepository } from "./infrastructure/prisma/prisma-se
 import { ServiceOrdersController } from "./presentation/http/service-orders.controller";
 
 @Module({
+  imports: [NotificationsModule],
   controllers: [ServiceOrdersController],
   providers: [
     AcceptBudgetUseCase,

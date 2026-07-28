@@ -21,11 +21,14 @@ export type RegisterProfessionalData = {
 
 export type UserWithPassword = AuthUser & {
   passwordHash: string | null;
+  status: string;
 };
 
 export abstract class AuthRepository {
   abstract findUserByEmail(email: string): Promise<UserWithPassword | null>;
   abstract findUserById(userId: number): Promise<AuthUser | null>;
+  abstract updatePasswordByEmail(email: string, passwordHash: string): Promise<boolean>;
+  abstract setPasswordById(userId: number, passwordHash: string): Promise<void>;
   abstract registerClient(data: RegisterClientData): Promise<AuthUser>;
   abstract registerProfessional(data: RegisterProfessionalData): Promise<AuthUser>;
   abstract createSession(userId: number, refreshTokenHash: string, expiresAt: string): Promise<AuthSessionEntity>;

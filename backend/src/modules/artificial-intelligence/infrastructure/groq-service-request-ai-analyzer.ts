@@ -164,7 +164,8 @@ export class GroqServiceRequestAiAnalyzer implements ServiceRequestAiAnalyzer {
                 "Devuelve exclusivamente un JSON que cumpla el esquema. No incluyas razonamiento, tool calls, markdown ni texto fuera del JSON.",
                 "No publiques, no guardes, no selecciones profesionales, no aceptes presupuestos y no garantices precios.",
                 "Usa exclusivamente las urgencias LOW, NORMAL, HIGH, EMERGENCY.",
-                "La improvedDescription debe corregir ortografia y puntuacion, redactar en espanol natural y expresar claramente el trabajo solicitado.",
+                "La improvedDescription es una REDACCION PROFESIONAL NUEVA del trabajo: reescribela por completo en espanol formal, claro y bien estructurado, describiendo el problema y el servicio que se necesita. Debe ser claramente distinta y mas profesional que el texto original; NUNCA la copies literalmente ni te limites a corregir tildes.",
+                "Elimina emociones, miedos, disculpas y comentarios personales irrelevantes (por ejemplo 'me siento sola', 'no se que hacer', 'no tengo nada', 'ayuda'). Conserva unicamente la informacion tecnica util para que el profesional entienda el trabajo.",
                 "Usa solamente los datos aportados por el cliente. No inventes medidas, marcas, materiales, cantidades, danos, fechas ni ubicaciones no indicadas.",
                 "Puedes anadir contexto tecnico general solo si es consecuencia segura del servicio.",
                 "No incluyas codigos internos, 'Tipo de trabajo:' ni 'Urgencia sugerida:'.",
@@ -397,7 +398,7 @@ export class GroqServiceRequestAiAnalyzer implements ServiceRequestAiAnalyzer {
     const cleanValue = this.cleanText(value, minLength, maxLength);
     if (!cleanValue) return null;
 
-    const sanitized = cleanValue
+    let sanitized = cleanValue
       .replace(/\bTipo de trabajo:\s*[^.?!]+[.?!]?\s*/gi, "")
       .replace(/\bNecesidad indicada por el cliente:\s*/gi, "")
       .replace(/\bUrgencia sugerida:\s*(LOW|NORMAL|HIGH|EMERGENCY)\.?\s*/gi, "")
@@ -407,11 +408,8 @@ export class GroqServiceRequestAiAnalyzer implements ServiceRequestAiAnalyzer {
       .slice(0, maxLength);
 
     if (sanitized.length < minLength) return null;
-    if (!this.isUsefulDescription(sanitized, originalDescription)) return null;
-    if (this.startsWithCatalogLabel(sanitized, categoryName) || this.startsWithCatalogLabel(sanitized, serviceName)) return null;
     if (this.containsInternalLabels(sanitized)) return null;
-    if (this.containsBrokenText(sanitized)) return null;
-    if (!/[.!?]$/.test(sanitized)) return null;
+    if (!/[.!?]$/.test(sanitized)) sanitized = `${sanitized}.`;
 
     return sanitized;
   }

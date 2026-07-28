@@ -1,12 +1,48 @@
-import { CheckCircle2, MapPin, SlidersHorizontal } from "lucide-react";
+import { CheckCircle2, MapPin, Search, Star } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { fallbackCategories, getCategories } from "../../categories";
 import { fallbackProfessionals } from "../data/professionalFallbacks";
 import { getProfessionals } from "../services/professionalsApi";
 import { useAsyncData } from "../../../shared/hooks/useAsyncData";
 
+type SortOption = "relevance" | "rating";
+
+const normalize = (value: string) =>
+  value.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+
 export function ProfessionalsPage() {
-  const { data: categories } = useAsyncData(getCategories, fallbackCategories);
   const { data: professionals } = useAsyncData(getProfessionals, fallbackProfessionals);
+  const { data: categories } = useAsyncData(getCategories, fallbackCategories);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortOption>("relevance");
+
+  const slugByTrade = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((category) => {
+      if (category.slug) map.set(normalize(category.name), category.slug);
+    });
+    return map;
+  }, [categories]);
+
+  const requestLink = (trade: string | null | undefined) => {
+    const slug = trade ? slugByTrade.get(normalize(trade)) : undefined;
+    return slug ? `/cliente/solicitar-presupuesto?category=${slug}` : "/cliente/solicitar-presupuesto";
+  };
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = professionals.filter((professional) => {
+      if (!q) return true;
+      const name = (professional.name ?? "").toLowerCase();
+      const trade = (professional.trade ?? "").toLowerCase();
+      return name.includes(q) || trade.includes(q);
+    });
+    if (sort === "rating") {
+      list = [...list].sort((a, b) => (b.ratingAverage ?? 0) - (a.ratingAverage ?? 0));
+    }
+    return list;
+  }, [professionals, query, sort]);
 
   return (
     <>
@@ -14,36 +50,50 @@ export function ProfessionalsPage() {
         <h1>Encuentra tu profesional</h1>
         <p>Profesionales disponibles en la red FixGo</p>
         <div className="professional-search-row">
-          <input placeholder="Buscar por nombre..." />
-          <select aria-label="Ordenar profesionales">
-            <option>Relevancia</option>
-            <option>Mejor valorados</option>
-            <option>Más cercanos</option>
+          <div className="search-field">
+            <Search size={18} aria-hidden="true" />
+            <input
+              placeholder="Buscar por nombre o gremio..."
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
+          <select aria-label="Ordenar profesionales" value={sort} onChange={(event) => setSort(event.target.value as SortOption)}>
+            <option value="relevance">Relevancia</option>
+            <option value="rating">Mejor valorados</option>
           </select>
         </div>
       </section>
-      <section className="professionals-layout">
-        <aside className="filters">
-          <h2><SlidersHorizontal size={20} /> Filtros</h2>
-          <span>Gremio</span>
-          <div className="filter-list">
-            {categories.slice(0, 12).map((category) => <button key={category.name}>{category.name}</button>)}
+
+      <section className="professionals-directory">
+        {visible.length === 0 ? (
+          <p className="professionals-empty">No encontramos profesionales para tu busqueda.</p>
+        ) : (
+          <div className="pro-directory-grid">
+            {visible.map((professional) => (
+              <article className="professional-card" key={professional.id ?? professional.name}>
+                <div className="professional-cover">
+                  <span>{professional.trade}</span>
+                </div>
+                <div className="professional-avatar">FG</div>
+                <div className="professional-info">
+                  <h3>
+                    {professional.name} {professional.verified && <CheckCircle2 size={18} />}
+                  </h3>
+                  <p className="professional-rating">
+                    <Star size={15} /> {professional.ratingAverage ? professional.ratingAverage.toFixed(1) : "Nuevo"}
+                  </p>
+                  <p>
+                    <MapPin size={16} /> {professional.location}
+                  </p>
+                  <Link className="pro-card-cta" to={requestLink(professional.trade)}>
+                    Pedir presupuesto
+                  </Link>
+                </div>
+              </article>
+            ))}
           </div>
-        </aside>
-        <div className="professional-grid">
-          {professionals.map((professional) => (
-            <article className="professional-card" key={professional.name}>
-              <div className="professional-cover">
-                <span>{professional.trade}</span>
-              </div>
-              <div className="professional-avatar">FG</div>
-              <div className="professional-info">
-                <h3>{professional.name} {professional.verified && <CheckCircle2 size={18} />}</h3>
-                <p><MapPin size={16} /> {professional.location}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+        )}
       </section>
     </>
   );

@@ -24,7 +24,11 @@ export class LoginUseCase {
       throw new UnauthorizedException("Credenciales inválidas.");
     }
 
-    const { passwordHash: _passwordHash, ...safeUser } = user;
+    if (user.status === "SUSPENDED") {
+      throw new UnauthorizedException("Tu cuenta está suspendida. Contacta con la administración de FixGo.");
+    }
+
+    const { passwordHash: _passwordHash, status: _status, ...safeUser } = user;
     return this.authTokenFactory.createForUser(safeUser);
   }
 }

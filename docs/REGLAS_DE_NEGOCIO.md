@@ -1,84 +1,59 @@
 # Reglas de negocio
 
-Este documento define reglas aprobadas para el producto. Algunas ya están cubiertas por código y otras pertenecen a fases futuras del roadmap. Ninguna regla futura debe presentarse como implementada hasta cerrar su fase correspondiente.
+Este documento define las reglas del producto. Salvo que se indique lo contrario, las reglas descritas están **cubiertas por código** en el sistema actual. Las reglas de evolución futura se marcan de forma explícita.
 
-## Estado actual frente a implementación futura
-
-- Actual: autenticación de cliente, perfil cliente, categorías y servicios reales.
-- Futuro: publicación completa de solicitudes, IA, matching, presupuestos, contratación, valoraciones, notificaciones, administración y auditoría completa.
-
-## Regla 1 - Publicación
+## Regla 1 — Publicación de solicitudes — Implementada
 
 Una solicitud solo puede publicarse cuando:
 
-- El cliente está autenticado.
+- El cliente está autenticado (identidad tomada del JWT, nunca del cuerpo).
 - Existe un perfil de cliente válido.
 - Tiene categoría válida.
 - Contiene descripción suficiente.
-- Contiene ubicación general.
 - Contiene urgencia válida.
 - Está en un estado que permite publicación.
 
 La IA puede sugerir datos, pero el cliente confirma. La IA no publica automáticamente.
 
-Estado: regla aprobada para implementación futura en Fase 4C y Fase 5.
+## Regla 2 — Profesionales compatibles — Implementada
 
-## Regla 2 - Profesionales compatibles
-
-Un profesional solamente puede ver o presupuestar una solicitud cuando:
+Un profesional solo ve una solicitud como oportunidad cuando:
 
 - Su cuenta está activa.
-- Su perfil está completo.
-- Está verificado.
+- Su perfil está verificado.
 - Trabaja en la categoría solicitada.
-- Ofrece un servicio compatible cuando corresponda.
-- Atiende la ciudad o zona.
 - La solicitud permanece abierta.
 - No es propietario de la solicitud.
 
-Estado: regla aprobada para implementación futura en Fase 6.
+El emparejamiento actual se realiza por **categoría**. La compatibilidad por zona geográfica y disponibilidad horaria queda como evolución futura.
 
-## Regla 3 - Presupuestos
+## Regla 3 — Presupuestos — Implementada
 
 Un profesional:
 
 - No puede presupuestar su propia solicitud.
 - No puede tener dos presupuestos activos para la misma solicitud.
 - No puede presupuestar solicitudes cerradas.
-- Debe indicar importe, duración, disponibilidad y condiciones.
-- Puede modificar o retirar el presupuesto mientras esté pendiente.
+- Indica importe, condiciones y detalle de la oferta.
 - No puede modificarlo después de ser aceptado.
 
 El total definitivo se calcula en backend.
 
-Estado: regla aprobada para implementación futura en Fase 7.
+## Regla 4 — Aceptación única — Implementada
 
-## Regla 4 - Aceptación única
+El cliente solo puede aceptar un presupuesto. La aceptación se ejecuta en **una sola transacción**:
 
-El cliente solo puede aceptar un presupuesto.
+- Presupuesto elegido → `ACCEPTED`.
+- Otros presupuestos → `REJECTED`.
+- Solicitud → `PROFESSIONAL_SELECTED`.
+- Orden de trabajo → creada.
+- Notificaciones → generadas.
 
-La aceptación debe ejecutarse en una transacción:
+`ACCEPTED` y `REJECTED` son estados de presupuesto, no de solicitud. La transacción evita doble clic, peticiones repetidas y que queden dos presupuestos aceptados.
 
-- Presupuesto elegido -> `ACCEPTED`.
-- Otros presupuestos -> `REJECTED`.
-- Solicitud -> `PROFESSIONAL_SELECTED`.
-- Servicio contratado -> creado.
-- Notificaciones -> generadas.
+## Regla 5 — Estados controlados — Implementada
 
-`ACCEPTED` y `REJECTED` son estados de presupuesto, no estados de solicitud.
-
-Debe evitar:
-
-- Doble clic.
-- Peticiones repetidas.
-- Aceptación simultánea.
-- Dos presupuestos aceptados.
-
-Estado: regla aprobada para implementación futura en Fase 7.
-
-## Regla 5 - Estados controlados
-
-Estados actuales conocidos de solicitudes:
+Estados de solicitud usados por el sistema:
 
 - `DRAFT`
 - `AI_PROCESSING`
@@ -91,32 +66,18 @@ Estados actuales conocidos de solicitudes:
 - `CANCELLED`
 - `EXPIRED`
 
-No se deben inventar estados adicionales sin auditar primero el esquema.
+Transiciones permitidas principales:
 
-Transiciones permitidas:
+- `DRAFT` → `AI_PROCESSING` → `READY_TO_PUBLISH` → `PUBLISHED`
+- `PUBLISHED` → `RECEIVING_BUDGETS` → `PROFESSIONAL_SELECTED`
+- `PROFESSIONAL_SELECTED` → `IN_PROGRESS` → `COMPLETED`
+- Estados abiertos → `CANCELLED` cuando las reglas lo permiten.
 
-- `DRAFT` -> `AI_PROCESSING`
-- `DRAFT` -> `READY_TO_PUBLISH`
-- `AI_PROCESSING` -> `READY_TO_PUBLISH`
-- `READY_TO_PUBLISH` -> `PUBLISHED`
-- `PUBLISHED` -> `RECEIVING_BUDGETS`
-- `RECEIVING_BUDGETS` -> `PROFESSIONAL_SELECTED`
-- `PROFESSIONAL_SELECTED` -> `IN_PROGRESS`
-- `IN_PROGRESS` -> `COMPLETED`
-- Estados abiertos -> `CANCELLED`, cuando las reglas lo permitan.
-- Estados publicados sin actividad -> `EXPIRED`, mediante proceso controlado.
+Transiciones prohibidas: desde `COMPLETED`, `CANCELLED` o `EXPIRED` hacia estados operativos; `DRAFT` → `PROFESSIONAL_SELECTED`; `PUBLISHED` → `COMPLETED`.
 
-Transiciones prohibidas:
+La orden de trabajo tiene su propio ciclo: `PENDING_START` → iniciada por el profesional → completada por el profesional → confirmada por el cliente.
 
-- `COMPLETED` -> cualquier estado operativo.
-- `CANCELLED` -> cualquier estado operativo.
-- `EXPIRED` -> cualquier estado operativo sin reactivación explícita.
-- `DRAFT` -> `PROFESSIONAL_SELECTED`.
-- `PUBLISHED` -> `COMPLETED`.
-
-Estado: regla aprobada para implementación gradual desde Fase 4C.
-
-## Regla 6 - Valoraciones
+## Regla 6 — Valoraciones — Implementada
 
 Solo se puede valorar cuando:
 
@@ -125,52 +86,53 @@ Solo se puede valorar cuando:
 - El profesional fue el seleccionado.
 - No existe una valoración anterior.
 
-El promedio del profesional se recalcula automáticamente.
+El promedio del profesional se recalcula automáticamente y se muestra en su perfil y en el directorio. Al registrarse una valoración, el profesional recibe una notificación en la app.
 
-Estado: regla aprobada para implementación futura en Fase 8.
+## Regla 7 — Administración — Implementada
 
-## Regla 7 - Administración y auditoría
+El administrador puede, desde el panel `/admin`:
 
-El administrador puede:
+- Verificar o rechazar profesionales.
+- Suspender o activar usuarios.
+- Crear usuarios (cliente, profesional o administrador) con clave temporal.
+- Otorgar o quitar el rol de administrador a un usuario existente.
+- Crear, editar, activar/desactivar y eliminar categorías.
+- Revisar, cancelar y eliminar solicitudes.
+- Consultar métricas globales, incluido el dinero generado (total y por categoría), y buscar en cada listado.
 
-- Verificar profesionales.
-- Suspender usuarios.
-- Gestionar categorías.
-- Revisar solicitudes.
-- Revisar incidencias.
-- Supervisar actividad.
+El registro de auditoría formal de acciones sensibles queda como evolución futura.
 
-Las acciones sensibles deben dejar registro de auditoría.
+## Regla 8 — Autorización — Implementada
 
-Estado: regla aprobada para implementación futura en Fase 8.
+`CLIENT`: crea y publica solicitudes, consulta presupuestos, acepta una oferta, sigue el servicio y valora.
 
-## Regla 8 - Autorización
+`PROFESSIONAL`: gestiona su perfil, consulta oportunidades compatibles, envía presupuestos y ejecuta trabajos asignados.
 
-`CLIENT`:
+`ADMIN`: verifica, suspende, administra catálogos, gestiona usuarios y supervisa.
 
-- Crea solicitudes.
-- Publica.
-- Consulta presupuestos.
-- Acepta una oferta.
-- Sigue el trabajo.
-- Valora.
+No se permite registro público como `ADMIN`: las cuentas de administrador solo las crea un administrador master (o se cargan por semilla). Un usuario **suspendido no puede iniciar sesión**. Todos los endpoints sensibles están protegidos con `JwtAuthGuard` + `RolesGuard` y la identidad se toma siempre del JWT.
 
-`PROFESSIONAL`:
+## Regla 9 — Privacidad del contacto — Implementada
 
-- Gestiona perfil.
-- Configura categorías y zonas.
-- Consulta solicitudes compatibles.
-- Envía presupuestos.
-- Ejecuta trabajos asignados.
+El teléfono del profesional no se muestra durante la exploración ni en la comparación de presupuestos. Se libera al cliente únicamente al final del flujo, una vez creada y aceptada la orden de trabajo.
 
-`ADMIN`:
+## Regla 10 — Jerarquía de administradores — Implementada
 
-- Verifica.
-- Suspende.
-- Administra catálogos.
-- Supervisa.
-- Audita.
+Existen dos niveles de administrador:
 
-No se permite registro público como `ADMIN`.
+- **Administrador master** (`SUPER_ADMIN`): puede crear administradores y otorgar/quitar el rol de administrador a otros usuarios, además de todo lo de un admin normal.
+- **Administrador normal** (`ADMIN`): gestiona clientes, profesionales, solicitudes y categorías, pero **no puede gestionar a otros administradores**.
 
-Estado: roles base existentes; permisos completos se implementarán por fase.
+Protecciones: un administrador master está protegido (nadie lo puede suspender desde el panel), nadie puede cambiar el estado de su propia cuenta, y solo un master puede tocar a otros administradores.
+
+## Regla 11 — Visibilidad de profesionales — Implementada
+
+Un profesional aparece en el directorio público y recibe oportunidades solo si su perfil está activo, su verificación es `APPROVED` y su usuario no está suspendido. Al rechazar la verificación o suspender la cuenta, el profesional deja de aparecer y de recibir oportunidades.
+
+## Regla 12 — Clave temporal y cambio forzado — Implementada
+
+Toda cuenta creada por un administrador nace con una **clave temporal** y la marca `must_change_password`. La primera vez que esa persona inicia sesión, el sistema la obliga a definir una contraseña nueva antes de poder navegar a cualquier otra pantalla.
+
+## Regla 13 — Insignias de cliente — Implementada
+
+Según la cantidad de servicios contratados, el cliente obtiene una insignia de clasificación (Cliente nuevo, Junior, Pro o Élite) que se muestra en su pantalla de servicios contratados. Es solo motivacional; no otorga descuentos ni beneficios en esta versión.

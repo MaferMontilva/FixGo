@@ -1,6 +1,7 @@
 import { LogIn, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { NotificationBell } from "../../modules/notifications";
 import { Logo } from "./Logo";
 
 const items = [
@@ -77,6 +78,7 @@ export function MarketplaceHeader({
           <button className="language-button" aria-label="Idioma espanol" onClick={() => setIsMenuOpen(false)}>
             ES
           </button>
+          {isAuthenticated ? <NotificationBell /> : null}
           {isAuthenticated ? (
             <span className="account-label" aria-label={`Usuario autenticado: ${accountName}`}>
               <span className="account-label-desktop">Hola, {accountName}</span>

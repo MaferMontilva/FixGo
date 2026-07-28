@@ -1,11 +1,23 @@
+export type AdminCategoryRevenue = {
+  category: string;
+  revenue: number;
+  orders: number;
+};
+
 export type AdminStats = {
   totalUsers: number;
+  admins: number;
+  suspendedUsers: number;
   clients: number;
   professionals: number;
   activeProfessionals: number;
   publishedRequests: number;
   serviceOrders: number;
+  completedOrders: number;
   reviews: number;
+  currency: string;
+  totalRevenue: number;
+  revenueByCategory: AdminCategoryRevenue[];
 };
 
 export type AdminUser = {

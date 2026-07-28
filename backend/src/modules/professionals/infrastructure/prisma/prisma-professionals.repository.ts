@@ -3,17 +3,23 @@ import { PrismaService } from "../../../../shared/prisma.service";
 import { ProfessionalEntity, ProfessionalMeEntity, ProfessionalOpportunityEntity, UpsertProfessionalProfileData } from "../../domain/professional.entity";
 import { ProfessionalsRepository } from "../../domain/professionals.repository";
 
-const KNOWN_PROVINCES = ["Madrid", "Barcelona", "Valencia", "Sevilla", "Málaga"];
-
 @Injectable()
 export class PrismaProfessionalsRepository implements ProfessionalsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAllActive(): Promise<ProfessionalEntity[]> {
-    const professionals = await this.prisma.professionalProfiles.findMany({
-      where: { profileStatus: "ACTIVE" },
+    // Solo se listan profesionales con perfil activo Y verificacion aprobada.
+    // Ademas se excluyen los que pertenecen a un usuario suspendido por administracion.
+    const approved = await this.prisma.professionalProfiles.findMany({
+      where: { profileStatus: "ACTIVE", verificationStatus: "APPROVED" },
       orderBy: [{ isHomologated: "desc" }, { ratingAverage: "desc" }, { displayName: "asc" }]
     });
+    const activeUsers = await this.prisma.users.findMany({
+      where: { id: { in: approved.map((profile) => profile.userId) }, status: "ACTIVE" },
+      select: { id: true }
+    });
+    const activeUserIds = new Set(activeUsers.map((user) => user.id));
+    const professionals = approved.filter((profile) => activeUserIds.has(profile.userId));
 
     const categoryLinks = await this.prisma.professionalCategories.findMany({
       where: {
@@ -197,6 +203,24 @@ export class PrismaProfessionalsRepository implements ProfessionalsRepository {
     return this.hydrateProfessionalMe(profile);
   }
 
+  async countCompatibleProfessionals(categoryId: number, location: string | null): Promise<number> {
+    const links = await this.prisma.professionalCategories.findMany({ where: { categoryId }, select: { professionalId: true } });
+    if (links.length === 0) return 0;
+    const professionalIds = [...new Set(links.map((link) => link.professionalId))];
+    const profiles = await this.prisma.professionalProfiles.findMany({
+      where: { id: { in: professionalIds }, profileStatus: "ACTIVE", verificationStatus: "APPROVED" },
+      select: { userId: true, province: true }
+    });
+    const loc = (location ?? "").toLowerCase();
+    const inProvince = profiles.filter((profile) => profile.province && loc.includes(profile.province.toLowerCase()));
+    if (inProvince.length === 0) return 0;
+    const activeUsers = await this.prisma.users.findMany({
+      where: { id: { in: inProvince.map((profile) => profile.userId) }, status: "ACTIVE" },
+      select: { id: true }
+    });
+    return activeUsers.length;
+  }
+
   async findCompatibleOpportunities(userId: number): Promise<ProfessionalOpportunityEntity[]> {
     const profile = await this.findMeByUserId(userId);
     if (!profile?.categories.length) return [];
@@ -237,6 +261,8 @@ export class PrismaProfessionalsRepository implements ProfessionalsRepository {
     availability: string | null;
     profileStatus: string;
     profileImageUrl: string | null;
+    ratingAverage: number;
+    ratingsCount: number;
     createdAt: string;
     updatedAt: string;
   }): Promise<ProfessionalMeEntity> {
@@ -268,6 +294,8 @@ export class PrismaProfessionalsRepository implements ProfessionalsRepository {
       availability: profile.availability,
       status: profile.profileStatus,
       profileImageUrl: profile.profileImageUrl,
+      ratingAverage: profile.ratingAverage,
+      ratingsCount: profile.ratingsCount,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
       categories: categories.map((category) => ({
@@ -311,12 +339,12 @@ export class PrismaProfessionalsRepository implements ProfessionalsRepository {
     const categoriesById = new Map(categories.map((category) => [category.id, category]));
     const servicesById = new Map(services.map((service) => [service.id, service]));
 
+    // Emparejamiento por CATEGORIA + PROVINCIA: el profesional solo ve las
+    // solicitudes de su categoria cuya ubicacion corresponde a su provincia.
     return requests
       .filter((request) => {
-        if (!province || !request.locationDescription) return true;
-        const location = request.locationDescription.toLowerCase();
-        const hasComparableProvince = KNOWN_PROVINCES.some((knownProvince) => location.includes(knownProvince.toLowerCase()));
-        return !hasComparableProvince || location.includes(province.toLowerCase());
+        if (!province || !request.locationDescription) return false;
+        return request.locationDescription.toLowerCase().includes(province.toLowerCase());
       })
       .map((request) => {
         const category = request.categoryId ? categoriesById.get(request.categoryId) : null;

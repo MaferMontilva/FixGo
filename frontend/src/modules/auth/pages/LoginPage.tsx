@@ -41,7 +41,11 @@ export function LoginPage() {
   const validate = () => {
     const nextErrors: LoginFormErrors = {};
 
-    if (!email.trim()) nextErrors.email = "Escribe tu correo.";
+    if (!email.trim()) {
+      nextErrors.email = "Escribe tu correo.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      nextErrors.email = "Escribe un correo valido.";
+    }
     if (!password) nextErrors.password = "Escribe tu contrasena.";
 
     setErrors(nextErrors);
@@ -89,6 +93,9 @@ export function LoginPage() {
             error={errors.password}
             onChange={(event) => setPassword(event.target.value)}
           />
+          <div className="auth-forgot">
+            <Link to="/recuperar">Olvidaste tu contrasena?</Link>
+          </div>
           {serverError ? <p className="form-error server-error">{serverError}</p> : null}
           <Button className="auth-submit" type="submit" variant="wide" disabled={isSubmitting}>
             <LogIn size={20} />

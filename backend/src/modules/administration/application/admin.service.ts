@@ -1,5 +1,9 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { ADMIN_REPOSITORY, AdminRepository, CreateCategoryData, UpdateCategoryData } from "../domain/admin.repository";
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ADMIN_REPOSITORY, AdminRepository, CreateCategoryData, CreateUserData, UpdateCategoryData } from "../domain/admin.repository";
+
+const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/;
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).+$/;
 
 const USER_STATUSES = ["ACTIVE", "SUSPENDED", "BLOCKED"];
 const VERIFICATION_STATUSES = ["PENDING", "IN_REVIEW", "APPROVED", "REJECTED", "SUSPENDED"];
@@ -19,13 +23,94 @@ export class AdminService {
     return this.repository.listUsers();
   }
 
-  async setUserStatus(userId: number, status: string) {
+  async setUserStatus(actingUserId: number, userId: number, status: string) {
     if (!USER_STATUSES.includes(status)) {
       throw new BadRequestException("Estado de usuario no valido.");
     }
+
+    const users = await this.repository.listUsers();
+    const actor = users.find((user) => user.id === actingUserId);
+    const target = users.find((user) => user.id === userId);
+    if (!target) throw new NotFoundException("Usuario no encontrado.");
+
+    // Un administrador no puede cambiar el estado de su propia cuenta (evita autobloqueo).
+    if (userId === actingUserId) {
+      throw new BadRequestException("No puedes cambiar el estado de tu propia cuenta.");
+    }
+
+    const actorIsMaster = actor?.roles.includes("SUPER_ADMIN") ?? false;
+    const targetIsMaster = target.roles.includes("SUPER_ADMIN");
+    const targetIsAdmin = target.roles.includes("ADMIN");
+
+    // Jerarquia de administradores:
+    // - Un administrador master esta protegido: nadie puede suspenderlo desde el panel.
+    // - A un administrador normal solo lo puede gestionar un master.
+    if (targetIsMaster) {
+      throw new ForbiddenException("No se puede suspender a un administrador master.");
+    }
+    if (targetIsAdmin && !actorIsMaster) {
+      throw new ForbiddenException("Solo un administrador master puede gestionar a otros administradores.");
+    }
+
     const user = await this.repository.setUserStatus(userId, status);
     if (!user) throw new NotFoundException("Usuario no encontrado.");
     return user;
+  }
+
+  async createUser(actingUserId: number, data: CreateUserData) {
+    const users = await this.repository.listUsers();
+    const actor = users.find((user) => user.id === actingUserId);
+
+    if (!["CLIENT", "PROFESSIONAL", "ADMIN"].includes(data.role)) {
+      throw new BadRequestException("Rol no valido.");
+    }
+    // Crear un administrador solo lo permite un administrador master.
+    if (data.role === "ADMIN" && !actor?.roles.includes("SUPER_ADMIN")) {
+      throw new ForbiddenException("Solo un administrador master puede crear administradores.");
+    }
+
+    const firstName = data.firstName.trim();
+    const lastName = data.lastName.trim();
+    const email = data.email.trim().toLowerCase();
+
+    if (firstName.length < 2 || firstName.length > 80 || !NAME_REGEX.test(firstName)) {
+      throw new BadRequestException("El nombre solo puede contener letras (2 a 80 caracteres).");
+    }
+    if (lastName.length < 2 || lastName.length > 80 || !NAME_REGEX.test(lastName)) {
+      throw new BadRequestException("El apellido solo puede contener letras (2 a 80 caracteres).");
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      throw new BadRequestException("Escribe un correo electronico valido.");
+    }
+    if (data.password.length < 8 || !PASSWORD_REGEX.test(data.password)) {
+      throw new BadRequestException("La clave temporal debe tener al menos 8 caracteres, con letra y numero.");
+    }
+    if (await this.repository.emailExists(email)) {
+      throw new ConflictException("Ese correo ya tiene una cuenta.");
+    }
+
+    return this.repository.createUser({ firstName, lastName, email, password: data.password, role: data.role });
+  }
+
+  async setUserAdminRole(actingUserId: number, userId: number, grant: boolean) {
+    const users = await this.repository.listUsers();
+    const actor = users.find((user) => user.id === actingUserId);
+    const target = users.find((user) => user.id === userId);
+    if (!target) throw new NotFoundException("Usuario no encontrado.");
+
+    if (!actor?.roles.includes("SUPER_ADMIN")) {
+      throw new ForbiddenException("Solo un administrador master puede otorgar o quitar permisos de administrador.");
+    }
+    if (userId === actingUserId) {
+      throw new BadRequestException("No puedes cambiar tus propios permisos.");
+    }
+    if (target.roles.includes("SUPER_ADMIN")) {
+      throw new ForbiddenException("No se pueden modificar los permisos de un administrador master.");
+    }
+
+    const updated = await this.repository.setUserAdminRole(userId, grant);
+    if (!updated) throw new NotFoundException("Usuario no encontrado.");
+    return updated;
   }
 
   listProfessionals() {

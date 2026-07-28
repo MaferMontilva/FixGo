@@ -1,4 +1,4 @@
-import { ClipboardList, Eye, PlusCircle, XCircle } from "lucide-react";
+import { AlertTriangle, Calendar, ClipboardList, Coins, Home, Layers, MapPin, PlusCircle, Wrench, XCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../shared/components/Button";
@@ -271,9 +271,12 @@ export function BudgetsPage() {
             {requests.map((request) => (
               <article className="client-request-card" key={request.id}>
                 <div className="client-request-card-header">
-                  <div>
-                    <span className="client-request-id">Solicitud #{request.id}</span>
-                    <h2>{request.title?.trim() || "Solicitud sin título"}</h2>
+                  <div className="crc-title-wrap">
+                    <span className="crc-cat-icon"><Home size={20} /></span>
+                    <div>
+                      <span className="client-request-id">Solicitud #{request.id}</span>
+                      <h2>{request.title?.trim() || "Solicitud sin título"}</h2>
+                    </div>
                   </div>
                   <span className={`client-request-status status-${request.status.toLowerCase().replace(/_/g, "-")}`}>
                     {getStatusLabel(request.status)}
@@ -281,48 +284,49 @@ export function BudgetsPage() {
                 </div>
                 <dl className="client-request-summary">
                   <div>
-                    <dt>Categoría</dt>
-                    <dd>{getCategoryName(request)}</dd>
+                    <span className="crf-ic"><Layers size={16} /></span>
+                    <div className="crf-text"><dt>Categoría</dt><dd>{getCategoryName(request)}</dd></div>
                   </div>
                   <div>
-                    <dt>Servicio</dt>
-                    <dd>{getServiceName(request)}</dd>
+                    <span className="crf-ic"><Wrench size={16} /></span>
+                    <div className="crf-text"><dt>Servicio</dt><dd>{getServiceName(request)}</dd></div>
                   </div>
                   <div>
-                    <dt>Ubicación</dt>
-                    <dd>{request.locationDescription || "Sin ubicación"}</dd>
+                    <span className="crf-ic"><MapPin size={16} /></span>
+                    <div className="crf-text"><dt>Ubicación</dt><dd>{request.locationDescription || "Sin ubicación"}</dd></div>
                   </div>
                   <div>
-                    <dt>Urgencia</dt>
-                    <dd>{urgencyLabels[request.urgency]}</dd>
+                    <span className="crf-ic"><AlertTriangle size={16} /></span>
+                    <div className="crf-text"><dt>Urgencia</dt><dd><span className="crf-urgency">{urgencyLabels[request.urgency]}</span></dd></div>
                   </div>
                   {formatAiPriceRange(request) ? (
                     <div>
-                      <dt>Precio orientativo de FixGo IA</dt>
-                      <dd>{formatAiPriceRange(request)}</dd>
+                      <span className="crf-ic"><Coins size={16} /></span>
+                      <div className="crf-text"><dt>Precio orientativo</dt><dd>{formatAiPriceRange(request)}</dd></div>
                     </div>
                   ) : null}
                   <div>
-                    <dt>Fecha</dt>
-                    <dd>{formatDate(request.publishedAt ?? request.createdAt)}</dd>
+                    <span className="crf-ic"><Calendar size={16} /></span>
+                    <div className="crf-text"><dt>Fecha</dt><dd>{formatDate(request.publishedAt ?? request.createdAt)}</dd></div>
                   </div>
                 </dl>
-                <p className="client-request-description">{getShortDescription(request.originalDescription)}</p>
+                {getShortDescription(request.originalDescription) ? (
+                  <div className="client-request-desc-box">
+                    <span className="crf-desc-label">Descripción</span>
+                    <p>{getShortDescription(request.originalDescription)}</p>
+                  </div>
+                ) : null}
                 <div className="client-request-actions">
-                  <button className="request-save-action" disabled={detailLoadingId === request.id} onClick={() => openDetail(request.id)} type="button">
-                    <Eye size={18} />
-                    {detailLoadingId === request.id ? "Abriendo..." : "Ver detalle"}
-                  </button>
                   {["PUBLISHED", "RECEIVING_BUDGETS", "PROFESSIONAL_SELECTED", "IN_PROGRESS", "COMPLETED"].includes(request.status) ? (
-                    <button className="request-save-action" onClick={() => navigate(`/cliente/solicitudes/${request.id}/presupuestos`)} type="button">
+                    <button className="client-request-primary" onClick={() => navigate(`/cliente/solicitudes/${request.id}/presupuestos`)} type="button">
                       <ClipboardList size={18} />
                       Ver presupuestos
                     </button>
                   ) : null}
                   {canCancel(request.status) ? (
-                    <button className="client-request-cancel" disabled={cancelLoadingId === request.id} onClick={() => cancelRequest(request)} type="button">
-                      <XCircle size={18} />
-                      {cancelLoadingId === request.id ? "Cancelando..." : "Cancelar solicitud"}
+                    <button className="client-request-cancel-link" disabled={cancelLoadingId === request.id} onClick={() => cancelRequest(request)} type="button">
+                      <XCircle size={17} />
+                      {cancelLoadingId === request.id ? "Cancelando..." : "Cancelar"}
                     </button>
                   ) : null}
                   {request.status === "CANCELLED" ? (

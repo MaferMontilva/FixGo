@@ -1,4 +1,5 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { CreateNotificationService } from "../../notifications/application/create-notification.use-case";
 import { ReviewEntity } from "../domain/review.entity";
 import { REVIEWS_REPOSITORY, ReviewsRepository } from "../domain/reviews.repository";
 
@@ -14,7 +15,8 @@ export type CreateReviewCommand = {
 export class CreateReviewUseCase {
   constructor(
     @Inject(REVIEWS_REPOSITORY)
-    private readonly repository: ReviewsRepository
+    private readonly repository: ReviewsRepository,
+    private readonly createNotificationService: CreateNotificationService
   ) {}
 
   async execute(command: CreateReviewCommand): Promise<ReviewEntity> {
@@ -38,7 +40,7 @@ export class CreateReviewUseCase {
       throw new ConflictException("Ya has valorado este trabajo.");
     }
 
-    return this.repository.createReview({
+    const review = await this.repository.createReview({
       serviceOrderId: command.serviceOrderId,
       authorUserId: command.authorUserId,
       professionalId: order.professionalId,
@@ -46,5 +48,25 @@ export class CreateReviewUseCase {
       title: command.title?.trim() || null,
       comment: command.comment?.trim() || null
     });
+
+    await this.notifyProfessional(order.professionalId, review);
+
+    return review;
+  }
+
+  private async notifyProfessional(professionalId: number, review: ReviewEntity): Promise<void> {
+    try {
+      const professionalUserId = await this.repository.findProfessionalUserId(professionalId);
+      if (!professionalUserId) return;
+      await this.createNotificationService.execute({
+        userId: professionalUserId,
+        type: "REVIEW_RECEIVED",
+        title: "Nueva valoración",
+        body: `Un cliente valoró tu trabajo con ${review.rating} de 5 estrellas.`,
+        data: { serviceOrderId: review.serviceOrderId, reviewId: review.id }
+      });
+    } catch {
+      // La notificacion nunca debe interrumpir el registro de la valoracion.
+    }
   }
 }

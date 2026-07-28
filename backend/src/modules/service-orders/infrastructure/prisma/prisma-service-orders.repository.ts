@@ -26,6 +26,11 @@ export class PrismaServiceOrdersRepository implements ServiceOrdersRepository {
     return profile?.id ?? null;
   }
 
+  async findProfessionalUserId(professionalId: number): Promise<number | null> {
+    const profile = await this.prisma.professionalProfiles.findUnique({ where: { id: professionalId }, select: { userId: true } });
+    return profile?.userId ?? null;
+  }
+
   async acceptBudget(clientUserId: number, budgetId: number): Promise<ServiceOrderEntity> {
     const budget = await this.prisma.budgets.findUnique({ where: { id: budgetId } });
     if (!budget) throw new NotFoundException("El presupuesto no existe.");
@@ -149,7 +154,7 @@ export class PrismaServiceOrdersRepository implements ServiceOrdersRepository {
 
     const [requests, professionals, budgets, reviews] = await Promise.all([
       this.prisma.serviceRequests.findMany({ where: { id: { in: requestIds } }, select: { id: true, title: true, finalDescription: true, originalDescription: true } }),
-      this.prisma.professionalProfiles.findMany({ where: { id: { in: professionalIds } }, select: { id: true, displayName: true, businessName: true } }),
+      this.prisma.professionalProfiles.findMany({ where: { id: { in: professionalIds } }, select: { id: true, displayName: true, businessName: true, phone: true } }),
       this.prisma.budgets.findMany({ where: { id: { in: budgetIds } }, select: { id: true, totalPrice: true, currency: true } }),
       this.prisma.reviews.findMany({ where: { serviceOrderId: { in: orderIds } }, select: { serviceOrderId: true } })
     ]);
@@ -178,6 +183,7 @@ export class PrismaServiceOrdersRepository implements ServiceOrdersRepository {
         requestTitle: request?.title ?? null,
         requestDescription: request?.finalDescription ?? request?.originalDescription ?? null,
         professionalName: professional?.businessName || professional?.displayName || null,
+        professionalPhone: professional?.phone ?? null,
         totalPrice: budget?.totalPrice ?? null,
         currency: budget?.currency ?? null,
         hasReview: reviewedOrderIds.has(order.id)

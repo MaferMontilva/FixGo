@@ -17,18 +17,18 @@ import {
 
 export class CreateBudgetItemDto {
   @IsString()
-  @MinLength(2)
+  @MinLength(2, { message: "La descripcion debe tener al menos 2 caracteres." })
   @MaxLength(200)
   description!: string;
 
-  @IsNumber()
-  @IsPositive()
-  @Max(100000)
+  @IsNumber({}, { message: "La cantidad debe ser un numero." })
+  @IsPositive({ message: "La cantidad debe ser mayor que 0." })
+  @Max(100000, { message: "La cantidad no puede superar 100000." })
   quantity!: number;
 
-  @IsNumber()
-  @Min(0)
-  @Max(1000000)
+  @IsNumber({}, { message: "El precio debe ser un numero." })
+  @IsPositive({ message: "El precio debe ser mayor que 0." })
+  @Max(1000000, { message: "El precio no puede superar 1000000." })
   unitPrice!: number;
 
   @IsOptional()

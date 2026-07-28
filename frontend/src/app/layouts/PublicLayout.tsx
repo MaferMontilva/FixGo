@@ -4,13 +4,14 @@ import { PublicHeader } from "../../shared/components/PublicHeader";
 
 export function PublicLayout() {
   const { pathname } = useLocation();
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout, user, hasRole } = useAuth();
   const accountName = user?.firstName || "Mi cuenta";
+  const isAdmin = hasRole("ADMIN");
 
   if (pathname === "/") {
     return (
       <main className="landing-shell">
-        <PublicHeader accountName={accountName} isAuthenticated={isAuthenticated} onLogout={logout} />
+        <PublicHeader accountName={accountName} isAuthenticated={isAuthenticated} isAdmin={isAdmin} onLogout={logout} />
         <Outlet />
       </main>
     );

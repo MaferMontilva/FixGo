@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { NotificationsModule } from "../notifications/notifications.module";
 import { CreateBudgetUseCase } from "./application/create-budget.use-case";
 import { GetMyBudgetsUseCase } from "./application/get-my-budgets.use-case";
 import { GetRequestBudgetsUseCase } from "./application/get-request-budgets.use-case";
@@ -7,6 +8,7 @@ import { PrismaBudgetsRepository } from "./infrastructure/prisma/prisma-budgets.
 import { BudgetsController } from "./presentation/http/budgets.controller";
 
 @Module({
+  imports: [NotificationsModule],
   controllers: [BudgetsController],
   providers: [
     CreateBudgetUseCase,

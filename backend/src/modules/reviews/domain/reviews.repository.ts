@@ -20,6 +20,7 @@ export type CreateReviewData = {
 
 export abstract class ReviewsRepository {
   abstract findProfessionalIdByUserId(userId: number): Promise<number | null>;
+  abstract findProfessionalUserId(professionalId: number): Promise<number | null>;
   abstract findServiceOrderForReview(serviceOrderId: number): Promise<ServiceOrderForReview | null>;
   abstract findExistingReview(serviceOrderId: number, authorUserId: number): Promise<ReviewEntity | null>;
   abstract createReview(data: CreateReviewData): Promise<ReviewEntity>;

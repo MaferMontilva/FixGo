@@ -27,6 +27,11 @@ export class PrismaReviewsRepository implements ReviewsRepository {
     return profile?.id ?? null;
   }
 
+  async findProfessionalUserId(professionalId: number): Promise<number | null> {
+    const profile = await this.prisma.professionalProfiles.findUnique({ where: { id: professionalId }, select: { userId: true } });
+    return profile?.userId ?? null;
+  }
+
   async findServiceOrderForReview(serviceOrderId: number): Promise<ServiceOrderForReview | null> {
     const order = await this.prisma.serviceOrders.findUnique({
       where: { id: serviceOrderId },

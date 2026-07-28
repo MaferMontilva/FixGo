@@ -1,9 +1,10 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
+import { CurrentUser, RequestUser } from "../../../auth/presentation/current-user";
 import { JwtAuthGuard } from "../../../auth/presentation/jwt-auth.guard";
 import { Roles } from "../../../auth/presentation/roles.decorator";
 import { RolesGuard } from "../../../auth/presentation/roles.guard";
 import { AdminService } from "../../application/admin.service";
-import { SetCategoryActiveDto, SetProfessionalVerificationDto, SetUserStatusDto } from "../dto/admin-actions.dto";
+import { CreateUserDto, SetAdminRoleDto, SetCategoryActiveDto, SetProfessionalVerificationDto, SetUserStatusDto } from "../dto/admin-actions.dto";
 import { CreateCategoryDto, UpdateCategoryDto } from "../dto/category.dto";
 
 @Controller("admin")
@@ -23,8 +24,24 @@ export class AdminController {
   }
 
   @Patch("users/:id/status")
-  setUserStatus(@Param("id", ParseIntPipe) id: number, @Body() dto: SetUserStatusDto) {
-    return this.adminService.setUserStatus(id, dto.status);
+  setUserStatus(@CurrentUser() actor: RequestUser, @Param("id", ParseIntPipe) id: number, @Body() dto: SetUserStatusDto) {
+    return this.adminService.setUserStatus(actor.id, id, dto.status);
+  }
+
+  @Post("users")
+  createUser(@CurrentUser() actor: RequestUser, @Body() dto: CreateUserDto) {
+    return this.adminService.createUser(actor.id, {
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
+      password: dto.password,
+      role: dto.role as "CLIENT" | "PROFESSIONAL" | "ADMIN"
+    });
+  }
+
+  @Patch("users/:id/admin-role")
+  setUserAdminRole(@CurrentUser() actor: RequestUser, @Param("id", ParseIntPipe) id: number, @Body() dto: SetAdminRoleDto) {
+    return this.adminService.setUserAdminRole(actor.id, id, dto.grant);
   }
 
   @Get("professionals")

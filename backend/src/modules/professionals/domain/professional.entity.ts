@@ -49,6 +49,8 @@ export type ProfessionalMeEntity = {
   availability: string | null;
   status: string;
   profileImageUrl: string | null;
+  ratingAverage: number;
+  ratingsCount: number;
   createdAt: string;
   updatedAt: string;
   categories: ProfessionalCategorySummary[];

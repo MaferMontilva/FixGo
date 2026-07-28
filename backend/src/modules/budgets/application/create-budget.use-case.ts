@@ -1,4 +1,5 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { CreateNotificationService } from "../../notifications/application/create-notification.use-case";
 import { BudgetEntity } from "../domain/budget.entity";
 import { BUDGETS_REPOSITORY, BudgetsRepository, CreateBudgetItemData } from "../domain/budgets.repository";
 
@@ -19,7 +20,8 @@ const BUDGETABLE_REQUEST_STATUSES = ["PUBLISHED", "RECEIVING_BUDGETS"];
 export class CreateBudgetUseCase {
   constructor(
     @Inject(BUDGETS_REPOSITORY)
-    private readonly budgetsRepository: BudgetsRepository
+    private readonly budgetsRepository: BudgetsRepository,
+    private readonly createNotificationService: CreateNotificationService
   ) {}
 
   async execute(command: CreateBudgetCommand): Promise<BudgetEntity> {
@@ -59,7 +61,7 @@ export class CreateBudgetUseCase {
 
     const subtotal = this.round(items.reduce((sum, item) => sum + item.total, 0));
 
-    return this.budgetsRepository.createBudget({
+    const budget = await this.budgetsRepository.createBudget({
       serviceRequestId: command.serviceRequestId,
       professionalId,
       currency: "EUR",
@@ -74,6 +76,24 @@ export class CreateBudgetUseCase {
       observations: command.observations?.trim() || null,
       items
     });
+
+    await this.notifyClient(request, budget);
+
+    return budget;
+  }
+
+  private async notifyClient(request: { clientUserId: number; title: string | null }, budget: BudgetEntity): Promise<void> {
+    try {
+      await this.createNotificationService.execute({
+        userId: request.clientUserId,
+        type: "BUDGET_RECEIVED",
+        title: "Nuevo presupuesto",
+        body: `Recibiste un presupuesto en tu solicitud "${request.title ?? "tu solicitud"}".`,
+        data: { serviceRequestId: budget.serviceRequestId, budgetId: budget.id }
+      });
+    } catch {
+      // La notificacion nunca debe interrumpir la creacion del presupuesto.
+    }
   }
 
   private round(value: number): number {

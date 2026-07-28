@@ -8,14 +8,14 @@ function trimText({ value }: { value: unknown }) {
 export class RefineServiceRequestDescriptionDto {
   @Transform(trimText)
   @IsString()
-  @MinLength(15)
-  @MaxLength(2000)
+  @MinLength(15, { message: "La descripcion debe tener al menos 15 caracteres." })
+  @MaxLength(2000, { message: "La descripcion no puede superar los 2000 caracteres." })
   currentDescription!: string;
 
   @Transform(trimText)
   @IsString()
-  @MinLength(3)
-  @MaxLength(800)
+  @MinLength(3, { message: "Los detalles adicionales deben tener al menos 3 caracteres." })
+  @MaxLength(800, { message: "Los detalles adicionales no pueden superar los 800 caracteres." })
   additionalDetails!: string;
 
   @IsOptional()

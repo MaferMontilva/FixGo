@@ -13,6 +13,12 @@ export class ProfessionalsService {
     return this.professionalsRepository.findAllActive();
   }
 
+  async countCompatible(categoryId: number, location: string | null): Promise<{ count: number }> {
+    if (!Number.isInteger(categoryId) || categoryId <= 0) return { count: 0 };
+    const count = await this.professionalsRepository.countCompatibleProfessionals(categoryId, location);
+    return { count };
+  }
+
   findMe(userId: number) {
     return this.professionalsRepository.findMeByUserId(userId);
   }
