@@ -1,9 +1,78 @@
-import { RefreshCw, Star } from "lucide-react";
+import { RefreshCw, Send, Star } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { ProfessionalNav } from "../../professionals";
+import { AiPolishButton } from "../../ai";
 import type { ApiError } from "../../../shared/types/apiError";
-import { getMyReviews } from "../services/reviewsApi";
+import { getMyReviews, replyToReview } from "../services/reviewsApi";
 import type { Review } from "../types/review";
+
+// Formulario para que el profesional responda (o edite su respuesta) a una valoración.
+function ReplyBox({ review, onReplied }: { review: Review; onReplied: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [reply, setReply] = useState(review.professionalReply ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async () => {
+    const clean = reply.trim();
+    if (clean.length < 2) {
+      setError("La respuesta debe tener al menos 2 caracteres.");
+      return;
+    }
+    setError("");
+    try {
+      setSaving(true);
+      await replyToReview(review.id, clean);
+      setOpen(false);
+      onReplied();
+    } catch (replyError) {
+      setError((replyError as ApiError).message || "No pudimos guardar tu respuesta.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (review.professionalReply && !open) {
+    return (
+      <div className="review-card-reply">
+        <strong>Tu respuesta</strong>
+        <p>{review.professionalReply}</p>
+        <button type="button" className="pro-link-button" onClick={() => setOpen(true)}>Editar respuesta</button>
+      </div>
+    );
+  }
+
+  if (!open) {
+    return (
+      <button type="button" className="pro-link-button review-reply-open" onClick={() => setOpen(true)}>
+        Responder valoración
+      </button>
+    );
+  }
+
+  return (
+    <div className="review-reply-form">
+      <textarea
+        className="review-comment"
+        rows={3}
+        maxLength={1000}
+        lang="es"
+        spellCheck
+        placeholder="Escribe tu respuesta al cliente..."
+        value={reply}
+        onChange={(event) => setReply(event.target.value)}
+      />
+      <AiPolishButton value={reply} onResult={setReply} style="professional-reply" label="Redactar con IA" />
+      {error ? <p className="form-error server-error">{error}</p> : null}
+      <div className="review-reply-actions">
+        <button type="button" className="request-secondary-action" onClick={() => setOpen(false)} disabled={saving}>Cancelar</button>
+        <button type="button" className="pro-primary-button" onClick={() => void submit()} disabled={saving}>
+          <Send size={16} /> {saving ? "Enviando..." : "Enviar respuesta"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -91,12 +160,7 @@ export function ProfessionalReviewsPage() {
                 <Stars value={review.rating} />
               </div>
               {review.comment ? <p className="review-card-comment">“{review.comment}”</p> : null}
-              {review.professionalReply ? (
-                <div className="review-card-reply">
-                  <strong>Tu respuesta</strong>
-                  <p>{review.professionalReply}</p>
-                </div>
-              ) : null}
+              <ReplyBox review={review} onReplied={() => void load()} />
             </article>
           ))}
         </div>

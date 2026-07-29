@@ -18,11 +18,15 @@ type RegisterErrors = {
   password?: string;
   businessName?: string;
   phone?: string;
+  addressLine1?: string;
+  postalCode?: string;
+  city?: string;
 };
 
 const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/;
 const BUSINESS_NAME_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ.,&' -]+$/;
 const PHONE_REGEX = /^[+]?[\d\s()-]{7,20}$/;
+const POSTAL_REGEX = /^[\d A-Za-z-]{3,12}$/;
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -30,7 +34,7 @@ export function RegisterPage() {
   const { initializing, isAuthenticated, register, registerProfessional, hasRole } = useAuth();
   const initialType = (location.state as { role?: AccountType } | null)?.role ?? null;
   const [accountType, setAccountType] = useState<AccountType | null>(initialType);
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", businessName: "", phone: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", businessName: "", phone: "", addressLine1: "", postalCode: "", city: "" });
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [serverError, setServerError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,8 +89,24 @@ export function RegisterPage() {
       }
     }
 
-    if (isProfessional && trimmedPhone && !PHONE_REGEX.test(trimmedPhone)) {
+    if (!trimmedPhone) {
+      nextErrors.phone = "El telefono es obligatorio.";
+    } else if (!PHONE_REGEX.test(trimmedPhone)) {
       nextErrors.phone = "Escribe un telefono valido.";
+    }
+
+    const trimmedAddress = form.addressLine1.trim();
+    const trimmedPostal = form.postalCode.trim();
+    const trimmedCity = form.city.trim();
+
+    if (trimmedAddress.length < 4) {
+      nextErrors.addressLine1 = "La direccion es obligatoria (mínimo 4 caracteres).";
+    }
+    if (!POSTAL_REGEX.test(trimmedPostal)) {
+      nextErrors.postalCode = "Escribe un codigo postal valido.";
+    }
+    if (trimmedCity.length < 2) {
+      nextErrors.city = "La ciudad o localidad es obligatoria.";
     }
 
     setErrors(nextErrors);
@@ -101,22 +121,23 @@ export function RegisterPage() {
 
     try {
       setIsSubmitting(true);
+      const sharedData = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+        phone: form.phone.trim(),
+        addressLine1: form.addressLine1.trim(),
+        postalCode: form.postalCode.trim(),
+        city: form.city.trim()
+      };
       if (isProfessional) {
         await registerProfessional({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          password: form.password,
-          businessName: form.businessName.trim() || undefined,
-          phone: form.phone.trim() || undefined
+          ...sharedData,
+          businessName: form.businessName.trim() || undefined
         });
       } else {
-        await register({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          password: form.password
-        });
+        await register(sharedData);
       }
     } catch (error) {
       const apiError = error as ApiError;
@@ -195,25 +216,47 @@ export function RegisterPage() {
             onChange={(event) => updateField("lastName", event.target.value)}
           />
           {isProfessional ? (
-            <>
-              <AuthFormField
-                id="register-business-name"
-                label="Nombre del negocio (opcional)"
-                autoComplete="organization"
-                value={form.businessName}
-                error={errors.businessName}
-                onChange={(event) => updateField("businessName", event.target.value)}
-              />
-              <AuthFormField
-                id="register-phone"
-                label="Telefono (opcional)"
-                autoComplete="tel"
-                value={form.phone}
-                error={errors.phone}
-                onChange={(event) => updateField("phone", event.target.value)}
-              />
-            </>
+            <AuthFormField
+              id="register-business-name"
+              label="Nombre del negocio (opcional)"
+              autoComplete="organization"
+              value={form.businessName}
+              error={errors.businessName}
+              onChange={(event) => updateField("businessName", event.target.value)}
+            />
           ) : null}
+          <AuthFormField
+            id="register-phone"
+            label="Teléfono"
+            autoComplete="tel"
+            value={form.phone}
+            error={errors.phone}
+            onChange={(event) => updateField("phone", event.target.value)}
+          />
+          <AuthFormField
+            id="register-address"
+            label="Dirección"
+            autoComplete="street-address"
+            value={form.addressLine1}
+            error={errors.addressLine1}
+            onChange={(event) => updateField("addressLine1", event.target.value)}
+          />
+          <AuthFormField
+            id="register-postal"
+            label="Código postal"
+            autoComplete="postal-code"
+            value={form.postalCode}
+            error={errors.postalCode}
+            onChange={(event) => updateField("postalCode", event.target.value)}
+          />
+          <AuthFormField
+            id="register-city"
+            label="Ciudad o localidad"
+            autoComplete="address-level2"
+            value={form.city}
+            error={errors.city}
+            onChange={(event) => updateField("city", event.target.value)}
+          />
           <AuthFormField
             id="register-email"
             label="Correo electronico"

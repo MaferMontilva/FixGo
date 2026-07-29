@@ -1,4 +1,4 @@
-import { httpGet, httpPatch } from "../../../shared/http/httpClient";
+import { httpGet, httpPatch, httpPost } from "../../../shared/http/httpClient";
 import { fallbackProfessionals } from "../data/professionalFallbacks";
 import type { ApiProfessional, UiProfessional } from "../types/professional";
 import type { ProfessionalOpportunity, ProfessionalProfileApi, UpdateProfessionalProfilePayload } from "../types/professionalOnboarding";
@@ -43,6 +43,12 @@ export function saveMyProfessionalProfile(payload: UpdateProfessionalProfilePayl
 
 export function getProfessionalOpportunities() {
   return httpGet<ProfessionalOpportunity[]>("/professionals/me/opportunities");
+}
+
+export type DismissReason = "TOO_EXPENSIVE" | "TOO_FAR" | "OUT_OF_SERVICE" | "BUSY" | "OTHER";
+
+export function dismissProfessionalOpportunity(id: number, reason: DismissReason) {
+  return httpPost<{ dismissed: boolean }, { reason: DismissReason }>(`/professionals/me/opportunities/${id}/dismiss`, { reason });
 }
 
 export function getProfessionalOpportunity(id: number) {

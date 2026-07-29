@@ -226,17 +226,49 @@ export class PrismaProfessionalsRepository implements ProfessionalsRepository {
     if (!profile?.categories.length) return [];
 
     const categoryIds = profile.categories.map((category) => category.id);
+    // Solicitudes que este profesional descartó ("No me interesa"): se excluyen.
+    await this.ensureDismissalsTable();
+    const declined = await this.prisma.$queryRawUnsafe<{ service_request_id: number | bigint }[]>(
+      "SELECT service_request_id FROM opportunity_dismissals WHERE professional_id = ?",
+      profile.id
+    );
+    const declinedIds = declined.map((row) => Number(row.service_request_id));
     const requests = await this.prisma.serviceRequests.findMany({
       where: {
-        status: "PUBLISHED",
+        // Ambos estados siguen abiertos a presupuestos: una solicitud no desaparece
+        // de las oportunidades del resto de profesionales solo porque ya recibió uno.
+        status: { in: ["PUBLISHED", "RECEIVING_BUDGETS"] },
         deletedAt: null,
-        categoryId: { in: categoryIds }
+        categoryId: { in: categoryIds },
+        ...(declinedIds.length ? { id: { notIn: declinedIds } } : {})
       },
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       take: 50
     });
 
     return this.hydrateOpportunities(requests, profile.province);
+  }
+
+  async dismissOpportunity(userId: number, opportunityId: number, reason: string): Promise<void> {
+    const profile = await this.prisma.professionalProfiles.findUnique({ where: { userId }, select: { id: true } });
+    if (!profile) return;
+    await this.ensureDismissalsTable();
+    const now = new Date().toISOString();
+    // Guardamos el descarte y su motivo (dato interno) en una tabla propia.
+    await this.prisma.$executeRawUnsafe(
+      "INSERT OR REPLACE INTO opportunity_dismissals (service_request_id, professional_id, reason, created_at) VALUES (?, ?, ?, ?)",
+      opportunityId,
+      profile.id,
+      reason,
+      now
+    );
+  }
+
+  // Tabla auxiliar para registrar oportunidades descartadas por el profesional (con motivo).
+  private async ensureDismissalsTable(): Promise<void> {
+    await this.prisma.$executeRawUnsafe(
+      "CREATE TABLE IF NOT EXISTS opportunity_dismissals (id INTEGER PRIMARY KEY AUTOINCREMENT, service_request_id INTEGER NOT NULL, professional_id INTEGER NOT NULL, reason TEXT NOT NULL, created_at TEXT NOT NULL, UNIQUE(service_request_id, professional_id))"
+    );
   }
 
   async findCompatibleOpportunityById(userId: number, opportunityId: number): Promise<ProfessionalOpportunityEntity | null> {

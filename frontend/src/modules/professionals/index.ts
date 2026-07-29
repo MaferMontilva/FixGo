@@ -5,6 +5,6 @@ export { ProfessionalOpportunitiesPage } from "./pages/ProfessionalOpportunities
 export { ProfessionalOpportunityDetailPage } from "./pages/ProfessionalOpportunityDetailPage";
 export { ProfessionalsPage } from "./pages/ProfessionalsPage";
 export { fallbackProfessionals } from "./data/professionalFallbacks";
-export { getProfessionals, getCompatibleProfessionalsCount } from "./services/professionalsApi";
+export { getProfessionals, getCompatibleProfessionalsCount, getProfessionalOpportunities } from "./services/professionalsApi";
 export type { ApiProfessional, UiProfessional } from "./types/professional";
 export { ProfessionalNav } from "./components/ProfessionalNav";

@@ -1,4 +1,4 @@
-import { CheckCircle2, PlayCircle, RefreshCw } from "lucide-react";
+import { CheckCircle2, MapPin, Phone, PlayCircle, RefreshCw, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { completeOrder, getProfessionalOrders, startOrder } from "../services/serviceOrdersApi";
 import type { ServiceOrder, ServiceOrderStatus } from "../types/serviceOrder";
@@ -26,6 +26,7 @@ export function ProfessionalOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionId, setActionId] = useState<number | null>(null);
+  const [contactId, setContactId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -80,6 +81,12 @@ export function ProfessionalOrdersPage() {
                 </div>
                 <h3>{order.requestTitle || `Solicitud #${order.serviceRequestId}`}</h3>
                 {order.requestDescription ? <p>{shortText(order.requestDescription)}</p> : null}
+                {(order.clientName || order.clientPhone || order.clientAddress) &&
+                !["COMPLETED", "CANCELLED"].includes(order.status) ? (
+                  <button type="button" className="client-contact-trigger" onClick={() => setContactId(order.id)}>
+                    <User size={14} /> Ver datos de contacto
+                  </button>
+                ) : null}
               </div>
               <div className="opp-card-side">
                 <span className={`order-status status-${order.status}`}>{statusLabels[order.status]}</span>
@@ -99,6 +106,38 @@ export function ProfessionalOrdersPage() {
           ))}
         </div>
       </section>
+
+      {(() => {
+        const contactOrder = orders.find((order) => order.id === contactId);
+        if (!contactOrder) return null;
+        return (
+          <div className="admin-modal-overlay" role="dialog" aria-modal="true" onClick={() => setContactId(null)}>
+            <div className="order-detail-modal" onClick={(event) => event.stopPropagation()}>
+              <button className="order-detail-close" type="button" aria-label="Cerrar" onClick={() => setContactId(null)}><X size={20} /></button>
+              <h2 className="contact-modal-title">Datos de contacto del cliente</h2>
+              <p className="contact-modal-sub">{contactOrder.requestTitle || `Trabajo #${contactOrder.serviceRequestId}`}</p>
+              <div className="contact-modal-list">
+                <div className="contact-modal-item">
+                  <span className="crf-ic"><User size={18} /></span>
+                  <div className="crf-text"><dt>Nombre</dt><dd>{contactOrder.clientName ?? "No disponible"}</dd></div>
+                </div>
+                <div className="contact-modal-item">
+                  <span className="crf-ic"><Phone size={18} /></span>
+                  <div className="crf-text">
+                    <dt>Teléfono</dt>
+                    <dd>{contactOrder.clientPhone ? <a href={`tel:${contactOrder.clientPhone.replace(/\s+/g, "")}`}>{contactOrder.clientPhone}</a> : "No disponible"}</dd>
+                  </div>
+                </div>
+                <div className="contact-modal-item">
+                  <span className="crf-ic"><MapPin size={18} /></span>
+                  <div className="crf-text"><dt>Dirección</dt><dd>{contactOrder.clientAddress ?? "No disponible"}</dd></div>
+                </div>
+              </div>
+              <p className="client-contact-note">Datos disponibles porque ganaste este trabajo. Úsalos solo para coordinar el servicio.</p>
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }

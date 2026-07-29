@@ -3,11 +3,19 @@ import { AuthUser } from "./auth-user";
 
 export const AUTH_REPOSITORY = Symbol("AUTH_REPOSITORY");
 
+export type RegisterAddressData = {
+  addressLine1: string;
+  postalCode: string;
+  city: string;
+};
+
 export type RegisterClientData = {
   firstName: string;
   lastName: string;
   email: string;
   passwordHash: string;
+  phone: string;
+  address: RegisterAddressData;
 };
 
 export type RegisterProfessionalData = {
@@ -16,7 +24,8 @@ export type RegisterProfessionalData = {
   email: string;
   passwordHash: string;
   businessName?: string | null;
-  phone?: string | null;
+  phone: string;
+  address: RegisterAddressData;
 };
 
 export type UserWithPassword = AuthUser & {

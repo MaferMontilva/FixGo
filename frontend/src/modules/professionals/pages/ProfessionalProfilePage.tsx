@@ -298,7 +298,7 @@ export function ProfessionalProfilePage() {
         <div className="pro-form-grid">
           <label>Años de experiencia<input min="0" max="70" type="number" value={profile.experienceYears} onChange={(event) => updateField("experienceYears", event.target.value)} />{fieldErrors.experienceYears ? <span className="field-error" role="alert">{fieldErrors.experienceYears}</span> : null}</label>
           <label>Disponibilidad<select value={profile.availability} onChange={(event) => updateField("availability", event.target.value)}><option>Laborables</option><option>Fines de semana</option><option>Urgencias 24 h</option><option>Mañanas</option><option>Tardes</option></select></label>
-          <label className="pro-form-wide">Descripción breve<textarea value={profile.shortBio} onChange={(event) => updateField("shortBio", event.target.value)} rows={4} maxLength={1000} />{fieldErrors.shortBio ? <span className="field-error" role="alert">{fieldErrors.shortBio}</span> : null}</label>
+          <label className="pro-form-wide">Descripción breve<textarea value={profile.shortBio} onChange={(event) => updateField("shortBio", event.target.value)} rows={4} maxLength={1000} lang="es" spellCheck />{fieldErrors.shortBio ? <span className="field-error" role="alert">{fieldErrors.shortBio}</span> : null}</label>
         </div>
         </div>
 

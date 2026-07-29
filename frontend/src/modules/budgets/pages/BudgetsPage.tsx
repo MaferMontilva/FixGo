@@ -1,4 +1,4 @@
-import { AlertTriangle, Calendar, ClipboardList, Coins, Home, Layers, MapPin, PlusCircle, Wrench, XCircle } from "lucide-react";
+import { AlertTriangle, BellRing, Calendar, ClipboardList, Coins, Home, Layers, MapPin, PlusCircle, Wrench, XCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../shared/components/Button";
@@ -160,6 +160,13 @@ export function BudgetsPage() {
     return new Map(services.map((service) => [service.id, service.name]));
   }, [services]);
 
+  // Solicitudes con un profesional trabajando ahora mismo. El aviso permanece visible
+  // mientras sigan en curso, para recordar al cliente que debe cerrar el proceso.
+  const inProgressRequests = useMemo(
+    () => requests.filter((request) => request.status === "IN_PROGRESS"),
+    [requests]
+  );
+
   const refreshRequest = (request: ServiceRequestResponse) => {
     setRequests((current) => current.map((item) => (item.id === request.id ? request : item)));
     setSelectedRequest((current) => (current?.id === request.id ? request : current));
@@ -252,6 +259,31 @@ export function BudgetsPage() {
         {error ? <p className="is-error">{error}</p> : null}
         {actionMessage ? <p>{actionMessage}</p> : null}
       </div>
+
+      {!loading && inProgressRequests.length > 0 ? (
+        <div className="orders-pending-banner" role="alert">
+          <span className="orders-pending-icon"><BellRing size={20} /></span>
+          <div className="orders-pending-text">
+            <strong>
+              {inProgressRequests.length === 1
+                ? "Tienes una solicitud en progreso"
+                : `Tienes ${inProgressRequests.length} solicitudes en progreso`}
+            </strong>
+            <p>
+              {inProgressRequests.length === 1
+                ? `“${inProgressRequests[0].title?.trim() || `Solicitud #${inProgressRequests[0].id}`}” está en curso. Cuando el profesional termine, confírmala y déjale tu valoración. Este aviso seguirá aquí hasta que cierres el proceso.`
+                : "Hay trabajos en curso. Cuando cada profesional termine, deberás confirmarlos y valorarlos. Este aviso seguirá aquí hasta que cierres cada proceso."}
+            </p>
+          </div>
+          <button
+            className="orders-pending-cta"
+            type="button"
+            onClick={() => navigate("/cliente/trabajos")}
+          >
+            Ir a servicios contratados
+          </button>
+        </div>
+      ) : null}
 
       {!loading && !error && requests.length === 0 ? (
         <Card className="session-card client-requests-empty">

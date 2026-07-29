@@ -3,6 +3,7 @@ import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from "cl
 const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/;
 const BUSINESS_NAME_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ.,&' -]+$/;
 const PHONE_REGEX = /^[+]?[\d\s()-]{7,20}$/;
+const POSTAL_REGEX = /^[\d A-Za-z-]{3,12}$/;
 
 export class RegisterProfessionalDto {
   @IsString()
@@ -36,8 +37,21 @@ export class RegisterProfessionalDto {
   })
   businessName?: string;
 
-  @IsOptional()
   @IsString()
   @Matches(PHONE_REGEX, { message: "Escribe un telefono valido." })
-  phone?: string;
+  phone!: string;
+
+  @IsString()
+  @MinLength(4, { message: "La direccion debe tener al menos 4 caracteres." })
+  @MaxLength(160)
+  addressLine1!: string;
+
+  @IsString()
+  @Matches(POSTAL_REGEX, { message: "Escribe un codigo postal valido." })
+  postalCode!: string;
+
+  @IsString()
+  @MinLength(2, { message: "Escribe tu ciudad o localidad." })
+  @MaxLength(120)
+  city!: string;
 }

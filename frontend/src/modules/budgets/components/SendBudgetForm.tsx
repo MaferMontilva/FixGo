@@ -1,5 +1,6 @@
 import { PlusCircle, Send, Trash2 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
+import { AiPolishButton } from "../../ai";
 import type { ApiError } from "../../../shared/types/apiError";
 import { createBudget } from "../services/budgetsApi";
 
@@ -121,6 +122,8 @@ export function SendBudgetForm({ serviceRequestId, onSent }: SendBudgetFormProps
         <div className="budget-item-row" key={index}>
           <input
             className="budget-input"
+            lang="es"
+            spellCheck
             placeholder="Ej. Mano de obra"
             value={item.description}
             onChange={(event) => updateItem(index, "description", event.target.value)}
@@ -156,9 +159,12 @@ export function SendBudgetForm({ serviceRequestId, onSent }: SendBudgetFormProps
           value={observations}
           rows={3}
           maxLength={1000}
+          lang="es"
+          spellCheck
           placeholder="Detalles, materiales incluidos, garantia..."
           onChange={(event) => setObservations(event.target.value)}
         />
+        <AiPolishButton value={observations} onResult={setObservations} style="budget-observations" />
       </label>
       <div className="budget-duration">
         <label className="budget-field">

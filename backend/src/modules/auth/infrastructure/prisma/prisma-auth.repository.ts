@@ -70,6 +70,7 @@ export class PrismaAuthRepository implements AuthRepository {
           passwordHash: data.passwordHash,
           firstName: data.firstName,
           lastName: data.lastName,
+          phoneNumber: data.phone,
           preferredLanguage: "es",
           status: "ACTIVE",
           createdAt: now,
@@ -97,6 +98,18 @@ export class PrismaAuthRepository implements AuthRepository {
         }
       });
 
+      await tx.addresses.create({
+        data: {
+          userId: user.id,
+          addressLine1: data.address.addressLine1,
+          postalCode: data.address.postalCode,
+          cityText: data.address.city,
+          isDefault: 1,
+          createdAt: now,
+          updatedAt: now
+        }
+      });
+
       return this.toAuthUser(user, ["CLIENT"]);
     });
   }
@@ -111,6 +124,7 @@ export class PrismaAuthRepository implements AuthRepository {
           passwordHash: data.passwordHash,
           firstName: data.firstName,
           lastName: data.lastName,
+          phoneNumber: data.phone,
           preferredLanguage: "es",
           status: "ACTIVE",
           createdAt: now,
@@ -148,6 +162,18 @@ export class PrismaAuthRepository implements AuthRepository {
           verificationStatus: "PENDING",
           profileStatus: "INCOMPLETE",
           ratingAverage: 0,
+          createdAt: now,
+          updatedAt: now
+        }
+      });
+
+      await tx.addresses.create({
+        data: {
+          userId: user.id,
+          addressLine1: data.address.addressLine1,
+          postalCode: data.address.postalCode,
+          cityText: data.address.city,
+          isDefault: 1,
           createdAt: now,
           updatedAt: now
         }

@@ -1,6 +1,8 @@
 import { IsEmail, IsString, Matches, MaxLength, MinLength } from "class-validator";
 
 const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/;
+const PHONE_REGEX = /^[+]?[\d\s()-]{7,20}$/;
+const POSTAL_REGEX = /^[\d A-Za-z-]{3,12}$/;
 
 export class RegisterClientDto {
   @IsString()
@@ -24,4 +26,22 @@ export class RegisterClientDto {
     message: "La contrasena debe incluir al menos una letra y un numero.",
   })
   password!: string;
+
+  @IsString()
+  @Matches(PHONE_REGEX, { message: "Escribe un telefono valido." })
+  phone!: string;
+
+  @IsString()
+  @MinLength(4, { message: "La direccion debe tener al menos 4 caracteres." })
+  @MaxLength(160)
+  addressLine1!: string;
+
+  @IsString()
+  @Matches(POSTAL_REGEX, { message: "Escribe un codigo postal valido." })
+  postalCode!: string;
+
+  @IsString()
+  @MinLength(2, { message: "Escribe tu ciudad o localidad." })
+  @MaxLength(120)
+  city!: string;
 }

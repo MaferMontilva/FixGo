@@ -22,6 +22,9 @@ export type ServiceOrder = {
   requestDescription: string | null;
   professionalName: string | null;
   professionalPhone: string | null;
+  clientName: string | null;
+  clientPhone: string | null;
+  clientAddress: string | null;
   totalPrice: number | null;
   currency: string | null;
   hasReview: boolean;

@@ -4896,6 +4896,53 @@ button {
 .orders-shell > .admin-modal-overlay { max-width: none; width: auto; margin: 0; }
 .orders-empty { color: #637083; background: #fff; border: 1px solid var(--fixgo-border); border-radius: 14px; padding: 22px; }
 
+/* Descartar oportunidad ("No me interesa") */
+.opp-dismiss { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--fixgo-border, #e5e7eb); }
+.opp-dismiss-trigger { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; background: none; border: none; color: #637083; font-size: 0.9rem; font-weight: 600; }
+.opp-dismiss-trigger:hover { color: #b42318; }
+.opp-dismiss-panel p { margin: 0 0 10px; color: #637083; font-size: 0.9rem; }
+.opp-dismiss-reasons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.opp-dismiss-chip { cursor: pointer; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--fixgo-border, #e5e7eb); background: #fff; color: #1f2733; font-size: 0.86rem; font-weight: 600; transition: background 140ms ease, border-color 140ms ease; }
+.opp-dismiss-chip:hover:not(:disabled) { background: #fef2f2; border-color: #fca5a5; color: #b42318; }
+.opp-dismiss-chip:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Botón "Corregir con IA" reutilizable bajo los campos de texto */
+.ai-polish { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.ai-polish-btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border-radius: 999px; border: 1px solid #c7b3f0; background: #f5f0ff; color: #6b3fd4; font-size: 0.82rem; font-weight: 600; transition: background 140ms ease, border-color 140ms ease; }
+.ai-polish-btn:hover:not(:disabled) { background: #ece2ff; border-color: #a98cec; }
+.ai-polish-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.ai-polish-error { color: #b42318; font-size: 0.8rem; }
+
+/* Botón "Ver datos de contacto" y ventana modal en los trabajos del profesional */
+.client-contact-trigger { margin-top: 10px; align-self: flex-start; width: fit-content; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 5px 11px; border-radius: 999px; border: 1px solid #fdba74; background: #fff7ed; color: #c2410c; font-weight: 600; font-size: 0.78rem; transition: background 140ms ease; }
+.client-contact-trigger:hover { background: #ffedd5; }
+.contact-modal-title { margin: 0; font-size: 1.15rem; }
+.contact-modal-sub { margin: 4px 0 16px; color: #637083; }
+.contact-modal-list { display: flex; flex-direction: column; gap: 14px; }
+.contact-modal-item { display: flex; align-items: flex-start; gap: 12px; }
+.contact-modal-item .crf-ic { color: #c2410c; }
+.contact-modal-item dt { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8a94a6; }
+.contact-modal-item dd { margin: 2px 0 0; font-weight: 600; color: #1f2733; }
+.contact-modal-item dd a { color: #c2410c; text-decoration: none; }
+.contact-modal-item dd a:hover { text-decoration: underline; }
+.client-contact-note { margin-top: 16px; font-size: 0.78rem; color: #b45309; }
+
+/* Respuesta del profesional a una valoración */
+.review-reply-open { margin-top: 8px; }
+.review-reply-form { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.review-reply-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.review-card-reply .pro-link-button { margin-top: 6px; }
+
+/* Aviso persistente: hay un trabajo terminado que el cliente aun no confirma ni valora */
+.orders-pending-banner { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 16px; box-shadow: 0 6px 18px rgba(234, 88, 12, 0.08); }
+.orders-pending-icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: #fed7aa; color: #c2410c; }
+.orders-pending-text { flex: 1; min-width: 0; }
+.orders-pending-text strong { display: block; color: #9a3412; }
+.orders-pending-text p { margin: 2px 0 0; color: #b45309; font-size: 0.9rem; }
+.orders-pending-cta { flex-shrink: 0; border: none; cursor: pointer; padding: 10px 16px; border-radius: 999px; background: var(--fixgo-orange, #ea580c); color: #fff; font-weight: 600; }
+.orders-pending-cta:hover { filter: brightness(0.95); }
+@media (max-width: 560px) { .orders-pending-banner { flex-wrap: wrap; } .orders-pending-cta { width: 100%; } }
+
 /* Fila compacta horizontal con boton "Ver" a la derecha */
 .order-row { display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; padding: 16px 18px; background: #fff; border: 1px solid var(--fixgo-border); border-radius: 16px; box-shadow: 0 6px 18px rgba(14, 22, 34, 0.04); transition: box-shadow 160ms ease, transform 160ms ease; }
 .order-row::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--fixgo-orange), var(--fixgo-orange-deep)); }
@@ -5011,6 +5058,28 @@ button {
 }
 .pro-nav-logout:hover { background: rgba(255, 255, 255, 0.12); }
 .pro-nav-actions { display: flex; align-items: center; gap: 10px; }
+/* --- Barra profesional responsive (menu hamburguesa en movil) --- */
+.pro-nav-collapse { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: space-between; }
+.pro-nav-toggle { display: none; color: #fff; background: transparent; border: 0; padding: 6px; cursor: pointer; }
+@media (max-width: 900px) {
+  .pro-nav { flex-wrap: nowrap; }
+  .pro-nav-toggle { display: inline-flex; }
+  .pro-nav-collapse { display: none; }
+  .pro-nav-collapse.is-open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    flex-basis: 100%;
+    order: 3;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .pro-nav-collapse.is-open .pro-nav-links { flex-direction: column; gap: 4px; }
+  .pro-nav-collapse.is-open .pro-nav-link { padding: 11px 12px; }
+  .pro-nav-collapse.is-open .pro-nav-actions { justify-content: space-between; }
+}
 
 /* --- Valoraciones (Claude) --- */
 .review-form { display: grid; gap: 10px; margin-top: 10px; padding: 14px; border: 1px solid var(--fixgo-border); border-radius: 14px; background: #fafafa; }
@@ -5745,3 +5814,30 @@ button[aria-disabled="true"] {
   font-size: 13px;
 }
 .request-block { margin-bottom: 0 !important; padding-bottom: 26px; }
+
+/* ============================================================
+   RESPONSIVE GLOBAL (Claude) — apila columnas y ajusta en movil
+   ============================================================ */
+@media (max-width: 900px) {
+  .landing-hero,
+  .renueva-section,
+  .how-grid,
+  .opp-detail-grid,
+  .pro-form-grid,
+  .auth-form-grid,
+  .auth-split { grid-template-columns: 1fr; }
+  .renueva-section { gap: 24px; }
+  .how-grid { gap: 16px; }
+}
+@media (max-width: 600px) {
+  .orders-head,
+  .reviews-summary,
+  .pro-hero,
+  .pro-profile-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .order-row { flex-wrap: wrap; }
+  .order-row .order-ver-btn { width: 100%; margin-top: 6px; }
+  .admin-catrev-row { grid-template-columns: 88px 1fr auto; }
+  .review-availability { align-items: flex-start; }
+  .request-step-indicator { overflow-x: auto; }
+  .hero-copy h1 { font-size: clamp(28px, 8vw, 40px); }
+}

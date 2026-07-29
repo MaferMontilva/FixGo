@@ -10,7 +10,10 @@ export type RegisterProfessionalCommand = {
   email: string;
   password: string;
   businessName?: string | null;
-  phone?: string | null;
+  phone: string;
+  addressLine1: string;
+  postalCode: string;
+  city: string;
 };
 
 @Injectable()
@@ -35,7 +38,12 @@ export class RegisterProfessionalUseCase {
       email,
       passwordHash: await this.passwordHasher.hash(command.password),
       businessName: command.businessName?.trim() || null,
-      phone: command.phone?.trim() || null
+      phone: command.phone.trim(),
+      address: {
+        addressLine1: command.addressLine1.trim(),
+        postalCode: command.postalCode.trim(),
+        city: command.city.trim()
+      }
     });
 
     return this.authTokenFactory.createForUser(user);

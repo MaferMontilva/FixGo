@@ -1,10 +1,19 @@
-import { ArrowLeft, Euro, MapPin } from "lucide-react";
+import { ArrowLeft, Euro, MapPin, ThumbsDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { getProfessionalOpportunity } from "../services/professionalsApi";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { dismissProfessionalOpportunity, getProfessionalOpportunity, type DismissReason } from "../services/professionalsApi";
 import { SendBudgetForm } from "../../budgets";
+import type { ApiError } from "../../../shared/types/apiError";
 import type { ProfessionalOpportunity } from "../types/professionalOnboarding";
 import { ProfessionalNav } from "../components/ProfessionalNav";
+
+const DISMISS_REASONS: { value: DismissReason; label: string }[] = [
+  { value: "TOO_EXPENSIVE", label: "El precio no me compensa" },
+  { value: "TOO_FAR", label: "Queda muy lejos" },
+  { value: "OUT_OF_SERVICE", label: "Fuera de mis servicios" },
+  { value: "BUSY", label: "Agenda llena" },
+  { value: "OTHER", label: "Otro motivo" }
+];
 
 const urgencyLabels: Record<string, string> = {
   EMERGENCY: "Emergencia",
@@ -34,9 +43,23 @@ function availabilityText(opportunity: ProfessionalOpportunity) {
 
 export function ProfessionalOpportunityDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [opportunity, setOpportunity] = useState<ProfessionalOpportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showDismiss, setShowDismiss] = useState(false);
+  const [dismissing, setDismissing] = useState(false);
+
+  const handleDismiss = async (reason: DismissReason) => {
+    try {
+      setDismissing(true);
+      await dismissProfessionalOpportunity(Number(id), reason);
+      navigate("/profesional/oportunidades");
+    } catch (dismissError) {
+      setError((dismissError as ApiError).message || "No pudimos descartar la oportunidad.");
+      setDismissing(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -44,8 +67,15 @@ export function ProfessionalOpportunityDetailPage() {
       try {
         const result = await getProfessionalOpportunity(Number(id));
         if (!cancelled) setOpportunity(result);
-      } catch {
-        if (!cancelled) setError("No fue posible cargar el detalle de la oportunidad.");
+      } catch (loadError) {
+        if (!cancelled) {
+          const status = (loadError as ApiError).status;
+          setError(
+            status === 404
+              ? "Esta oportunidad ya no está disponible. Es posible que la solicitud ya haya sido adjudicada, completada o cancelada."
+              : "No fue posible cargar el detalle de la oportunidad."
+          );
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -89,6 +119,34 @@ export function ProfessionalOpportunityDetailPage() {
               <div><dt>Disponibilidad</dt><dd>{availabilityText(opportunity)}</dd></div>
             </dl>
             <SendBudgetForm serviceRequestId={opportunity.id} />
+
+            <div className="opp-dismiss">
+              {!showDismiss ? (
+                <button type="button" className="opp-dismiss-trigger" onClick={() => setShowDismiss(true)}>
+                  <ThumbsDown size={16} /> No me interesa esta oportunidad
+                </button>
+              ) : (
+                <div className="opp-dismiss-panel">
+                  <p>¿Por qué la descartas? Se quitará de tus oportunidades (no se avisa al cliente).</p>
+                  <div className="opp-dismiss-reasons">
+                    {DISMISS_REASONS.map((reason) => (
+                      <button
+                        key={reason.value}
+                        type="button"
+                        className="opp-dismiss-chip"
+                        disabled={dismissing}
+                        onClick={() => handleDismiss(reason.value)}
+                      >
+                        {reason.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" className="pro-link-button" onClick={() => setShowDismiss(false)} disabled={dismissing}>
+                    Cancelar
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         )}
       </section>

@@ -6,8 +6,6 @@ import { fallbackProfessionals } from "../data/professionalFallbacks";
 import { getProfessionals } from "../services/professionalsApi";
 import { useAsyncData } from "../../../shared/hooks/useAsyncData";
 
-type SortOption = "relevance" | "rating";
-
 const normalize = (value: string) =>
   value.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 
@@ -15,7 +13,6 @@ export function ProfessionalsPage() {
   const { data: professionals } = useAsyncData(getProfessionals, fallbackProfessionals);
   const { data: categories } = useAsyncData(getCategories, fallbackCategories);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortOption>("relevance");
 
   const slugByTrade = useMemo(() => {
     const map = new Map<string, string>();
@@ -32,17 +29,13 @@ export function ProfessionalsPage() {
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = professionals.filter((professional) => {
+    return professionals.filter((professional) => {
       if (!q) return true;
       const name = (professional.name ?? "").toLowerCase();
       const trade = (professional.trade ?? "").toLowerCase();
       return name.includes(q) || trade.includes(q);
     });
-    if (sort === "rating") {
-      list = [...list].sort((a, b) => (b.ratingAverage ?? 0) - (a.ratingAverage ?? 0));
-    }
-    return list;
-  }, [professionals, query, sort]);
+  }, [professionals, query]);
 
   return (
     <>
@@ -58,10 +51,6 @@ export function ProfessionalsPage() {
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          <select aria-label="Ordenar profesionales" value={sort} onChange={(event) => setSort(event.target.value as SortOption)}>
-            <option value="relevance">Relevancia</option>
-            <option value="rating">Mejor valorados</option>
-          </select>
         </div>
       </section>
 

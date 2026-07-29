@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Patch, ParseIntPipe, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, ParseIntPipe, Query, UseGuards } from "@nestjs/common";
 import { CurrentUser, RequestUser } from "../../../auth/presentation/current-user";
 import { JwtAuthGuard } from "../../../auth/presentation/jwt-auth.guard";
 import { Roles } from "../../../auth/presentation/roles.decorator";
 import { RolesGuard } from "../../../auth/presentation/roles.guard";
 import { ProfessionalsService } from "../../application/professionals.service";
 import { UpdateProfessionalProfileDto } from "../dto/update-professional-profile.dto";
+import { DismissOpportunityDto } from "../dto/dismiss-opportunity.dto";
 
 @Controller("professionals")
 export class ProfessionalsController {
@@ -36,6 +37,18 @@ export class ProfessionalsController {
   @Roles("PROFESSIONAL")
   findOpportunity(@CurrentUser() user: RequestUser, @Param("id", ParseIntPipe) id: number) {
     return this.professionalsService.findOpportunity(user.id, id);
+  }
+
+  @Post("me/opportunities/:id/dismiss")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("PROFESSIONAL")
+  dismissOpportunity(
+    @CurrentUser() user: RequestUser,
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: DismissOpportunityDto
+  ) {
+    return this.professionalsService.dismissOpportunity(user.id, id, dto.reason);
   }
 
   @Get("compatible-count")

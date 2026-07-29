@@ -1,14 +1,16 @@
-# Diccionario de datos — FixGo v1
+# Diccionario de datos — FixGo IA
 
-Base de datos: SQLite  |  Tablas: 44
+Base de datos: **SQLite** (`backend/database/fixgo.db`), gestionada con Prisma. Generado a partir del esquema real de la base.
 
-Este modelo cubre autenticación, clientes, profesionales, ubicación, categorías, solicitudes, IA, presupuestos, contratación, mensajería, valoraciones, notificaciones, legal y auditoría.
+Total de tablas: **45** (44 del esquema Prisma + 1 auxiliar `opportunity_dismissals` creada por SQL para la función de descartar oportunidades).
+
+Los estados y tipos se modelan como columnas `TEXT`/`INTEGER` (no hay enums nativos); los booleanos se representan como `INTEGER` (0/1) y las fechas como `TEXT` en formato ISO.
 
 ## `addresses`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `user_id` | INTEGER | Sí | FK | — |
 | `label` | TEXT | No |  | — |
 | `address_line1` | TEXT | Sí |  | — |
@@ -25,15 +27,15 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `city_id` → `cities.id`; al eliminar: **SET NULL**.
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `city_id` → `cities.id` (ON DELETE SET NULL).
+- `user_id` → `users.id` (ON DELETE CASCADE).
 
 ## `ai_analyses`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_request_id` | INTEGER | Sí | FK | — |
 | `session_id` | INTEGER | No | FK | — |
 | `provider` | TEXT | Sí |  | — |
@@ -58,17 +60,17 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `accepted_by_user` | INTEGER | Sí |  | 0 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `suggested_service_id` → `services.id`; al eliminar: **SET NULL**.
-- `suggested_category_id` → `categories.id`; al eliminar: **SET NULL**.
-- `session_id` → `ai_assistant_sessions.id`; al eliminar: **SET NULL**.
-- `service_request_id` → `service_requests.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `suggested_service_id` → `services.id` (ON DELETE SET NULL).
+- `suggested_category_id` → `categories.id` (ON DELETE SET NULL).
+- `session_id` → `ai_assistant_sessions.id` (ON DELETE SET NULL).
+- `service_request_id` → `service_requests.id` (ON DELETE CASCADE).
 
 ## `ai_analysis_answers`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `question_id` | INTEGER | Sí | FK | — |
 | `user_id` | INTEGER | Sí | FK | — |
 | `answer_text` | TEXT | No |  | — |
@@ -76,15 +78,16 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
-- `question_id` → `ai_analysis_questions.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
+- `question_id` → `ai_analysis_questions.id` (ON DELETE CASCADE).
+- Único compuesto: (`question_id`, `user_id`).
 
 ## `ai_analysis_questions`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `analysis_id` | INTEGER | Sí | FK | — |
 | `question_text` | TEXT | Sí |  | — |
 | `answer_type` | TEXT | Sí |  | 'TEXT' |
@@ -93,43 +96,43 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `sort_order` | INTEGER | Sí |  | 0 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `analysis_id` → `ai_analyses.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `analysis_id` → `ai_analyses.id` (ON DELETE CASCADE).
 
 ## `ai_assistant_messages`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `session_id` | INTEGER | Sí | FK | — |
 | `role` | TEXT | Sí |  | — |
 | `content` | TEXT | Sí |  | — |
 | `metadata_json` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `session_id` → `ai_assistant_sessions.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `session_id` → `ai_assistant_sessions.id` (ON DELETE CASCADE).
 
 ## `ai_assistant_sessions`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_request_id` | INTEGER | Sí | FK | — |
 | `user_id` | INTEGER | Sí | FK | — |
 | `status` | TEXT | Sí |  | 'OPEN' |
 | `started_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `completed_at` | TEXT | No |  | — |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
-- `service_request_id` → `service_requests.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
+- `service_request_id` → `service_requests.id` (ON DELETE CASCADE).
 
 ## `audit_logs`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `actor_user_id` | INTEGER | No | FK | — |
 | `action` | TEXT | Sí |  | — |
 | `entity_type` | TEXT | Sí |  | — |
@@ -139,44 +142,44 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `ip_address` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `actor_user_id` → `users.id`; al eliminar: **SET NULL**.
+**Relaciones y restricciones:**
+- `actor_user_id` → `users.id` (ON DELETE SET NULL).
 
 ## `auth_sessions`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `user_id` | INTEGER | Sí | FK | — |
-| `refresh_token_hash` | TEXT | Sí |  | — |
+| `refresh_token_hash` | TEXT | Sí | UNIQUE | — |
 | `ip_address` | TEXT | No |  | — |
 | `user_agent` | TEXT | No |  | — |
 | `expires_at` | TEXT | Sí |  | — |
 | `revoked_at` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
 
 ## `budget_attachments`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `budget_id` | INTEGER | Sí | FK | — |
 | `file_url` | TEXT | Sí |  | — |
 | `original_filename` | TEXT | No |  | — |
 | `mime_type` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `budget_id` → `budgets.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `budget_id` → `budgets.id` (ON DELETE CASCADE).
 
 ## `budget_items`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `budget_id` | INTEGER | Sí | FK | — |
 | `item_type` | TEXT | Sí |  | 'SERVICE' |
 | `description` | TEXT | Sí |  | — |
@@ -186,14 +189,14 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `sort_order` | INTEGER | Sí |  | 0 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `budget_id` → `budgets.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `budget_id` → `budgets.id` (ON DELETE CASCADE).
 
 ## `budgets`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_request_id` | INTEGER | Sí | FK | — |
 | `professional_id` | INTEGER | Sí | FK | — |
 | `status` | TEXT | Sí |  | 'DRAFT' |
@@ -214,19 +217,20 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
-- `service_request_id` → `service_requests.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+- `service_request_id` → `service_requests.id` (ON DELETE CASCADE).
+- Único compuesto: (`service_request_id`, `professional_id`).
 
 ## `categories`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `parent_id` | INTEGER | No | FK | — |
-| `code` | TEXT | Sí |  | — |
+| `code` | TEXT | Sí | UNIQUE | — |
 | `name` | TEXT | Sí |  | — |
-| `slug` | TEXT | Sí |  | — |
+| `slug` | TEXT | Sí | UNIQUE | — |
 | `description` | TEXT | No |  | — |
 | `icon_name` | TEXT | No |  | — |
 | `image_url` | TEXT | No |  | — |
@@ -235,34 +239,35 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `parent_id` → `categories.id`; al eliminar: **SET NULL**.
+**Relaciones y restricciones:**
+- `parent_id` → `categories.id` (ON DELETE SET NULL).
 
 ## `cities`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `region_id` | INTEGER | Sí | FK | — |
 | `name` | TEXT | Sí |  | — |
 | `postal_code_prefix` | TEXT | No |  | — |
 
-**Relaciones:**
-- `region_id` → `regions.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `region_id` → `regions.id` (ON DELETE CASCADE).
+- Único compuesto: (`region_id`, `name`).
 
 ## `client_profiles`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
-| `user_id` | INTEGER | Sí | FK | — |
+| `id` | INTEGER | Sí | PK | — |
+| `user_id` | INTEGER | Sí | FK / UNIQUE | — |
 | `display_name` | TEXT | No |  | — |
 | `notes` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
 
 ## `conversation_participants`
 
@@ -274,15 +279,16 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `left_at` | TEXT | No |  | — |
 | `last_read_at` | TEXT | No |  | — |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
-- `conversation_id` → `conversations.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
+- `conversation_id` → `conversations.id` (ON DELETE CASCADE).
+- Único compuesto: (`conversation_id`, `user_id`).
 
 ## `conversations`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_request_id` | INTEGER | No | FK | — |
 | `budget_id` | INTEGER | No | FK | — |
 | `service_order_id` | INTEGER | No | FK | — |
@@ -290,18 +296,18 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `service_order_id` → `service_orders.id`; al eliminar: **CASCADE**.
-- `budget_id` → `budgets.id`; al eliminar: **CASCADE**.
-- `service_request_id` → `service_requests.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `service_order_id` → `service_orders.id` (ON DELETE CASCADE).
+- `budget_id` → `budgets.id` (ON DELETE CASCADE).
+- `service_request_id` → `service_requests.id` (ON DELETE CASCADE).
 
 ## `countries`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
-| `iso2` | TEXT | Sí |  | — |
-| `name` | TEXT | Sí |  | — |
+| `id` | INTEGER | Sí | PK | — |
+| `iso2` | TEXT | Sí | UNIQUE | — |
+| `name` | TEXT | Sí | UNIQUE | — |
 
 ## `favorite_professionals`
 
@@ -311,15 +317,16 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `professional_id` | INTEGER | Sí | PK / FK | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
-- `client_user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+- `client_user_id` → `users.id` (ON DELETE CASCADE).
+- Único compuesto: (`client_user_id`, `professional_id`).
 
 ## `legal_documents`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `document_type` | TEXT | Sí |  | — |
 | `version` | TEXT | Sí |  | — |
 | `title` | TEXT | Sí |  | — |
@@ -327,11 +334,14 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `published_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `is_active` | INTEGER | Sí |  | 1 |
 
+**Relaciones y restricciones:**
+- Único compuesto: (`document_type`, `version`).
+
 ## `message_attachments`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `message_id` | INTEGER | Sí | FK | — |
 | `file_url` | TEXT | Sí |  | — |
 | `original_filename` | TEXT | No |  | — |
@@ -339,14 +349,14 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `size_bytes` | INTEGER | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `message_id` → `messages.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `message_id` → `messages.id` (ON DELETE CASCADE).
 
 ## `messages`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `conversation_id` | INTEGER | Sí | FK | — |
 | `sender_user_id` | INTEGER | Sí | FK | — |
 | `message_type` | TEXT | Sí |  | 'TEXT' |
@@ -355,15 +365,15 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `edited_at` | TEXT | No |  | — |
 | `deleted_at` | TEXT | No |  | — |
 
-**Relaciones:**
-- `sender_user_id` → `users.id`; al eliminar: **RESTRICT**.
-- `conversation_id` → `conversations.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `sender_user_id` → `users.id` (ON DELETE RESTRICT).
+- `conversation_id` → `conversations.id` (ON DELETE CASCADE).
 
 ## `notifications`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `user_id` | INTEGER | Sí | FK | — |
 | `type` | TEXT | Sí |  | — |
 | `title` | TEXT | Sí |  | — |
@@ -375,14 +385,27 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `read_at` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
+
+## `opportunity_dismissals` *(tabla auxiliar, fuera de `schema.prisma`)*
+
+| Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
+|---|---|---:|---|---|
+| `id` | INTEGER | Sí | PK | — |
+| `service_request_id` | INTEGER | Sí |  | — |
+| `professional_id` | INTEGER | Sí |  | — |
+| `reason` | TEXT | Sí |  | — |
+| `created_at` | TEXT | Sí |  | — |
+
+**Relaciones y restricciones:**
+- Único compuesto: (`service_request_id`, `professional_id`).
 
 ## `otp_codes`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `user_id` | INTEGER | No | FK | — |
 | `destination` | TEXT | Sí |  | — |
 | `channel` | TEXT | Sí |  | — |
@@ -393,28 +416,28 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `attempts` | INTEGER | Sí |  | 0 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
 
 ## `password_reset_tokens`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `user_id` | INTEGER | Sí | FK | — |
-| `token_hash` | TEXT | Sí |  | — |
+| `token_hash` | TEXT | Sí | UNIQUE | — |
 | `expires_at` | TEXT | Sí |  | — |
 | `used_at` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
 
 ## `professional_availability`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `professional_id` | INTEGER | Sí | FK | — |
 | `weekday` | INTEGER | Sí |  | — |
 | `start_time` | TEXT | Sí |  | — |
@@ -422,8 +445,9 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `is_available` | INTEGER | Sí |  | 1 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+- Único compuesto: (`professional_id`, `weekday`, `start_time`, `end_time`).
 
 ## `professional_categories`
 
@@ -435,15 +459,16 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `years_experience` | INTEGER | Sí |  | 0 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `category_id` → `categories.id`; al eliminar: **RESTRICT**.
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `category_id` → `categories.id` (ON DELETE RESTRICT).
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+- Único compuesto: (`professional_id`, `category_id`).
 
 ## `professional_documents`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `professional_id` | INTEGER | Sí | FK | — |
 | `document_type` | TEXT | Sí |  | — |
 | `document_number` | TEXT | No |  | — |
@@ -455,29 +480,36 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `rejection_reason` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `reviewed_by_user_id` → `users.id`; al eliminar: **SET NULL**.
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `reviewed_by_user_id` → `users.id` (ON DELETE SET NULL).
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
 
 ## `professional_profiles`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
-| `user_id` | INTEGER | Sí | FK | — |
-| `slug` | TEXT | Sí |  | — |
+| `id` | INTEGER | Sí | PK | — |
+| `user_id` | INTEGER | Sí | FK / UNIQUE | — |
+| `slug` | TEXT | Sí | UNIQUE | — |
 | `display_name` | TEXT | Sí |  | — |
 | `business_name` | TEXT | No |  | — |
+| `phone` | TEXT | No |  | — |
 | `tax_id` | TEXT | No |  | — |
 | `bio` | TEXT | No |  | — |
 | `years_experience` | INTEGER | Sí |  | 0 |
+| `province` | TEXT | No |  | — |
+| `municipality` | TEXT | No |  | — |
+| `postal_code` | TEXT | No |  | — |
+| `reference_address` | TEXT | No |  | — |
+| `work_radius` | INTEGER | No |  | — |
+| `availability` | TEXT | No |  | — |
 | `profile_image_url` | TEXT | No |  | — |
 | `cover_image_url` | TEXT | No |  | — |
 | `website_url` | TEXT | No |  | — |
 | `is_verified` | INTEGER | Sí |  | 0 |
 | `is_homologated` | INTEGER | Sí |  | 0 |
 | `verification_status` | TEXT | Sí |  | 'PENDING' |
-| `profile_status` | TEXT | Sí |  | 'DRAFT' |
+| `profile_status` | TEXT | Sí |  | 'INCOMPLETE' |
 | `rating_average` | REAL | Sí |  | 0 |
 | `ratings_count` | INTEGER | Sí |  | 0 |
 | `response_time_minutes` | INTEGER | No |  | — |
@@ -485,14 +517,14 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `user_id` → `users.id` (ON DELETE CASCADE).
 
 ## `professional_service_areas`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `professional_id` | INTEGER | Sí | FK | — |
 | `city_id` | INTEGER | No | FK | — |
 | `postal_code` | TEXT | No |  | — |
@@ -500,27 +532,41 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `is_active` | INTEGER | Sí |  | 1 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `city_id` → `cities.id`; al eliminar: **CASCADE**.
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `city_id` → `cities.id` (ON DELETE CASCADE).
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+
+## `professional_services`
+
+| Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
+|---|---|---:|---|---|
+| `professional_id` | INTEGER | Sí | PK / FK | — |
+| `service_id` | INTEGER | Sí | PK / FK | — |
+| `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
+
+**Relaciones y restricciones:**
+- `service_id` → `services.id` (ON DELETE RESTRICT).
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+- Único compuesto: (`professional_id`, `service_id`).
 
 ## `regions`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `country_id` | INTEGER | Sí | FK | — |
 | `name` | TEXT | Sí |  | — |
 | `code` | TEXT | No |  | — |
 
-**Relaciones:**
-- `country_id` → `countries.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `country_id` → `countries.id` (ON DELETE CASCADE).
+- Único compuesto: (`country_id`, `name`).
 
 ## `request_professional_invitations`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_request_id` | INTEGER | Sí | FK | — |
 | `professional_id` | INTEGER | Sí | FK | — |
 | `invited_by_user_id` | INTEGER | Sí | FK | — |
@@ -528,16 +574,17 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `sent_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `responded_at` | TEXT | No |  | — |
 
-**Relaciones:**
-- `invited_by_user_id` → `users.id`; al eliminar: **RESTRICT**.
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
-- `service_request_id` → `service_requests.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `invited_by_user_id` → `users.id` (ON DELETE RESTRICT).
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+- `service_request_id` → `service_requests.id` (ON DELETE CASCADE).
+- Único compuesto: (`service_request_id`, `professional_id`).
 
 ## `request_status_history`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_request_id` | INTEGER | Sí | FK | — |
 | `previous_status` | TEXT | No |  | — |
 | `new_status` | TEXT | Sí |  | — |
@@ -545,15 +592,15 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `note` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `changed_by_user_id` → `users.id`; al eliminar: **SET NULL**.
-- `service_request_id` → `service_requests.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `changed_by_user_id` → `users.id` (ON DELETE SET NULL).
+- `service_request_id` → `service_requests.id` (ON DELETE CASCADE).
 
 ## `reviews`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_order_id` | INTEGER | Sí | FK | — |
 | `author_user_id` | INTEGER | Sí | FK | — |
 | `professional_id` | INTEGER | Sí | FK | — |
@@ -566,17 +613,18 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `professional_id` → `professional_profiles.id`; al eliminar: **CASCADE**.
-- `author_user_id` → `users.id`; al eliminar: **RESTRICT**.
-- `service_order_id` → `service_orders.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `professional_id` → `professional_profiles.id` (ON DELETE CASCADE).
+- `author_user_id` → `users.id` (ON DELETE RESTRICT).
+- `service_order_id` → `service_orders.id` (ON DELETE CASCADE).
+- Único compuesto: (`service_order_id`, `author_user_id`).
 
 ## `roles`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
-| `code` | TEXT | Sí |  | — |
+| `id` | INTEGER | Sí | PK | — |
+| `code` | TEXT | Sí | UNIQUE | — |
 | `name` | TEXT | Sí |  | — |
 | `description` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
@@ -585,9 +633,9 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
-| `service_request_id` | INTEGER | Sí | FK | — |
-| `accepted_budget_id` | INTEGER | Sí | FK | — |
+| `id` | INTEGER | Sí | PK | — |
+| `service_request_id` | INTEGER | Sí | FK / UNIQUE | — |
+| `accepted_budget_id` | INTEGER | Sí | FK / UNIQUE | — |
 | `client_user_id` | INTEGER | Sí | FK | — |
 | `professional_id` | INTEGER | Sí | FK | — |
 | `status` | TEXT | Sí |  | 'PENDING_START' |
@@ -600,17 +648,17 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `professional_id` → `professional_profiles.id`; al eliminar: **RESTRICT**.
-- `client_user_id` → `users.id`; al eliminar: **RESTRICT**.
-- `accepted_budget_id` → `budgets.id`; al eliminar: **RESTRICT**.
-- `service_request_id` → `service_requests.id`; al eliminar: **RESTRICT**.
+**Relaciones y restricciones:**
+- `professional_id` → `professional_profiles.id` (ON DELETE RESTRICT).
+- `client_user_id` → `users.id` (ON DELETE RESTRICT).
+- `accepted_budget_id` → `budgets.id` (ON DELETE RESTRICT).
+- `service_request_id` → `service_requests.id` (ON DELETE RESTRICT).
 
 ## `service_request_images`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_request_id` | INTEGER | Sí | FK | — |
 | `storage_path` | TEXT | Sí |  | — |
 | `original_filename` | TEXT | No |  | — |
@@ -621,14 +669,14 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `visible_to_ai` | INTEGER | Sí |  | 1 |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `service_request_id` → `service_requests.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `service_request_id` → `service_requests.id` (ON DELETE CASCADE).
 
 ## `service_requests`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `client_user_id` | INTEGER | Sí | FK | — |
 | `category_id` | INTEGER | No | FK | — |
 | `service_id` | INTEGER | No | FK | — |
@@ -654,17 +702,17 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `deleted_at` | TEXT | No |  | — |
 
-**Relaciones:**
-- `address_id` → `addresses.id`; al eliminar: **SET NULL**.
-- `service_id` → `services.id`; al eliminar: **SET NULL**.
-- `category_id` → `categories.id`; al eliminar: **SET NULL**.
-- `client_user_id` → `users.id`; al eliminar: **RESTRICT**.
+**Relaciones y restricciones:**
+- `address_id` → `addresses.id` (ON DELETE SET NULL).
+- `service_id` → `services.id` (ON DELETE SET NULL).
+- `category_id` → `categories.id` (ON DELETE SET NULL).
+- `client_user_id` → `users.id` (ON DELETE RESTRICT).
 
 ## `service_status_history`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `service_order_id` | INTEGER | Sí | FK | — |
 | `previous_status` | TEXT | No |  | — |
 | `new_status` | TEXT | Sí |  | — |
@@ -672,19 +720,19 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `note` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `changed_by_user_id` → `users.id`; al eliminar: **SET NULL**.
-- `service_order_id` → `service_orders.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `changed_by_user_id` → `users.id` (ON DELETE SET NULL).
+- `service_order_id` → `service_orders.id` (ON DELETE CASCADE).
 
 ## `services`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `category_id` | INTEGER | Sí | FK | — |
-| `code` | TEXT | Sí |  | — |
+| `code` | TEXT | Sí | UNIQUE | — |
 | `name` | TEXT | Sí |  | — |
-| `slug` | TEXT | Sí |  | — |
+| `slug` | TEXT | Sí | UNIQUE | — |
 | `description` | TEXT | No |  | — |
 | `base_unit` | TEXT | No |  | — |
 | `sort_order` | INTEGER | Sí |  | 0 |
@@ -692,15 +740,15 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `category_id` → `categories.id`; al eliminar: **RESTRICT**.
+**Relaciones y restricciones:**
+- `category_id` → `categories.id` (ON DELETE RESTRICT).
 
 ## `site_settings`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
-| `setting_key` | TEXT | Sí |  | — |
+| `id` | INTEGER | Sí | PK | — |
+| `setting_key` | TEXT | Sí | UNIQUE | — |
 | `setting_value` | TEXT | No |  | — |
 | `value_type` | TEXT | Sí |  | 'STRING' |
 | `is_public` | INTEGER | Sí |  | 0 |
@@ -712,15 +760,16 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
+| `id` | INTEGER | Sí | PK | — |
 | `user_id` | INTEGER | Sí | FK | — |
 | `legal_document_id` | INTEGER | Sí | FK | — |
 | `ip_address` | TEXT | No |  | — |
 | `accepted_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `legal_document_id` → `legal_documents.id`; al eliminar: **RESTRICT**.
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `legal_document_id` → `legal_documents.id` (ON DELETE RESTRICT).
+- `user_id` → `users.id` (ON DELETE CASCADE).
+- Único compuesto: (`user_id`, `legal_document_id`).
 
 ## `user_roles`
 
@@ -730,16 +779,17 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `role_id` | INTEGER | Sí | PK / FK | — |
 | `assigned_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 
-**Relaciones:**
-- `role_id` → `roles.id`; al eliminar: **RESTRICT**.
-- `user_id` → `users.id`; al eliminar: **CASCADE**.
+**Relaciones y restricciones:**
+- `role_id` → `roles.id` (ON DELETE RESTRICT).
+- `user_id` → `users.id` (ON DELETE CASCADE).
+- Único compuesto: (`user_id`, `role_id`).
 
 ## `users`
 
 | Campo | Tipo | Obligatorio | Clave | Valor predeterminado |
 |---|---|---:|---|---|
-| `id` | INTEGER | No | PK | — |
-| `email` | TEXT | No |  | — |
+| `id` | INTEGER | Sí | PK | — |
+| `email` | TEXT | No | UNIQUE | — |
 | `phone_country_code` | TEXT | No |  | — |
 | `phone_number` | TEXT | No |  | — |
 | `password_hash` | TEXT | No |  | — |
@@ -748,10 +798,13 @@ Este modelo cubre autenticación, clientes, profesionales, ubicación, categorí
 | `avatar_url` | TEXT | No |  | — |
 | `preferred_language` | TEXT | Sí |  | 'es' |
 | `status` | TEXT | Sí |  | 'ACTIVE' |
-| `must_change_password` | INTEGER | Sí |  | 0 |
 | `email_verified_at` | TEXT | No |  | — |
 | `phone_verified_at` | TEXT | No |  | — |
 | `last_login_at` | TEXT | No |  | — |
 | `created_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `updated_at` | TEXT | Sí |  | CURRENT_TIMESTAMP |
 | `deleted_at` | TEXT | No |  | — |
+| `must_change_password` | INTEGER | Sí |  | 0 |
+
+**Relaciones y restricciones:**
+- Único compuesto: (`phone_country_code`, `phone_number`).

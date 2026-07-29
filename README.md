@@ -23,6 +23,8 @@ FixGo IA es una plataforma web tipo marketplace que conecta **clientes** que nec
 
 ## Arranque
 
+> **Guía paso a paso completa (recomendada para evaluar):** [docs/INSTALACION.md](docs/INSTALACION.md). La base de datos SQLite ya viene incluida con datos de demostración (`backend/database/fixgo.db`): no hay que migrar ni sembrar. Antes de arrancar el backend, copia `backend/.env.example` a `backend/.env` y define un `JWT_ACCESS_SECRET` (las claves de IA son opcionales).
+
 Backend:
 
 ```bash

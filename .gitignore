@@ -43,6 +43,15 @@ backend/.env.*
 *.sqlite
 *.sqlite3
 backend/prisma/*.backup.prisma
+# Excepción: la base de datos de demostración SÍ se versiona para la entrega,
+# así el proyecto funciona al descargarlo sin sembrar datos.
+!backend/database/fixgo.db
+
+# =========================
+# RUNTIME / RESPALDOS DEL ASISTENTE
+# =========================
+.codex-runtime/
+*.bundle
 
 # =========================
 # LOGS

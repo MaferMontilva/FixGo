@@ -197,6 +197,8 @@ export function DescriptionStep({
             aria-describedby={visibleDescriptionError ? descriptionErrorId : undefined}
             aria-invalid={visibleDescriptionError ? "true" : "false"}
             id={descriptionId}
+            lang="es"
+            spellCheck
             maxLength={2000}
             onBlur={() => setDescriptionTouched(true)}
             onChange={(event) => updateDescription(event.target.value)}
@@ -291,6 +293,8 @@ export function DescriptionStep({
                   aria-describedby={additionalDetailsError ? additionalDetailsErrorId : undefined}
                   aria-invalid={additionalDetailsError ? "true" : "false"}
                   id={additionalDetailsId}
+                  lang="es"
+                  spellCheck
                   maxLength={800}
                   onChange={(event) => {
                     setAdditionalDetails(event.target.value);

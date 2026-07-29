@@ -9,4 +9,5 @@ export abstract class ProfessionalsRepository {
   abstract upsertMe(userId: number, data: UpsertProfessionalProfileData): Promise<ProfessionalMeEntity>;
   abstract findCompatibleOpportunities(userId: number): Promise<ProfessionalOpportunityEntity[]>;
   abstract findCompatibleOpportunityById(userId: number, opportunityId: number): Promise<ProfessionalOpportunityEntity | null>;
+  abstract dismissOpportunity(userId: number, opportunityId: number, reason: string): Promise<void>;
 }

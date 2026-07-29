@@ -31,6 +31,21 @@ export class PrismaServiceOrdersRepository implements ServiceOrdersRepository {
     return profile?.userId ?? null;
   }
 
+  async findRejectedProfessionalUserIds(serviceRequestId: number, acceptedBudgetId: number): Promise<number[]> {
+    // Profesionales cuyos presupuestos quedaron rechazados ("No seleccionado") al aceptar otro.
+    const rejected = await this.prisma.budgets.findMany({
+      where: { serviceRequestId, status: "REJECTED", id: { not: acceptedBudgetId } },
+      select: { professionalId: true }
+    });
+    const professionalIds = [...new Set(rejected.map((budget) => budget.professionalId))];
+    if (professionalIds.length === 0) return [];
+    const profiles = await this.prisma.professionalProfiles.findMany({
+      where: { id: { in: professionalIds } },
+      select: { userId: true }
+    });
+    return profiles.map((profile) => profile.userId);
+  }
+
   async acceptBudget(clientUserId: number, budgetId: number): Promise<ServiceOrderEntity> {
     const budget = await this.prisma.budgets.findUnique({ where: { id: budgetId } });
     if (!budget) throw new NotFoundException("El presupuesto no existe.");
@@ -150,24 +165,49 @@ export class PrismaServiceOrdersRepository implements ServiceOrdersRepository {
     const requestIds = [...new Set(orders.map((order) => order.serviceRequestId))];
     const professionalIds = [...new Set(orders.map((order) => order.professionalId))];
     const budgetIds = [...new Set(orders.map((order) => order.acceptedBudgetId))];
+    const clientUserIds = [...new Set(orders.map((order) => order.clientUserId))];
     const orderIds = orders.map((order) => order.id);
 
-    const [requests, professionals, budgets, reviews] = await Promise.all([
-      this.prisma.serviceRequests.findMany({ where: { id: { in: requestIds } }, select: { id: true, title: true, finalDescription: true, originalDescription: true } }),
+    const [requests, professionals, budgets, reviews, clients] = await Promise.all([
+      this.prisma.serviceRequests.findMany({ where: { id: { in: requestIds } }, select: { id: true, title: true, finalDescription: true, originalDescription: true, locationDescription: true, addressId: true } }),
       this.prisma.professionalProfiles.findMany({ where: { id: { in: professionalIds } }, select: { id: true, displayName: true, businessName: true, phone: true } }),
       this.prisma.budgets.findMany({ where: { id: { in: budgetIds } }, select: { id: true, totalPrice: true, currency: true } }),
-      this.prisma.reviews.findMany({ where: { serviceOrderId: { in: orderIds } }, select: { serviceOrderId: true } })
+      this.prisma.reviews.findMany({ where: { serviceOrderId: { in: orderIds } }, select: { serviceOrderId: true } }),
+      this.prisma.users.findMany({ where: { id: { in: clientUserIds } }, select: { id: true, firstName: true, lastName: true, phoneNumber: true, phoneCountryCode: true } })
     ]);
+
+    const addressIds = [...new Set(requests.map((request) => request.addressId).filter((value): value is number => typeof value === "number"))];
+    const addresses = addressIds.length
+      ? await this.prisma.addresses.findMany({
+          where: { id: { in: addressIds } },
+          select: { id: true, addressLine1: true, addressLine2: true, postalCode: true, cityText: true, regionText: true }
+        })
+      : [];
 
     const requestById = new Map(requests.map((request) => [request.id, request]));
     const professionalById = new Map(professionals.map((professional) => [professional.id, professional]));
     const budgetById = new Map(budgets.map((budget) => [budget.id, budget]));
     const reviewedOrderIds = new Set(reviews.map((review) => review.serviceOrderId));
+    const clientById = new Map(clients.map((client) => [client.id, client]));
+    const addressById = new Map(addresses.map((address) => [address.id, address]));
 
     return orders.map((order) => {
       const request = requestById.get(order.serviceRequestId);
       const professional = professionalById.get(order.professionalId);
       const budget = budgetById.get(order.acceptedBudgetId);
+      const client = clientById.get(order.clientUserId);
+      const address = request?.addressId != null ? addressById.get(request.addressId) : undefined;
+      const clientName = client ? `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() || null : null;
+      const clientPhone = client?.phoneNumber
+        ? `${client.phoneCountryCode ? `${client.phoneCountryCode} ` : ""}${client.phoneNumber}`.trim()
+        : null;
+      const composedAddress = address
+        ? [address.addressLine1, address.addressLine2, address.postalCode, address.cityText, address.regionText]
+            .map((part) => (part ?? "").trim())
+            .filter((part) => part.length > 0)
+            .join(", ")
+        : "";
+      const clientAddress = composedAddress || request?.locationDescription || null;
       return {
         id: order.id,
         serviceRequestId: order.serviceRequestId,
@@ -184,6 +224,9 @@ export class PrismaServiceOrdersRepository implements ServiceOrdersRepository {
         requestDescription: request?.finalDescription ?? request?.originalDescription ?? null,
         professionalName: professional?.businessName || professional?.displayName || null,
         professionalPhone: professional?.phone ?? null,
+        clientName,
+        clientPhone,
+        clientAddress,
         totalPrice: budget?.totalPrice ?? null,
         currency: budget?.currency ?? null,
         hasReview: reviewedOrderIds.has(order.id)

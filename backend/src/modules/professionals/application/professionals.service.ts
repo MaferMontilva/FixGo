@@ -52,4 +52,9 @@ export class ProfessionalsService {
 
     return opportunity;
   }
+
+  async dismissOpportunity(userId: number, opportunityId: number, reason: string) {
+    await this.professionalsRepository.dismissOpportunity(userId, opportunityId, reason);
+    return { dismissed: true };
+  }
 }

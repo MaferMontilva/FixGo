@@ -12,3 +12,7 @@ export function getProfessionalReviews(professionalId: number) {
 export function getMyReviews() {
   return httpGet<Review[]>("/reviews/mine");
 }
+
+export function replyToReview(reviewId: number, reply: string) {
+  return httpPost<Review, { reply: string }>(`/reviews/${reviewId}/reply`, { reply });
+}

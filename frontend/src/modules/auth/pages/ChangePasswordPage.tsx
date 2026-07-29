@@ -59,21 +59,18 @@ export function ChangePasswordPage() {
   };
 
   return (
-    <PageContainer>
-      <div className="auth-single">
-        <Card>
-          <div className="auth-card-head">
-            <Logo compact />
-            <h1><KeyRound size={22} /> Cambia tu contraseña</h1>
-            <p>
-              Hola {user?.firstName || ""}. Por seguridad, tu cuenta fue creada con una clave temporal y debes
-              definir una contraseña nueva antes de continuar.
-            </p>
-          </div>
+    <PageContainer className="login-shell">
+      <Card className="login-card auth-card">
+        <Logo compact />
+        <h1 className="login-title"><KeyRound size={22} /> Cambia tu contraseña</h1>
+        <p className="login-intro">
+          Hola {user?.firstName || ""}. Por seguridad, tu cuenta fue creada con una clave temporal y debes
+          definir una contraseña nueva antes de continuar.
+        </p>
 
-          {serverError ? <p className="form-error server-error">{serverError}</p> : null}
+        {serverError ? <p className="form-error server-error">{serverError}</p> : null}
 
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <AuthFormField
               id="new-password"
               label="Nueva contraseña"
@@ -94,12 +91,11 @@ export function ChangePasswordPage() {
               placeholder="Vuelve a escribirla"
               autoComplete="new-password"
             />
-            <Button type="submit" disabled={isSubmitting}>
+            <Button className="auth-submit" type="submit" variant="wide" disabled={isSubmitting}>
               {isSubmitting ? "Guardando..." : "Guardar y continuar"}
             </Button>
           </form>
-        </Card>
-      </div>
+      </Card>
     </PageContainer>
   );
 }

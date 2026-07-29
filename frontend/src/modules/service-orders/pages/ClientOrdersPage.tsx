@@ -1,6 +1,7 @@
-import { Award, CheckCircle2, Crown, Droplet, KeyRound, Medal, Paintbrush, Phone, RefreshCw, Sparkles, Sprout, Truck, User, Wallet, Wrench, X, Zap } from "lucide-react";
+import { Award, BellRing, CheckCircle2, Crown, Droplet, KeyRound, Medal, Paintbrush, Phone, RefreshCw, Sparkles, Sprout, Truck, User, Wallet, Wrench, X, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import type { ApiError } from "../../../shared/types/apiError";
 import { confirmOrder, getClientOrders } from "../services/serviceOrdersApi";
@@ -48,6 +49,7 @@ export function ClientOrdersPage() {
   const [error, setError] = useState("");
   const [actionId, setActionId] = useState<number | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const load = useCallback(async () => {
     try {
@@ -65,6 +67,17 @@ export function ClientOrdersPage() {
     void load();
   }, [load]);
 
+  // Si llegamos desde una notificación (?orderId=...), abrimos ese trabajo directamente
+  // para que el cliente confirme y valore sin buscarlo en la lista.
+  useEffect(() => {
+    const requestedId = Number(searchParams.get("orderId"));
+    if (!Number.isFinite(requestedId) || requestedId <= 0) return;
+    if (!orders.some((order) => order.id === requestedId)) return;
+    setDetailId(requestedId);
+    searchParams.delete("orderId");
+    setSearchParams(searchParams, { replace: true });
+  }, [orders, searchParams, setSearchParams]);
+
   const confirm = async (order: ServiceOrder) => {
     try {
       setActionId(order.id);
@@ -81,6 +94,10 @@ export function ClientOrdersPage() {
     order.totalPrice != null ? `${order.totalPrice.toFixed(2)} ${order.currency ?? "EUR"}` : "-";
 
   const detailOrder = orders.find((order) => order.id === detailId) ?? null;
+
+  // Trabajos que el profesional dio por terminados y siguen esperando que el cliente
+  // los confirme y valore. El aviso permanece visible hasta que cierre el proceso.
+  const pendingConfirmation = orders.filter((order) => order.status === "AWAITING_CLIENT_CONFIRMATION");
 
   return (
     <PageContainer className="orders-shell">
@@ -103,6 +120,27 @@ export function ClientOrdersPage() {
           <RefreshCw size={18} /> Actualizar
         </button>
       </div>
+
+      {!loading && pendingConfirmation.length > 0 ? (
+        <div className="orders-pending-banner" role="alert">
+          <span className="orders-pending-icon"><BellRing size={20} /></span>
+          <div className="orders-pending-text">
+            <strong>
+              {pendingConfirmation.length === 1
+                ? "Tienes un trabajo terminado sin cerrar"
+                : `Tienes ${pendingConfirmation.length} trabajos terminados sin cerrar`}
+            </strong>
+            <p>Confírmalo y deja tu valoración para completar el proceso. Este aviso seguirá aquí hasta que lo hagas.</p>
+          </div>
+          <button
+            className="orders-pending-cta"
+            type="button"
+            onClick={() => setDetailId(pendingConfirmation[0].id)}
+          >
+            Confirmar y valorar
+          </button>
+        </div>
+      ) : null}
 
       {loading ? <p className="orders-empty">Cargando...</p> : null}
       {error ? <p className="form-error server-error">{error}</p> : null}

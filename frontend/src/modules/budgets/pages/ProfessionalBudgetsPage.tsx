@@ -10,7 +10,7 @@ const statusLabels: Record<BudgetStatus, string> = {
   SENT: "Enviado",
   VIEWED: "Visto por el cliente",
   ACCEPTED: "Aceptado",
-  REJECTED: "Rechazado",
+  REJECTED: "No seleccionado",
   WITHDRAWN: "Retirado",
   EXPIRED: "Caducado"
 };
@@ -63,7 +63,7 @@ export function ProfessionalBudgetsPage() {
                 <div className="opp-card-top">
                   <span className="opp-badge">Solicitud #{budget.serviceRequestId}</span>
                 </div>
-                <h3>Presupuesto enviado</h3>
+                <h3>Tu presupuesto</h3>
                 <ul className="budget-card-items">
                   {budget.items.map((item) => (
                     <li key={item.id}>

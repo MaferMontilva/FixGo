@@ -9,6 +9,10 @@ export type RegisterClientCommand = {
   lastName: string;
   email: string;
   password: string;
+  phone: string;
+  addressLine1: string;
+  postalCode: string;
+  city: string;
 };
 
 @Injectable()
@@ -31,7 +35,13 @@ export class RegisterClientUseCase {
       firstName: command.firstName.trim(),
       lastName: command.lastName.trim(),
       email,
-      passwordHash: await this.passwordHasher.hash(command.password)
+      passwordHash: await this.passwordHasher.hash(command.password),
+      phone: command.phone.trim(),
+      address: {
+        addressLine1: command.addressLine1.trim(),
+        postalCode: command.postalCode.trim(),
+        city: command.city.trim()
+      }
     });
 
     return this.authTokenFactory.createForUser(user);

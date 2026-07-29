@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { FormEvent, useState } from "react";
+import { AiPolishButton } from "../../ai";
 import type { ApiError } from "../../../shared/types/apiError";
 import { createReview } from "../services/reviewsApi";
 
@@ -72,10 +73,13 @@ export function ReviewForm({ serviceOrderId, onSubmitted }: ReviewFormProps) {
         className="review-comment"
         rows={2}
         maxLength={1000}
+        lang="es"
+        spellCheck
         placeholder="Cuenta como fue tu experiencia (opcional)"
         value={comment}
         onChange={(event) => setComment(event.target.value)}
       />
+      <AiPolishButton value={comment} onResult={setComment} style="client-review" />
       {error ? <p className="form-error server-error">{error}</p> : null}
       <button className="pro-primary-button" type="submit" disabled={submitting}>
         {submitting ? "Enviando..." : "Enviar valoracion"}

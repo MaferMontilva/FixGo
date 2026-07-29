@@ -1,10 +1,14 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { CreateNotificationService } from "../../notifications/application/create-notification.use-case";
 import { SERVICE_ORDER_STATUS, ServiceOrderEntity } from "../domain/service-order.entity";
 import { SERVICE_ORDERS_REPOSITORY, ServiceOrdersRepository } from "../domain/service-orders.repository";
 
 @Injectable()
 export class StartOrderUseCase {
-  constructor(@Inject(SERVICE_ORDERS_REPOSITORY) private readonly repository: ServiceOrdersRepository) {}
+  constructor(
+    @Inject(SERVICE_ORDERS_REPOSITORY) private readonly repository: ServiceOrdersRepository,
+    private readonly createNotificationService: CreateNotificationService
+  ) {}
 
   async execute(orderId: number, professionalUserId: number): Promise<ServiceOrderEntity> {
     const professionalId = await this.ensureProfessional(professionalUserId);
@@ -16,7 +20,22 @@ export class StartOrderUseCase {
       "startedAt",
       "IN_PROGRESS"
     );
-    return this.ensureUpdated(order);
+    const updated = this.ensureUpdated(order);
+
+    // Avisamos al cliente de que su solicitud ya esta en progreso.
+    try {
+      await this.createNotificationService.execute({
+        userId: updated.clientUserId,
+        type: "WORK_STARTED",
+        title: "Trabajo en progreso",
+        body: `El profesional ha comenzado "${updated.requestTitle ?? "tu servicio"}". Cuando termine, deberás confirmarlo y dejar tu valoración.`,
+        data: { serviceOrderId: updated.id, serviceRequestId: updated.serviceRequestId }
+      });
+    } catch {
+      // La notificacion nunca debe impedir iniciar el trabajo.
+    }
+
+    return updated;
   }
 
   private async ensureProfessional(userId: number): Promise<number> {
@@ -33,7 +52,10 @@ export class StartOrderUseCase {
 
 @Injectable()
 export class CompleteOrderUseCase {
-  constructor(@Inject(SERVICE_ORDERS_REPOSITORY) private readonly repository: ServiceOrdersRepository) {}
+  constructor(
+    @Inject(SERVICE_ORDERS_REPOSITORY) private readonly repository: ServiceOrdersRepository,
+    private readonly createNotificationService: CreateNotificationService
+  ) {}
 
   async execute(orderId: number, professionalUserId: number): Promise<ServiceOrderEntity> {
     const professionalId = await this.repository.findProfessionalIdByUserId(professionalUserId);
@@ -47,6 +69,20 @@ export class CompleteOrderUseCase {
       null
     );
     if (!order) throw new ConflictException("El trabajo no se puede completar en su estado actual.");
+
+    // Al terminar el profesional, se avisa al cliente para que confirme y valore.
+    try {
+      await this.createNotificationService.execute({
+        userId: order.clientUserId,
+        type: "WORK_COMPLETED",
+        title: "Trabajo terminado",
+        body: `El profesional terminó "${order.requestTitle ?? "tu servicio"}". Confírmalo y déjale tu valoración.`,
+        data: { serviceOrderId: order.id, serviceRequestId: order.serviceRequestId }
+      });
+    } catch {
+      // La notificacion nunca debe interrumpir el cierre del trabajo.
+    }
+
     return order;
   }
 }
